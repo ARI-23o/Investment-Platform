@@ -9,7 +9,10 @@ import {
   RotateCcw,
   Sparkles,
   Layers,
-  Award
+  Award,
+  Landmark,
+  Receipt,
+  PiggyBank
 } from "lucide-react";
 
 export default function SipCalculatorSection({ onStartInvesting }) {
