@@ -32,15 +32,6 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
         <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent sm:from-white/85 sm:via-white/40 lg:via-transparent pointer-events-none"></div>
       </div>
 
-      {/* Hanging Money Plant on Right Edge Matching Design */}
-      <div className="hidden sm:block absolute top-0 right-0 h-[460px] w-52 lg:w-72 pointer-events-none select-none z-10 overflow-hidden">
-        <img 
-          src="/assets/money_plant_clean.png" 
-          alt="" 
-          className="w-full h-full object-contain object-right-top drop-shadow-md"
-        />
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
         
         {/* Main Hero Grid */}
