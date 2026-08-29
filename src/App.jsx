@@ -33,8 +33,12 @@ export default function App() {
 
   // Persistent User Session
   const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem("gsp_current_user");
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem("gsp_current_user");
+      return (saved && saved !== "undefined" && saved !== "null") ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
 
   // Central Backend Enquiries State (Shared across all browsers)
