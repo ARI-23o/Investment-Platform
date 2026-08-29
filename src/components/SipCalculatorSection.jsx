@@ -3,52 +3,177 @@ import {
   ArrowRight, 
   CheckCircle2, 
   TrendingUp, 
-  ShieldCheck, 
-  PieChart, 
   Calculator, 
   RotateCcw,
-  Sparkles,
-  Layers,
-  Award,
   Landmark,
   Receipt,
-  PiggyBank
+  PiggyBank,
+  Wallet,
+  ArrowUpRight
 } from "lucide-react";
 
+// Reusable Calculator Slider Component
+function CalculatorSlider({ 
+  label, 
+  value, 
+  onChange, 
+  min, 
+  max, 
+  step = 1, 
+  prefix = "", 
+  suffix = "", 
+  marks = [], 
+  accentColor = "accent-[#0f4b32]" 
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2.5">
+        <label className="text-sm sm:text-base font-bold text-gray-800">
+          {label}
+        </label>
+        <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 px-3.5 py-1.5 rounded-xl text-base font-extrabold text-gray-900 shadow-2xs">
+          {prefix && <span className="text-gray-400 text-xs font-semibold">{prefix}</span>}
+          <input 
+            type="number" 
+            value={value} 
+            onChange={(e) => onChange(Math.max(min, Math.min(max, Number(e.target.value) || 0)))}
+            className="w-24 bg-transparent outline-none text-right font-black"
+            step={step}
+            min={min}
+            max={max}
+          />
+          {suffix && <span className="text-gray-500 text-xs font-medium">{suffix}</span>}
+        </div>
+      </div>
+      <input 
+        type="range" 
+        min={min} 
+        max={max} 
+        step={step} 
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className={`w-full h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer ${accentColor}`}
+      />
+      {marks.length > 0 && (
+        <div className="flex justify-between text-xs text-gray-400 font-medium mt-1">
+          {marks.map((mark, idx) => (
+            <span key={idx}>{mark}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SipCalculatorSection({ onStartInvesting }) {
+  // Mode: 'sip' | 'lumpsum' | 'swp'
+  const [calcMode, setCalcMode] = useState("sip");
+
+  // SIP States
   const [monthlyInvestment, setMonthlyInvestment] = useState(25000);
-  const [years, setYears] = useState(10);
-  const [expectedReturn, setExpectedReturn] = useState(12);
+  const [sipYears, setSipYears] = useState(10);
+  const [sipReturn, setSipReturn] = useState(12);
 
-  // Exact SIP formula matching Page 6
-  const { totalInvestment, estimatedReturns, totalWealth, investmentRatio, returnsRatio } = useMemo(() => {
-    const P = Number(monthlyInvestment) || 0;
-    const n = (Number(years) || 1) * 12;
-    const r = (Number(expectedReturn) || 0) / 100 / 12;
+  // Lumpsum States
+  const [lumpsumAmount, setLumpsumAmount] = useState(500000);
+  const [lumpYears, setLumpYears] = useState(10);
+  const [lumpReturn, setLumpReturn] = useState(12);
 
-    const invested = P * n;
+  // SWP States
+  const [swpTotalInvestment, setSwpTotalInvestment] = useState(5000000);
+  const [swpMonthlyWithdrawal, setSwpMonthlyWithdrawal] = useState(35000);
+  const [swpYears, setSwpYears] = useState(10);
+  const [swpReturn, setSwpReturn] = useState(10);
 
-    let wealth = 0;
-    if (r > 0) {
-      wealth = P * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
-    } else {
-      wealth = invested;
+  // Dynamic Calculation Engine
+  const { 
+    totalInvestment, 
+    estimatedReturns, 
+    totalWealth, 
+    investmentRatio, 
+    returnsRatio,
+    labelTotalInvested,
+    labelReturns,
+    labelTotalWealth
+  } = useMemo(() => {
+    if (calcMode === "sip") {
+      const P = Number(monthlyInvestment) || 0;
+      const n = (Number(sipYears) || 1) * 12;
+      const i = (Number(sipReturn) || 0) / 100 / 12;
+      const invested = P * n;
+      let wealth = 0;
+      if (i > 0) {
+        wealth = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+      } else {
+        wealth = invested;
+      }
+      const returns = Math.max(0, wealth - invested);
+      const safeTotal = wealth > 0 ? wealth : 1;
+
+      return {
+        totalInvestment: invested,
+        estimatedReturns: returns,
+        totalWealth: wealth,
+        investmentRatio: Math.min(100, Math.max(0, (invested / safeTotal) * 100)),
+        returnsRatio: Math.min(100, Math.max(0, (returns / safeTotal) * 100)),
+        labelTotalInvested: "Total Investment",
+        labelReturns: "Estimated Returns",
+        labelTotalWealth: "Total Wealth",
+      };
+    } 
+    
+    if (calcMode === "lumpsum") {
+      const P = Number(lumpsumAmount) || 0;
+      const n = Number(lumpYears) || 1;
+      const r = (Number(lumpReturn) || 0) / 100;
+      const invested = P;
+      const wealth = P * Math.pow(1 + r, n);
+      const returns = Math.max(0, wealth - invested);
+      const safeTotal = wealth > 0 ? wealth : 1;
+
+      return {
+        totalInvestment: invested,
+        estimatedReturns: returns,
+        totalWealth: wealth,
+        investmentRatio: Math.min(100, Math.max(0, (invested / safeTotal) * 100)),
+        returnsRatio: Math.min(100, Math.max(0, (returns / safeTotal) * 100)),
+        labelTotalInvested: "Initial Investment",
+        labelReturns: "Total Growth",
+        labelTotalWealth: "Total Wealth",
+      };
     }
 
-    const returns = Math.max(0, wealth - invested);
+    // SWP calculation
+    const totalPrincipal = Number(swpTotalInvestment) || 0;
+    const monthlyOut = Number(swpMonthlyWithdrawal) || 0;
+    const months = (Number(swpYears) || 1) * 12;
+    const monthlyRate = (Number(swpReturn) || 0) / 100 / 12;
+    const totalWithdrawn = monthlyOut * months;
 
-    const safeTotal = wealth > 0 ? wealth : 1;
-    const invRatio = Math.min(100, Math.max(0, (invested / safeTotal) * 100));
-    const retRatio = Math.min(100, Math.max(0, (returns / safeTotal) * 100));
+    let balance = totalPrincipal;
+    for (let m = 0; m < months; m++) {
+      balance = Math.max(0, (balance - monthlyOut) * (1 + monthlyRate));
+    }
+    const finalValue = balance;
+    const overallValue = totalWithdrawn + finalValue;
+    const safeTotal = overallValue > 0 ? overallValue : 1;
 
     return {
-      totalInvestment: invested,
-      estimatedReturns: returns,
-      totalWealth: wealth,
-      investmentRatio: invRatio,
-      returnsRatio: retRatio,
+      totalInvestment: totalPrincipal,
+      estimatedReturns: totalWithdrawn,
+      totalWealth: finalValue,
+      investmentRatio: Math.min(100, Math.max(0, (totalWithdrawn / safeTotal) * 100)),
+      returnsRatio: Math.min(100, Math.max(0, (finalValue / safeTotal) * 100)),
+      labelTotalInvested: "Initial Principal",
+      labelReturns: "Total Withdrawn",
+      labelTotalWealth: "Final Balance Remaining",
     };
-  }, [monthlyInvestment, years, expectedReturn]);
+  }, [
+    calcMode, 
+    monthlyInvestment, sipYears, sipReturn,
+    lumpsumAmount, lumpYears, lumpReturn,
+    swpTotalInvestment, swpMonthlyWithdrawal, swpYears, swpReturn
+  ]);
 
   const radius = 60;
   const circumference = 2 * Math.PI * radius;
@@ -56,6 +181,23 @@ export default function SipCalculatorSection({ onStartInvesting }) {
 
   const formatCurrency = (val) => {
     return "₹" + Math.round(val).toLocaleString("en-IN");
+  };
+
+  const handleReset = () => {
+    if (calcMode === "sip") {
+      setMonthlyInvestment(25000);
+      setSipYears(10);
+      setSipReturn(12);
+    } else if (calcMode === "lumpsum") {
+      setLumpsumAmount(500000);
+      setLumpYears(10);
+      setLumpReturn(12);
+    } else {
+      setSwpTotalInvestment(5000000);
+      setSwpMonthlyWithdrawal(35000);
+      setSwpYears(10);
+      setSwpReturn(10);
+    }
   };
 
   return (
@@ -81,7 +223,7 @@ export default function SipCalculatorSection({ onStartInvesting }) {
             </h2>
 
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-              Whether saving for retirement, your child's education, or a dream home — our goal-based mutual fund platform helps you invest with purpose and discipline.
+              Whether saving for retirement, your child's education, or creating regular monthly income — our interactive wealth calculators help you plan with precision and discipline.
             </p>
 
             {/* 4 Feature Badges in 2x2 Grid */}
@@ -101,7 +243,7 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                   <TrendingUp className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-gray-900">Goal-Based Investing</div>
+                  <div className="text-sm font-bold text-gray-900">Goal-Based Planning</div>
                   <div className="text-xs text-gray-500">Achieve life milestones</div>
                 </div>
               </div>
@@ -140,138 +282,207 @@ export default function SipCalculatorSection({ onStartInvesting }) {
 
           </div>
 
-          {/* Right Column: SIP Calculator Card */}
+          {/* Right Column: Calculator Card */}
           <div className="lg:col-span-7">
             <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
               
-              {/* Solid Green Card Header */}
-              <div className="bg-[#0f4b32] px-6 sm:px-8 py-4.5 flex items-center justify-between text-white">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-white/15 text-amber-400 flex items-center justify-center">
-                    <Calculator className="w-5 h-5" />
+              {/* Solid Green Card Header with Tabs */}
+              <div className="bg-[#0f4b32] px-6 sm:px-8 py-5 text-white">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-white/15 text-amber-400 flex items-center justify-center">
+                      <Calculator className="w-5 h-5" />
+                    </div>
+                    <span className="font-bold text-lg sm:text-xl tracking-tight">
+                      Wealth Calculator
+                    </span>
                   </div>
-                  <span className="font-bold text-lg sm:text-xl tracking-tight">SIP Calculator</span>
+
+                  <button 
+                    onClick={handleReset}
+                    className="text-xs font-semibold text-emerald-100 hover:text-white flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-all cursor-pointer"
+                    title="Reset to default"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset</span>
+                  </button>
                 </div>
 
-                <button 
-                  onClick={() => {
-                    setMonthlyInvestment(25000);
-                    setYears(10);
-                    setExpectedReturn(12);
-                  }}
-                  className="text-xs font-semibold text-emerald-100 hover:text-white flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-all cursor-pointer"
-                  title="Reset to default"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Reset</span>
-                </button>
+                {/* Calculator Mode Tabs: [SIP] [Lumpsum] [SWP] */}
+                <div className="grid grid-cols-3 gap-2 bg-emerald-950/50 p-1.5 rounded-2xl border border-emerald-800/40">
+                  <button
+                    onClick={() => setCalcMode("sip")}
+                    className={`py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
+                      calcMode === "sip"
+                        ? "bg-white text-[#0f4b32] shadow-sm"
+                        : "text-emerald-100 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    SIP
+                  </button>
+                  <button
+                    onClick={() => setCalcMode("lumpsum")}
+                    className={`py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
+                      calcMode === "lumpsum"
+                        ? "bg-white text-[#0f4b32] shadow-sm"
+                        : "text-emerald-100 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    Lumpsum
+                  </button>
+                  <button
+                    onClick={() => setCalcMode("swp")}
+                    className={`py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
+                      calcMode === "swp"
+                        ? "bg-white text-[#0f4b32] shadow-sm"
+                        : "text-emerald-100 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    SWP
+                  </button>
+                </div>
               </div>
 
               {/* Sliders & Inputs Body */}
               <div className="p-6 sm:p-8 space-y-6">
                 
-                {/* 1. Monthly Investment */}
-                <div>
-                  <div className="flex items-center justify-between mb-2.5">
-                    <label className="text-sm sm:text-base font-bold text-gray-800">
-                      Monthly Investment
-                    </label>
-                    <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 px-3.5 py-1.5 rounded-xl text-base font-extrabold text-gray-900">
-                      <span className="text-gray-400 text-xs">₹</span>
-                      <input 
-                        type="number" 
-                        value={monthlyInvestment} 
-                        onChange={(e) => setMonthlyInvestment(Math.max(500, Number(e.target.value)))}
-                        className="w-24 bg-transparent outline-none text-right font-black"
-                        step={500}
-                        min={500}
-                        max={500000}
-                      />
-                    </div>
-                  </div>
-                  <input 
-                    type="range" 
-                    min={500} 
-                    max={200000} 
-                    step={500} 
-                    value={monthlyInvestment}
-                    onChange={(e) => setMonthlyInvestment(Number(e.target.value))}
-                    className="w-full h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#0f4b32]"
-                  />
-                  <div className="flex justify-between text-xs text-gray-400 font-medium mt-1">
-                    <span>₹500</span>
-                    <span>₹1,00,000</span>
-                    <span>₹2,00,000</span>
-                  </div>
-                </div>
+                {/* 1. SIP Mode Inputs */}
+                {calcMode === "sip" && (
+                  <>
+                    <CalculatorSlider
+                      label="Monthly Investment"
+                      value={monthlyInvestment}
+                      onChange={setMonthlyInvestment}
+                      min={500}
+                      max={200000}
+                      step={500}
+                      prefix="₹"
+                      marks={["₹500", "₹1,00,000", "₹2,00,000"]}
+                      accentColor="accent-[#0f4b32]"
+                    />
 
-                {/* 2. Investment Period */}
-                <div>
-                  <div className="flex items-center justify-between mb-2.5">
-                    <label className="text-sm sm:text-base font-bold text-gray-800">
-                      Investment Period
-                    </label>
-                    <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 px-3.5 py-1.5 rounded-xl text-base font-extrabold text-gray-900">
-                      <input 
-                        type="number" 
-                        value={years} 
-                        onChange={(e) => setYears(Math.max(1, Math.min(40, Number(e.target.value))))}
-                        className="w-12 bg-transparent outline-none text-right font-black"
-                        min={1}
-                        max={40}
-                      />
-                      <span className="text-gray-500 text-xs font-medium">Years</span>
-                    </div>
-                  </div>
-                  <input 
-                    type="range" 
-                    min={1} 
-                    max={30} 
-                    step={1} 
-                    value={years}
-                    onChange={(e) => setYears(Number(e.target.value))}
-                    className="w-full h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#0f4b32]"
-                  />
-                  <div className="flex justify-between text-xs text-gray-400 font-medium mt-1">
-                    <span>1 Yr</span>
-                    <span>15 Yrs</span>
-                    <span>30 Yrs</span>
-                  </div>
-                </div>
+                    <CalculatorSlider
+                      label="Investment Period"
+                      value={sipYears}
+                      onChange={setSipYears}
+                      min={1}
+                      max={30}
+                      step={1}
+                      suffix="Years"
+                      marks={["1 Yr", "15 Yrs", "30 Yrs"]}
+                      accentColor="accent-[#0f4b32]"
+                    />
 
-                {/* 3. Expected Return */}
-                <div>
-                  <div className="flex items-center justify-between mb-2.5">
-                    <label className="text-sm sm:text-base font-bold text-gray-800">
-                      Expected Return (p.a.)
-                    </label>
-                    <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 px-3.5 py-1.5 rounded-xl text-base font-extrabold text-gray-900">
-                      <input 
-                        type="number" 
-                        value={expectedReturn} 
-                        onChange={(e) => setExpectedReturn(Math.max(1, Math.min(30, Number(e.target.value))))}
-                        className="w-12 bg-transparent outline-none text-right font-black"
+                    <CalculatorSlider
+                      label="Expected Return (p.a.)"
+                      value={sipReturn}
+                      onChange={setSipReturn}
+                      min={5}
+                      max={25}
+                      step={0.5}
+                      suffix="%"
+                      marks={["5%", "15%", "25%"]}
+                      accentColor="accent-[#e8a317]"
+                    />
+                  </>
+                )}
+
+                {/* 2. Lumpsum Mode Inputs */}
+                {calcMode === "lumpsum" && (
+                  <>
+                    <CalculatorSlider
+                      label="Total Investment (One-Time)"
+                      value={lumpsumAmount}
+                      onChange={setLumpsumAmount}
+                      min={10000}
+                      max={5000000}
+                      step={10000}
+                      prefix="₹"
+                      marks={["₹10,000", "₹25,00,000", "₹50,00,000"]}
+                      accentColor="accent-[#0f4b32]"
+                    />
+
+                    <CalculatorSlider
+                      label="Investment Period"
+                      value={lumpYears}
+                      onChange={setLumpYears}
+                      min={1}
+                      max={30}
+                      step={1}
+                      suffix="Years"
+                      marks={["1 Yr", "15 Yrs", "30 Yrs"]}
+                      accentColor="accent-[#0f4b32]"
+                    />
+
+                    <CalculatorSlider
+                      label="Expected Return (p.a.)"
+                      value={lumpReturn}
+                      onChange={setLumpReturn}
+                      min={5}
+                      max={25}
+                      step={0.5}
+                      suffix="%"
+                      marks={["5%", "15%", "25%"]}
+                      accentColor="accent-[#e8a317]"
+                    />
+                  </>
+                )}
+
+                {/* 3. SWP Mode Inputs */}
+                {calcMode === "swp" && (
+                  <>
+                    <CalculatorSlider
+                      label="Total Investment"
+                      value={swpTotalInvestment}
+                      onChange={setSwpTotalInvestment}
+                      min={100000}
+                      max={20000000}
+                      step={50000}
+                      prefix="₹"
+                      marks={["₹1,00,000", "₹1,00,00,000", "₹2,00,00,000"]}
+                      accentColor="accent-[#0f4b32]"
+                    />
+
+                    <CalculatorSlider
+                      label="Monthly Withdrawal"
+                      value={swpMonthlyWithdrawal}
+                      onChange={setSwpMonthlyWithdrawal}
+                      min={1000}
+                      max={200000}
+                      step={1000}
+                      prefix="₹"
+                      suffix="/mo"
+                      marks={["₹1,000", "₹1,00,000", "₹2,00,000"]}
+                      accentColor="accent-[#e8a317]"
+                    />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <CalculatorSlider
+                        label="Time Period"
+                        value={swpYears}
+                        onChange={setSwpYears}
                         min={1}
                         max={30}
+                        step={1}
+                        suffix="Years"
+                        marks={["1 Yr", "30 Yrs"]}
+                        accentColor="accent-[#0f4b32]"
                       />
-                      <span className="text-gray-500 text-xs font-medium">%</span>
+
+                      <CalculatorSlider
+                        label="Expected Return (p.a.)"
+                        value={swpReturn}
+                        onChange={setSwpReturn}
+                        min={5}
+                        max={20}
+                        step={0.5}
+                        suffix="%"
+                        marks={["5%", "20%"]}
+                        accentColor="accent-[#e8a317]"
+                      />
                     </div>
-                  </div>
-                  <input 
-                    type="range" 
-                    min={5} 
-                    max={25} 
-                    step={0.5} 
-                    value={expectedReturn}
-                    onChange={(e) => setExpectedReturn(Number(e.target.value))}
-                    className="w-full h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#e8a317]"
-                  />
-                  <div className="flex justify-between text-xs text-gray-400 font-medium mt-1">
-                    <span>5%</span>
-                    <span>15%</span>
-                    <span>25%</span>
-                  </div>
-                </div>
+                  </>
+                )}
 
                 {/* Calculation Breakdown & Donut Chart */}
                 <div className="pt-6 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
@@ -279,31 +490,46 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                   {/* Left Column: Figures */}
                   <div className="sm:col-span-7 space-y-3">
                     <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
-                      <span className="text-xs sm:text-sm text-gray-600 font-medium">Total Investment</span>
-                      <span className="text-base sm:text-lg font-black text-gray-900">{formatCurrency(totalInvestment)}</span>
+                      <span className="text-xs sm:text-sm text-gray-600 font-medium">
+                        {labelTotalInvested}
+                      </span>
+                      <span className="text-base sm:text-lg font-black text-gray-900 tabular-nums">
+                        {formatCurrency(totalInvestment)}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50/60 border border-amber-100">
-                      <span className="text-xs sm:text-sm text-amber-900 font-medium">Estimated Returns</span>
-                      <span className="text-base sm:text-lg font-black text-[#c28414]">{formatCurrency(estimatedReturns)}</span>
+                      <span className="text-xs sm:text-sm text-amber-900 font-medium">
+                        {labelReturns}
+                      </span>
+                      <span className="text-base sm:text-lg font-black text-[#c28414] tabular-nums">
+                        {formatCurrency(estimatedReturns)}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-[#0f4b32] text-white shadow-md">
                       <div>
-                        <div className="text-[11px] text-emerald-200 font-semibold uppercase tracking-wider">Total Wealth</div>
-                        <div className="text-xl sm:text-2xl font-black">{formatCurrency(totalWealth)}</div>
+                        <div className="text-[11px] text-emerald-200 font-semibold uppercase tracking-wider">
+                          {labelTotalWealth}
+                        </div>
+                        <div className="text-xl sm:text-2xl font-black tabular-nums">
+                          {formatCurrency(totalWealth)}
+                        </div>
                       </div>
                       <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-white/20 text-emerald-100">
-                        {Math.round((totalWealth / Math.max(1, totalInvestment) - 1) * 100)}% Gain
+                        {calcMode === "swp" 
+                          ? `${Math.round(returnsRatio)}% Remaining`
+                          : `${Math.round((totalWealth / Math.max(1, totalInvestment) - 1) * 100)}% Gain`
+                        }
                       </span>
                     </div>
                   </div>
 
-                  {/* Right Column: Donut Chart */}
+                  {/* Right Column: Dynamic Animated Donut Chart */}
                   <div className="sm:col-span-5 flex flex-col items-center justify-center">
                     <div className="relative w-40 h-40 flex items-center justify-center">
                       <svg viewBox="0 0 160 160" className="w-36 h-36 transform -rotate-90">
-                        {/* Background circle (Investment) */}
+                        {/* Base Circle (Primary/Investment) */}
                         <circle
                           cx="80"
                           cy="80"
@@ -312,7 +538,7 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                           strokeWidth="18"
                           fill="transparent"
                         />
-                        {/* Returns circle (Warm Amber/Gold) */}
+                        {/* Animated Arc Circle (Growth/Returns) */}
                         <circle
                           cx="80"
                           cy="80"
@@ -329,11 +555,11 @@ export default function SipCalculatorSection({ onStartInvesting }) {
 
                       {/* Donut Center Label */}
                       <div className="absolute text-center p-2">
-                        <div className="text-xs sm:text-sm font-extrabold text-gray-900 leading-tight">
+                        <div className="text-xs sm:text-sm font-extrabold text-gray-900 leading-tight tabular-nums">
                           {formatCurrency(totalWealth)}
                         </div>
                         <div className="text-[10px] text-gray-500 font-medium mt-0.5">
-                          Total Wealth
+                          {calcMode === "swp" ? "Balance" : "Total Wealth"}
                         </div>
                       </div>
                     </div>
@@ -342,11 +568,15 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                     <div className="flex items-center gap-4 text-xs font-semibold mt-2">
                       <div className="flex items-center gap-1.5">
                         <span className="w-3 h-3 rounded-full bg-[#0f4b32]"></span>
-                        <span className="text-gray-700">Investment</span>
+                        <span className="text-gray-700">
+                          {calcMode === "swp" ? "Withdrawn" : "Investment"} ({Math.round(investmentRatio)}%)
+                        </span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="w-3 h-3 rounded-full bg-[#e8a317]"></span>
-                        <span className="text-gray-700">Returns</span>
+                        <span className="text-gray-700">
+                          {calcMode === "swp" ? "Balance" : "Returns"} ({Math.round(returnsRatio)}%)
+                        </span>
                       </div>
                     </div>
                   </div>
