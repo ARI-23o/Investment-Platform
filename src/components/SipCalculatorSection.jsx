@@ -57,16 +57,39 @@ export default function SipCalculatorSection({ onStartInvesting }) {
   };
 
   return (
-    <section id="calculator" className="py-20 bg-[#f8faf9] border-t border-gray-100 relative overflow-hidden">
-      {/* Complete Unified Panoramic Section Background */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0">
-        <img 
-          src="/assets/investor_service_banner.jpg" 
-          alt="SIP Mutual Funds Background" 
-          className="w-full h-full object-cover object-center opacity-85 sm:opacity-90"
-        />
-        {/* Soft overlay to keep calculator card and text sharp and readable */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white/30 via-white/70 to-white/30 pointer-events-none"></div>
+    <section id="calculator" className="py-20 bg-gradient-to-b from-[#fafcfb] via-[#f7faf8] to-[#f4f7f5] border-t border-gray-100 relative overflow-hidden">
+      {/* Top-Left Subtle Golden Dot Grid Pattern */}
+      <div 
+        className="absolute top-0 left-0 w-80 h-72 opacity-25 pointer-events-none select-none"
+        style={{ 
+          backgroundImage: 'radial-gradient(#d97706 1.2px, transparent 1.2px)', 
+          backgroundSize: '16px 16px' 
+        }}
+      ></div>
+
+      {/* Top-Right Subtle Golden Dot Grid Pattern */}
+      <div 
+        className="absolute top-0 right-0 w-80 h-72 opacity-20 pointer-events-none select-none"
+        style={{ 
+          backgroundImage: 'radial-gradient(#d97706 1.2px, transparent 1.2px)', 
+          backgroundSize: '16px 16px' 
+        }}
+      ></div>
+
+      {/* Bottom-Left Curved Green & Gold Wave Ribbon */}
+      <div className="absolute bottom-0 left-0 w-72 sm:w-96 h-32 sm:h-44 pointer-events-none select-none z-0">
+        <svg viewBox="0 0 380 160" fill="none" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M0,160 C90,160 160,130 220,80 C270,40 320,10 380,0 L0,0 Z" fill="#0f4b32" opacity="0.9" transform="scale(1,-1) translate(0,-160)" />
+          <path d="M0,160 C80,160 140,140 200,95 C250,55 290,25 350,10" stroke="#f59e0b" strokeWidth="4" fill="none" transform="scale(1,-1) translate(0,-160)" />
+        </svg>
+      </div>
+
+      {/* Bottom-Right Curved Green & Gold Wave Ribbon */}
+      <div className="absolute bottom-0 right-0 w-72 sm:w-96 h-32 sm:h-44 pointer-events-none select-none z-0">
+        <svg viewBox="0 0 380 160" fill="none" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M380,160 C290,160 220,130 160,80 C110,40 60,10 0,0 L380,0 Z" fill="#0f4b32" opacity="0.9" transform="scale(1,-1) translate(0,-160)" />
+          <path d="M380,160 C300,160 240,140 180,95 C130,55 90,25 30,10" stroke="#f59e0b" strokeWidth="4" fill="none" transform="scale(1,-1) translate(0,-160)" />
+        </svg>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -93,10 +116,10 @@ export default function SipCalculatorSection({ onStartInvesting }) {
             </p>
 
             {/* 4 Feature Badges in 2x2 Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white border border-gray-200/80 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
-                  <Calculator className="w-5 h-5" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 p-3.5 bg-white/90 backdrop-blur-md rounded-2xl border border-gray-200/80 shadow-xs">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0">
+                  <Landmark className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="text-sm font-bold text-gray-900">SIP Investments</div>
@@ -104,8 +127,8 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white border border-gray-200/80 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+              <div className="flex items-center gap-3 p-3.5 bg-white/90 backdrop-blur-md rounded-2xl border border-gray-200/80 shadow-xs">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0">
                   <TrendingUp className="w-5 h-5" />
                 </div>
                 <div>
@@ -114,9 +137,9 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white border border-gray-200/80 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
-                  <PieChart className="w-5 h-5" />
+              <div className="flex items-center gap-3 p-3.5 bg-white/90 backdrop-blur-md rounded-2xl border border-gray-200/80 shadow-xs">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0">
+                  <Receipt className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="text-sm font-bold text-gray-900">2,500+ Fund Schemes</div>
@@ -124,9 +147,9 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white border border-gray-200/80 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
-                  <Award className="w-5 h-5" />
+              <div className="flex items-center gap-3 p-3.5 bg-white/90 backdrop-blur-md rounded-2xl border border-gray-200/80 shadow-xs">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0">
+                  <PiggyBank className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="text-sm font-bold text-gray-900">Wealth Creation</div>
@@ -135,43 +158,23 @@ export default function SipCalculatorSection({ onStartInvesting }) {
               </div>
             </div>
 
-            {/* CTA Button */}
-            <div className="pt-2">
+            {/* CTA Button & Coin Stacks with Sprouts */}
+            <div className="flex flex-col sm:flex-row sm:items-end gap-6 pt-4">
               <button 
                 onClick={onStartInvesting}
-                className="flex items-center gap-2.5 px-8 py-3.5 rounded-full text-base font-semibold bg-[#0f4b32] hover:bg-[#093523] text-white shadow-lg shadow-emerald-950/20 transition-all duration-200 cursor-pointer"
+                className="flex items-center gap-2.5 px-8 py-3.5 rounded-full text-base font-semibold bg-[#0f4b32] hover:bg-[#093523] text-white shadow-lg shadow-emerald-950/20 transition-all duration-200 cursor-pointer shrink-0"
               >
                 <span>Start Investing</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
-            </div>
 
-            {/* Bottom 3 Benefit Checkpoints matching Page 6 */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 border-t border-gray-200/80 text-xs">
-              <div className="flex items-start gap-2 text-gray-700">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <strong className="block text-gray-900">Disciplined investing</strong>
-                  <span className="text-gray-500">Create wealth systematically</span>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2 text-gray-700">
-                <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">
-                  ₹
-                </div>
-                <div>
-                  <strong className="block text-gray-900">Power of Compounding</strong>
-                  <span className="text-gray-500">Let money grow exponentially</span>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2 text-gray-700">
-                <TrendingUp className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <div>
-                  <strong className="block text-gray-900">Secure Your Future</strong>
-                  <span className="text-gray-500">Plan today for tomorrow</span>
-                </div>
+              {/* 3 Gold Coin Stacks with Green Sprouts Matching Screenshot */}
+              <div className="w-40 sm:w-52 h-24 sm:h-28 pointer-events-none select-none flex items-end">
+                <img 
+                  src="/assets/gold_coins_sprout_clean.png" 
+                  alt="Mutual Fund Wealth Growth" 
+                  className="w-full h-full object-contain object-bottom drop-shadow-md"
+                />
               </div>
             </div>
 
@@ -179,12 +182,14 @@ export default function SipCalculatorSection({ onStartInvesting }) {
 
           {/* Right Column: SIP Calculator Card matching Page 6 */}
           <div className="lg:col-span-6">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-xl relative overflow-hidden">
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
               
-              {/* Header Badge */}
-              <div className="flex items-center justify-between pb-6 border-b border-gray-100">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0f4b32] text-white text-sm font-bold shadow-sm">
-                  <Calculator className="w-4 h-4 text-amber-400" />
+              {/* Solid Green Card Header Matching Screenshot */}
+              <div className="bg-[#093523] px-6 sm:px-8 py-5 flex items-center justify-between">
+                <div className="flex items-center gap-2.5 text-white font-bold text-base sm:text-lg">
+                  <div className="w-8 h-8 rounded-lg bg-amber-400/20 text-amber-400 flex items-center justify-center">
+                    <Calculator className="w-5 h-5" />
+                  </div>
                   <span>SIP Calculator</span>
                 </div>
 
@@ -194,7 +199,7 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                     setYears(10);
                     setExpectedReturn(12);
                   }}
-                  className="text-xs font-semibold text-gray-500 hover:text-emerald-800 flex items-center gap-1 transition-colors cursor-pointer"
+                  className="text-xs font-semibold text-emerald-200/80 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
                   title="Reset to default"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
@@ -202,8 +207,8 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                 </button>
               </div>
 
-              {/* Sliders & Inputs */}
-              <div className="space-y-6 py-6">
+              {/* Card Body */}
+              <div className="p-6 sm:p-8 space-y-6">
                 
                 {/* Monthly Investment */}
                 <div>
@@ -389,6 +394,37 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                   </div>
                 </div>
 
+              {/* Bottom 3 Benefit Checkpoints matching Page 6 screenshot */}
+              <div className="mt-8 pt-6 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 border border-emerald-100 shadow-xs">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <strong className="block text-gray-900 text-xs font-bold leading-tight">Disciplined Investing</strong>
+                    <span className="text-[11px] text-gray-500 font-normal">Create wealth systematically</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 border border-emerald-100 font-bold text-sm shadow-xs">
+                    ₹
+                  </div>
+                  <div>
+                    <strong className="block text-gray-900 text-xs font-bold leading-tight">Power of Compounding</strong>
+                    <span className="text-[11px] text-gray-500 font-normal">Let your money grow exponentially</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 border border-emerald-100 shadow-xs">
+                    <TrendingUp className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <strong className="block text-gray-900 text-xs font-bold leading-tight">Secure Your Future</strong>
+                    <span className="text-[11px] text-gray-500 font-normal">Plan today for a better tomorrow</span>
+                  </div>
+                </div>
               </div>
 
             </div>
@@ -397,6 +433,7 @@ export default function SipCalculatorSection({ onStartInvesting }) {
         </div>
 
       </div>
-    </section>
-  );
+    </div>
+  </section>
+);
 }
