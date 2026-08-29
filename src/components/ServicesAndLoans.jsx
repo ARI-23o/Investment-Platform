@@ -6,6 +6,8 @@ import {
   CreditCard, 
   Briefcase, 
   Award,
+  Wallet,
+  Crown,
   User,
   Home,
   Car,
@@ -115,7 +117,7 @@ export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
       title: "Demat Account",
       badge: "Free Opening",
       badgeColor: "bg-emerald-100 text-emerald-800",
-      icon: CreditCard,
+      icon: Wallet,
       description: "Open a zero-maintenance Demat account with instant eKYC and paperless onboarding.",
     },
     {
@@ -129,7 +131,7 @@ export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
     {
       id: "portfolio-advisory",
       title: "Portfolio Advisory",
-      icon: Award,
+      icon: Crown,
       description: "Personalised portfolio construction and rebalancing by SEBI-registered investment advisors.",
     },
   ];
@@ -187,65 +189,90 @@ export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
   ];
 
   return (
-    <section id="services" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="services" className="bg-white">
+      {/* PART 1: INVESTMENT PRODUCTS & SERVICES with Exact Green-to-Gold Gradient */}
+      <div className="relative py-16 sm:py-20 overflow-hidden bg-gradient-to-r from-[#062c1b] via-[#0d4629] via-50% to-[#c98914]">
         
-        {/* PART 1: INVESTMENT PRODUCTS & SERVICES */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="text-xs font-black uppercase tracking-widest text-emerald-800 mb-2">
-            OUR SERVICES
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Investment Products & Services
-          </h2>
-          <p className="mt-3 text-sm sm:text-base text-gray-600">
-            Comprehensive investment solutions for every stage of your financial journey.
-          </p>
-        </div>
+        {/* Subtle Left Side Micro-Dot Pattern Texture */}
+        <div 
+          className="absolute inset-y-0 left-0 w-80 opacity-20 pointer-events-none"
+          style={{ 
+            backgroundImage: 'radial-gradient(#86efac 1.5px, transparent 1.5px)', 
+            backgroundSize: '18px 18px' 
+          }}
+        ></div>
 
-        {/* 6 Grid Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
-          {investmentServices.map((service) => {
-            const Icon = service.icon;
-            return (
-              <div 
-                key={service.id}
-                onClick={() => onSelectService(service)}
-                className="bg-white rounded-3xl p-6 border border-gray-200 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-800 group-hover:bg-[#0f4b32] group-hover:text-white flex items-center justify-center transition-colors">
-                      <Icon className="w-6 h-6" />
+        {/* Subtle Right Side Diagonal Striped Pattern Texture */}
+        <div 
+          className="absolute inset-y-0 right-0 w-96 opacity-15 pointer-events-none"
+          style={{ 
+            backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0, rgba(255,255,255,0.25) 2px, transparent 0, transparent 12px)' 
+          }}
+        ></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-14">
+            <div className="text-xs font-black uppercase tracking-widest text-[#4ade80] mb-2 drop-shadow-xs">
+              OUR SERVICES
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+              Investment Products & Services
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-emerald-100/90 font-normal">
+              Comprehensive investment solutions for every stage of your financial journey.
+            </p>
+
+            {/* Accent divider matching screenshot */}
+            <div className="flex items-center justify-center gap-1.5 mt-4">
+              <div className="w-10 h-1 rounded-full bg-[#4ade80]"></div>
+              <div className="w-2.5 h-1 rounded-full bg-[#f59e0b]"></div>
+            </div>
+          </div>
+
+          {/* 6 Grid Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {investmentServices.map((service) => {
+              const Icon = service.icon;
+              return (
+                <div 
+                  key={service.id}
+                  onClick={() => onSelectService(service)}
+                  className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1.5 group cursor-pointer flex flex-col justify-between border border-white/40"
+                >
+                  <div>
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-13 h-13 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-800 group-hover:bg-[#0f4b32] group-hover:text-white flex items-center justify-center transition-colors shadow-xs">
+                        <Icon className="w-6 h-6 stroke-[1.75]" />
+                      </div>
+
+                      {service.badge && (
+                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${service.badgeColor}`}>
+                          {service.badge}
+                        </span>
+                      )}
                     </div>
 
-                    {service.badge && (
-                      <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${service.badgeColor}`}>
-                        {service.badge}
-                      </span>
-                    )}
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-emerald-900 transition-colors mb-2.5">
+                      {service.title}
+                    </h3>
+
+                    <p className="text-sm text-gray-600 leading-relaxed font-normal">
+                      {service.description}
+                    </p>
                   </div>
-
-                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-emerald-900 transition-colors mb-2">
-                    {service.title}
-                  </h3>
-
-                  <p className="text-sm text-gray-600 leading-relaxed font-normal">
-                    {service.description}
-                  </p>
                 </div>
+              );
+            })}
+          </div>
 
-                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-xs font-semibold text-emerald-800 group-hover:text-emerald-950">
-                  <span>Learn more</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            );
-          })}
         </div>
+      </div>
 
-        {/* PART 2: LOAN SERVICES WITH SNAP SCROLLING */}
-        <div id="loans" className="pt-10 border-t border-gray-100">
+      {/* PART 2: LOAN SERVICES WITH INFINITE SCROLLING */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+        <div id="loans">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
             <div className="max-w-2xl">
               <div className="text-xs font-black uppercase tracking-widest text-emerald-800 mb-2">
