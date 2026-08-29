@@ -71,17 +71,14 @@ export default function InvestorServiceCentre({ onSelectService }) {
   return (
     <section id="services-centre" className="relative py-14 sm:py-20 overflow-hidden bg-gradient-to-b from-[#fbfdfc] via-[#f7faf8] to-[#f4f8f6]">
       
-      {/* Desktop/Tablet Centered Gold Coins & Sprout Plant Background */}
-      <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 bottom-0 w-[540px] md:w-[680px] lg:w-[820px] h-[260px] md:h-[350px] pointer-events-none select-none z-0 overflow-hidden items-end justify-center">
+      {/* Centered Low-Opacity Background Watermark Graphic */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
         <img 
           src="/assets/gold_coins_sprout_clean.png" 
           alt="Investor Service Centre Wealth Background" 
-          className="w-full h-full object-contain object-bottom opacity-75 sm:opacity-85 drop-shadow-2xl"
+          className="w-[420px] sm:w-[540px] md:w-[680px] lg:w-[760px] max-h-[85%] object-contain object-center opacity-20 sm:opacity-25 transition-opacity"
         />
       </div>
-
-      {/* Mobile Subtle Warm Glow (Prevents text clash on small screens) */}
-      <div className="md:hidden absolute bottom-0 left-1/2 -translate-x-1/2 w-64 h-36 bg-gradient-to-t from-amber-100/40 via-emerald-100/20 to-transparent rounded-full blur-2xl pointer-events-none z-0"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
