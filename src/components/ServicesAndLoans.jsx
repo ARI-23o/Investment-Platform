@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { 
   ArrowUpRight, 
   PieChart, 
@@ -15,11 +15,20 @@ import {
   Banknote,
   Sparkles,
   CheckCircle2,
-  ChevronRight
+  ChevronRight,
+  ChevronLeft
 } from "lucide-react";
 
 export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
   const [selectedLoan, setSelectedLoan] = useState(null);
+  const loanScrollRef = useRef(null);
+
+  const scrollLoans = (direction) => {
+    if (loanScrollRef.current) {
+      const scrollAmount = direction === "left" ? -330 : 330;
+      loanScrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
 
   const investmentServices = [
     {
@@ -178,49 +187,96 @@ export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
           })}
         </div>
 
-        {/* PART 2: LOAN SERVICES */}
-        <div id="loans" className="text-center max-w-3xl mx-auto mb-12 pt-6 border-t border-gray-100">
-          <div className="text-xs font-black uppercase tracking-widest text-emerald-800 mb-2">
-            LOAN SERVICES
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Loan Solutions for Every Need
-          </h2>
-          <p className="mt-3 text-sm sm:text-base text-gray-600">
-            Flexible loan options tailored to help you achieve your goals.
-          </p>
-        </div>
+        {/* PART 2: LOAN SERVICES WITH SNAP SCROLLING */}
+        <div id="loans" className="pt-10 border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
+            <div className="max-w-2xl">
+              <div className="text-xs font-black uppercase tracking-widest text-[#581c87] mb-2">
+                LOAN SERVICES
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+                Loan Solutions for Every Need
+              </h2>
+              <p className="mt-3 text-base sm:text-lg text-gray-600 font-normal">
+                Flexible loan options tailored to help you achieve your personal and business goals.
+              </p>
+            </div>
 
-        {/* 7 Loan Solutions Cards matching Page 5 bottom */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
-          {loanSolutions.map((loan) => {
-            const Icon = loan.icon;
-            return (
-              <div 
-                key={loan.id}
-                onClick={() => onApplyLoan(loan)}
-                className="bg-white rounded-2xl p-4 border border-gray-200/90 shadow-xs hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between cursor-pointer group text-center"
+            {/* Snap Scrolling Navigation Controls */}
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="text-xs text-gray-500 font-medium hidden sm:inline-block">
+                Swipe or click to browse
+              </span>
+              <button 
+                type="button"
+                onClick={() => scrollLoans("left")} 
+                className="p-3 rounded-2xl border border-gray-200 bg-white hover:bg-purple-50 text-gray-700 hover:text-purple-900 shadow-xs hover:shadow-md transition-all cursor-pointer"
+                aria-label="Scroll left"
               >
-                <div>
-                  <div className="w-11 h-11 mx-auto rounded-xl bg-purple-50 group-hover:bg-purple-100 text-purple-700 flex items-center justify-center mb-3 transition-colors">
-                    <Icon className="w-5 h-5" />
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button 
+                type="button"
+                onClick={() => scrollLoans("right")} 
+                className="p-3 rounded-2xl border border-gray-200 bg-white hover:bg-purple-50 text-gray-700 hover:text-purple-900 shadow-xs hover:shadow-md transition-all cursor-pointer"
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* 7 Loan Solutions Cards with Snap Scrolling and Large Clear Typography */}
+          <div 
+            ref={loanScrollRef}
+            className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-8 pt-2 px-1 focus:outline-none"
+            style={{ 
+              scrollSnapType: 'x mandatory',
+              scrollbarWidth: 'thin'
+            }}
+          >
+            {loanSolutions.map((loan) => {
+              const Icon = loan.icon;
+              return (
+                <div 
+                  key={loan.id}
+                  onClick={() => onApplyLoan(loan)}
+                  className="snap-start shrink-0 w-[270px] sm:w-[300px] md:w-[320px] bg-white rounded-3xl p-6 sm:p-7 border border-gray-200 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between cursor-pointer group text-left"
+                >
+                  <div>
+                    {/* Top Row: Icon & Rate Badge */}
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="w-14 h-14 rounded-2xl bg-purple-50 group-hover:bg-[#4a1d96] text-purple-800 group-hover:text-white flex items-center justify-center transition-colors duration-300 shadow-xs">
+                        <Icon className="w-7 h-7 stroke-[1.75]" />
+                      </div>
+
+                      {loan.rate && (
+                        <span className="text-xs font-bold text-purple-800 bg-purple-50 px-3 py-1 rounded-full border border-purple-100/80">
+                          {loan.rate}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Enlarged Clear Title */}
+                    <h3 className="font-bold text-lg sm:text-xl text-gray-900 mb-3 leading-snug group-hover:text-purple-950 transition-colors">
+                      {loan.title}
+                    </h3>
+
+                    {/* Enlarged Readable Description */}
+                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed font-normal">
+                      {loan.description}
+                    </p>
                   </div>
 
-                  <h3 className="font-bold text-xs sm:text-sm text-gray-900 mb-2 leading-snug">
-                    {loan.title}
-                  </h3>
-
-                  <p className="text-[11px] text-gray-500 leading-normal line-clamp-4">
-                    {loan.description}
-                  </p>
+                  {/* Card Bottom CTA */}
+                  <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-sm font-bold text-purple-900 group-hover:text-purple-950">
+                    <span>Apply Online</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
-
-                <div className="mt-4 pt-2 border-t border-gray-100 text-[10px] font-bold text-purple-800 group-hover:underline">
-                  Apply Now →
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
       </div>
