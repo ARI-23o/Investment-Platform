@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { 
   ArrowUpRight, 
   PieChart, 
@@ -16,17 +16,74 @@ import {
   Sparkles,
   CheckCircle2,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Pause,
+  Play
 } from "lucide-react";
 
 export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
   const [selectedLoan, setSelectedLoan] = useState(null);
+  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const loanScrollRef = useRef(null);
+  const isHoveredRef = useRef(false);
+
+  // Smooth Infinite Auto-Scrolling Engine
+  useEffect(() => {
+    const el = loanScrollRef.current;
+    if (!el) return;
+
+    // Initialize scroll position to the middle clone set for seamless bidirectional loop
+    const initializePosition = () => {
+      if (el.scrollWidth > el.clientWidth) {
+        const oneSetWidth = el.scrollWidth / 3;
+        if (el.scrollLeft === 0) {
+          el.scrollLeft = oneSetWidth;
+        }
+      }
+    };
+    const timer = setTimeout(initializePosition, 100);
+
+    let animationFrameId;
+    const scrollStep = () => {
+      if (isAutoScrolling && !isHoveredRef.current && el) {
+        el.scrollLeft += 0.85; // Smooth 60fps drift
+
+        const oneSetWidth = el.scrollWidth / 3;
+        if (oneSetWidth > 0) {
+          if (el.scrollLeft >= oneSetWidth * 2) {
+            el.scrollLeft -= oneSetWidth; // Seamless wrap to first set
+          } else if (el.scrollLeft <= 5) {
+            el.scrollLeft += oneSetWidth;
+          }
+        }
+      }
+      animationFrameId = requestAnimationFrame(scrollStep);
+    };
+
+    animationFrameId = requestAnimationFrame(scrollStep);
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isAutoScrolling]);
 
   const scrollLoans = (direction) => {
     if (loanScrollRef.current) {
-      const scrollAmount = direction === "left" ? -330 : 330;
-      loanScrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      const el = loanScrollRef.current;
+      const scrollAmount = direction === "left" ? -340 : 340;
+      el.scrollBy({ left: scrollAmount, behavior: "smooth" });
+
+      // Handle infinite wrap-around on manual scroll
+      setTimeout(() => {
+        const oneSetWidth = el.scrollWidth / 3;
+        if (oneSetWidth > 0) {
+          if (el.scrollLeft >= oneSetWidth * 2) {
+            el.scrollLeft -= oneSetWidth;
+          } else if (el.scrollLeft <= 10) {
+            el.scrollLeft += oneSetWidth;
+          }
+        }
+      }, 400);
     }
   };
 
@@ -202,11 +259,29 @@ export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
               </p>
             </div>
 
-            {/* Snap Scrolling Navigation Controls */}
+            {/* Infinite Scrolling Navigation Controls */}
             <div className="flex items-center gap-3 shrink-0">
-              <span className="text-xs text-gray-500 font-medium hidden sm:inline-block">
-                Swipe or click to browse
-              </span>
+              {/* Play / Pause Toggle Button */}
+              <button 
+                type="button"
+                onClick={() => setIsAutoScrolling(!isAutoScrolling)}
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl border border-gray-200 bg-white hover:bg-purple-50 text-xs font-bold text-gray-700 hover:text-purple-900 shadow-xs hover:shadow-md transition-all cursor-pointer"
+                title={isAutoScrolling ? "Pause auto-scroll" : "Resume auto-scroll"}
+              >
+                {isAutoScrolling ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <Pause className="w-3.5 h-3.5 text-purple-800" />
+                    <span className="hidden sm:inline">Auto-Scrolling</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 text-purple-700 fill-purple-700" />
+                    <span className="hidden sm:inline">Play Auto-Scroll</span>
+                  </>
+                )}
+              </button>
+
               <button 
                 type="button"
                 onClick={() => scrollLoans("left")} 
@@ -226,20 +301,25 @@ export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
             </div>
           </div>
 
-          {/* 7 Loan Solutions Cards with Snap Scrolling and Large Clear Typography */}
+          {/* Infinite Auto-Scrolling Carousel with Pause on Hover */}
           <div 
             ref={loanScrollRef}
-            className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-8 pt-2 px-1 focus:outline-none"
+            onMouseEnter={() => { isHoveredRef.current = true; }}
+            onMouseLeave={() => { isHoveredRef.current = false; }}
+            onTouchStart={() => { isHoveredRef.current = true; }}
+            onTouchEnd={() => { setTimeout(() => { isHoveredRef.current = false; }, 2000); }}
+            className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-8 pt-2 px-1 focus:outline-none cursor-grab active:cursor-grabbing select-none"
             style={{ 
-              scrollSnapType: 'x mandatory',
-              scrollbarWidth: 'thin'
+              scrollSnapType: isAutoScrolling ? 'none' : 'x mandatory',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
             }}
           >
-            {loanSolutions.map((loan) => {
+            {[...loanSolutions, ...loanSolutions, ...loanSolutions].map((loan, idx) => {
               const Icon = loan.icon;
               return (
                 <div 
-                  key={loan.id}
+                  key={`${loan.id}-${idx}`}
                   onClick={() => onApplyLoan(loan)}
                   className="snap-start shrink-0 w-[270px] sm:w-[300px] md:w-[320px] bg-white rounded-3xl p-6 sm:p-7 border border-gray-200 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between cursor-pointer group text-left"
                 >
