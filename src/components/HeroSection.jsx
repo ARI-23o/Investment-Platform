@@ -20,21 +20,28 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
   const [activeTab, setActiveTab] = useState("all");
 
   return (
-    <section id="home" className="relative pt-6 pb-12 overflow-hidden bg-gradient-to-b from-[#f2f7f4] via-[#f7faf8] to-[#ffffff]">
-      {/* Full Section Background Money Plant Foliage Matching Page 1 */}
-      <div className="absolute top-0 right-0 h-full w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[500px] pointer-events-none select-none z-0 overflow-hidden">
+    <section id="home" className="relative pt-6 pb-12 overflow-hidden bg-[#fafcfb]">
+      {/* Official Full Section Background Image */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0">
+        <img 
+          src="/assets/hero_bg_official.jpg" 
+          alt="Investment Market Background" 
+          className="w-full h-full object-cover object-right lg:object-center"
+        />
+        {/* Soft responsive gradient overlay ensuring left-side text has contrast */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent sm:from-white/85 sm:via-white/40 lg:via-transparent pointer-events-none"></div>
+      </div>
+
+      {/* Hanging Money Plant on Right Edge Matching Design */}
+      <div className="hidden sm:block absolute top-0 right-0 h-[460px] w-52 lg:w-72 pointer-events-none select-none z-10 overflow-hidden">
         <img 
           src="/assets/money_plant_clean.png" 
           alt="" 
-          className="absolute top-0 right-0 w-full h-[85%] object-contain object-right-top opacity-70 lg:opacity-90 drop-shadow-md"
+          className="w-full h-full object-contain object-right-top drop-shadow-md"
         />
       </div>
 
-      {/* Subtle ambient light gradient circles */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-200/30 rounded-full blur-3xl pointer-events-none z-0"></div>
-      <div className="absolute top-20 right-10 w-96 h-96 bg-amber-100/40 rounded-full blur-3xl pointer-events-none z-0"></div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
         
         {/* Main Hero Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center pt-4 pb-12">
