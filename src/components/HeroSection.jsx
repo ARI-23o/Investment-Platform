@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   ArrowRight, 
   Calendar, 
@@ -16,12 +16,55 @@ import {
   Award
 } from "lucide-react";
 
+// Clean, high-performance count-up animation helper
+function useCountUp(target, duration = 1500, delay = 250) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    let timer = setTimeout(() => {
+      let start = null;
+      const step = (timestamp) => {
+        if (!start) start = timestamp;
+        const progress = Math.min((timestamp - start) / duration, 1);
+        // Smooth easeOutQuart curve
+        const ease = 1 - Math.pow(1 - progress, 4);
+        setValue(Math.floor(ease * target));
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          setValue(target);
+        }
+      };
+      requestAnimationFrame(step);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [target, duration, delay]);
+
+  return value;
+}
+
 export default function HeroSection({ onOpenRegister, onBookConsultation, onGetStarted }) {
   const [activeTab, setActiveTab] = useState("all");
+  const [isMounted, setIsMounted] = useState(false);
+  const [chartDrawn, setChartDrawn] = useState(false);
+
+  // Statistics Count-Up
+  const portfolioVal = useCountUp(1482350, 1600, 300);
+  const dailyGainVal = useCountUp(124210, 1600, 300);
+  const yearsTrust = useCountUp(15, 1200, 450);
+  const investors = useCountUp(50, 1200, 550);
+  const assets = useCountUp(2400, 1400, 650);
+
+  useEffect(() => {
+    setIsMounted(true);
+    const chartTimer = setTimeout(() => setChartDrawn(true), 350);
+    return () => clearTimeout(chartTimer);
+  }, []);
 
   return (
     <section id="home" className="relative pt-6 pb-12 overflow-hidden bg-[#fafcfb]">
-      {/* Official Full Section Background Image */}
+      {/* Official Full Section Background Image - Pure Static for Clean Stability */}
       <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0">
         <img 
           src="/assets/hero_bg_official.jpg" 
@@ -37,8 +80,8 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
         {/* Main Hero Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center pt-4 pb-12">
           
-          {/* Left Column (Content) */}
-          <div className="lg:col-span-7 space-y-6">
+          {/* Left Column (Content) with Headline Fade / Slide */}
+          <div className={`lg:col-span-7 space-y-6 transition-all duration-700 ease-out ${isMounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
             
             {/* Growth Priority Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs sm:text-sm font-semibold tracking-wide shadow-xs">
@@ -98,7 +141,9 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
                   <Users className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-base font-black text-gray-900 leading-tight">15+</div>
+                  <div className="text-base font-black text-gray-900 leading-tight tabular-nums">
+                    {yearsTrust}+
+                  </div>
                   <div className="text-xs text-gray-500 font-medium">Years of Trust</div>
                 </div>
               </div>
@@ -108,7 +153,9 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
                   <BarChart2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-base font-black text-gray-900 leading-tight">50K+</div>
+                  <div className="text-base font-black text-gray-900 leading-tight tabular-nums">
+                    {investors}K+
+                  </div>
                   <div className="text-xs text-gray-500 font-medium">Active Investors</div>
                 </div>
               </div>
@@ -118,7 +165,9 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
                   <Coins className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <div className="text-base font-black text-gray-900 leading-tight">₹2,400Cr+</div>
+                  <div className="text-base font-black text-gray-900 leading-tight tabular-nums">
+                    ₹{assets.toLocaleString("en-IN")}Cr+
+                  </div>
                   <div className="text-xs text-gray-500 font-medium">Assets Advisory</div>
                 </div>
               </div>
@@ -127,24 +176,24 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
 
           </div>
 
-          {/* Right Column (Interactive Visual Card Matching PDF) */}
+          {/* Right Column: Portfolio Card with Slight Upward Motion */}
           <div className="lg:col-span-5 relative">
 
             {/* Dark Emerald Portfolio Glass Card */}
-            <div className="relative rounded-3xl bg-gradient-to-br from-[#063321] via-[#09422b] to-[#042416] p-6 text-white shadow-2xl border border-emerald-600/30 overflow-hidden">
+            <div className={`relative rounded-3xl bg-gradient-to-br from-[#063321] via-[#09422b] to-[#042416] p-6 text-white shadow-2xl border border-emerald-600/30 overflow-hidden transition-all duration-800 ease-out delay-150 ${isMounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
               
-              {/* Card Header */}
+              {/* Card Header with Statistics Count-Up */}
               <div className="flex items-center justify-between pb-4 border-b border-emerald-800/60">
                 <div>
                   <span className="text-xs uppercase tracking-wider text-emerald-300 font-semibold">
                     Portfolio Value
                   </span>
-                  <div className="text-3xl font-extrabold tracking-tight text-white mt-1">
-                    ₹14,82,350
+                  <div className="text-3xl font-extrabold tracking-tight text-white mt-1 tabular-nums">
+                    ₹{portfolioVal.toLocaleString("en-IN")}
                   </div>
-                  <div className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 mt-0.5">
+                  <div className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 mt-0.5 tabular-nums">
                     <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>+₹1,24,210 (+8.37%) Today</span>
+                    <span>+₹{dailyGainVal.toLocaleString("en-IN")} (+8.37%) Today</span>
                   </div>
                 </div>
 
@@ -153,7 +202,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
                 </div>
               </div>
 
-              {/* Sparkline Graphic SVG */}
+              {/* Sparkline Graphic SVG with Draw Animation */}
               <div className="py-4">
                 <svg viewBox="0 0 320 60" className="w-full h-14 overflow-visible">
                   <defs>
@@ -165,6 +214,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
                   <path
                     d="M 0,45 Q 40,35 80,38 T 160,25 T 240,15 T 320,8 L 320,60 L 0,60 Z"
                     fill="url(#chartGradient)"
+                    className={`transition-opacity duration-1000 delay-500 ${chartDrawn ? "opacity-100" : "opacity-0"}`}
                   />
                   <path
                     d="M 0,45 Q 40,35 80,38 T 160,25 T 240,15 T 320,8"
@@ -172,9 +222,26 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
                     stroke="#34d399"
                     strokeWidth="3"
                     strokeLinecap="round"
+                    style={{
+                      strokeDasharray: 340,
+                      strokeDashoffset: chartDrawn ? 0 : 340,
+                      transition: "stroke-dashoffset 1.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                    }}
                   />
-                  <circle cx="320" cy="8" r="4" fill="#34d399" className="animate-ping" />
-                  <circle cx="320" cy="8" r="4" fill="#10b981" />
+                  <circle 
+                    cx="320" 
+                    cy="8" 
+                    r="4" 
+                    fill="#34d399" 
+                    className={`animate-ping transition-opacity duration-500 delay-1000 ${chartDrawn ? "opacity-100" : "opacity-0"}`} 
+                  />
+                  <circle 
+                    cx="320" 
+                    cy="8" 
+                    r="4" 
+                    fill="#10b981" 
+                    className={`transition-opacity duration-500 delay-1000 ${chartDrawn ? "opacity-100" : "opacity-0"}`} 
+                  />
                 </svg>
               </div>
 
