@@ -17,23 +17,37 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
           {/* Brand Column */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3 select-none">
-              <div className="flex items-baseline font-black tracking-tighter text-2xl">
-                <span className="text-white text-3xl font-extrabold tracking-tight">G</span>
-                <span className="text-[#e8a317] text-3xl font-extrabold tracking-tight">S</span>
-                <span className="text-white text-3xl font-extrabold tracking-tight">P</span>
+              {/* Left Tagline with Connecting Brace */}
+              <div className="flex items-center gap-1.5 text-right border-r border-emerald-800/80 pr-3">
+                <div className="flex flex-col text-[11px] font-bold tracking-tight text-emerald-200/90 leading-tight">
+                  <span className="text-emerald-100">Invest Smarter</span>
+                  <span className="text-[#e8a317] font-extrabold">Trade Faster</span>
+                </div>
+                <div className="text-2xl font-light text-emerald-400 leading-none select-none font-serif opacity-80">
+                  &#125;
+                </div>
               </div>
-              <div className="flex flex-col border-l border-emerald-800 pl-2.5">
-                <span className="text-sm font-black tracking-wider text-emerald-100 uppercase leading-none">
-                  Investment
-                </span>
-                <span className="text-[11px] font-semibold tracking-widest text-emerald-400 uppercase leading-tight">
-                  Pvt. Ltd.
-                </span>
+
+              {/* Brand Name */}
+              <div className="flex items-center gap-2">
+                <div className="flex items-baseline font-black tracking-tighter text-2xl md:text-3xl">
+                  <span className="text-white font-black tracking-tight">G</span>
+                  <span className="text-[#e8a317] font-black tracking-tight">S</span>
+                  <span className="text-white font-black tracking-tight">P</span>
+                </div>
+                <div className="flex flex-col pl-1.5">
+                  <span className="text-xs md:text-sm font-black tracking-wider text-emerald-100 uppercase leading-tight">
+                    Investment
+                  </span>
+                  <span className="text-[10px] md:text-[11px] font-bold tracking-widest text-emerald-400 uppercase leading-none">
+                    Pvt. Ltd.
+                  </span>
+                </div>
               </div>
             </div>
 
             <p className="text-xs sm:text-sm text-emerald-200/70 leading-relaxed max-w-sm font-normal">
-              GSP Investment Pvt. Ltd. is a SEBI registered stock broker and wealth advisory firm empowering Indian investors with equities, IPOs, direct mutual funds, and pre-IPO unlisted shares.
+              GSP Investment Pvt. Ltd. is a SEBI registered sub broker and wealth advisory firm empowering Indian investors with equities, IPOs, direct mutual funds, and pre-IPO unlisted shares.
             </p>
 
             <div className="pt-2 text-xs text-emerald-400 font-medium space-y-1">

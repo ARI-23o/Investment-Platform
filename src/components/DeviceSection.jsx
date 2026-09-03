@@ -26,7 +26,7 @@ export default function DeviceSection({ onOpenPlatform }) {
       label: "Web Trading",
       icon: Globe,
       badge: "No Install Needed",
-      title: "Web Trading Terminal",
+      title: "Web Trading Platform",
       subtitle: "Lightning-fast browser trading engineered for modern investors.",
       description: "Trade equities, F&O, commodities and IPOs directly in Google Chrome, Safari, Edge or Firefox without downloading any software. Featuring real-time WebSocket tick-by-tick market feeds and instant order execution.",
       features: [
@@ -35,7 +35,7 @@ export default function DeviceSection({ onOpenPlatform }) {
         "Customisable multi-market watchlists with drag-and-drop",
         "Instant one-click order placement with bracket & stop-loss",
       ],
-      primaryCta: "Launch Web Terminal",
+      primaryCta: "Launch Web Platform",
       primaryIcon: ExternalLink,
       stat: "100+ Indicators",
     },
@@ -45,7 +45,7 @@ export default function DeviceSection({ onOpenPlatform }) {
       icon: Smartphone,
       badge: "iOS & Android",
       title: "GSP Mobile Trader",
-      subtitle: "Power-packed investment terminal in the palm of your hand.",
+      subtitle: "Power-packed investment application in the palm of your hand.",
       description: "Experience the fastest mobile trading app. Track your net worth, set smart price alerts, execute trades with biometric authentication, and manage mutual fund SIPs anytime, anywhere.",
       features: [
         "Biometric fingerprint & FaceID instant login",
@@ -59,10 +59,10 @@ export default function DeviceSection({ onOpenPlatform }) {
     },
     {
       id: "desktop",
-      label: "Desktop Workstation",
+      label: "Desktop App",
       icon: Monitor,
       badge: "Windows & Mac",
-      title: "Desktop Pro Workstation",
+      title: "Desktop Pro Application",
       subtitle: "Heavy-duty multi-monitor setup designed for active day traders.",
       description: "Built with native high-performance C++ rendering for ultra-low latency execution. Supports multi-monitor charting grids, custom hotkey mapping, advanced DOM ladder, and institutional-grade analytics.",
       features: [
@@ -71,7 +71,7 @@ export default function DeviceSection({ onOpenPlatform }) {
         "Depth of Market (DOM) ladder & volume profile",
         "Customizable hotkeys for rapid scalping execution",
       ],
-      primaryCta: "Download Desktop Pro",
+      primaryCta: "Download Desktop App",
       primaryIcon: Download,
       stat: "0.2ms Latency",
     },
@@ -190,7 +190,7 @@ export default function DeviceSection({ onOpenPlatform }) {
                     </div>
                     <div className="bg-gray-950/70 text-[11px] font-mono text-gray-300 px-4 py-1 rounded-md border border-gray-700 flex items-center gap-1.5">
                       <span className="text-emerald-400">🔒</span>
-                      <span>trade.gspinvestment.com/terminal</span>
+                      <span>trade.gspinvestment.com/web</span>
                     </div>
                     <div className="w-10"></div>
                   </div>
