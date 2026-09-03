@@ -8,7 +8,6 @@ import DeviceSection from "./components/DeviceSection";
 import ServicesAndLoans from "./components/ServicesAndLoans";
 import SipCalculatorSection from "./components/SipCalculatorSection";
 import MarketInsightsSection from "./components/MarketInsightsSection";
-import ClientReviewSection from "./components/ClientReviewSection";
 import ShareDetailsView from "./components/ShareDetailsView";
 import ContactSection from "./components/ContactSection";
 import Footer from "./components/Footer";
@@ -237,13 +236,6 @@ export default function App() {
 
             {/* Market Insights & Research Section */}
             <MarketInsightsSection />
-
-            {/* Page 7: Client Reviews & Ratings */}
-            <ClientReviewSection
-              onReadAllReviews={() => {
-                showToast("Redirecting to Google Verified Reviews page (4.9 / 5.0).");
-              }}
-            />
 
             {/* Page 9: Contact Us & Branch Network */}
             <ContactSection
