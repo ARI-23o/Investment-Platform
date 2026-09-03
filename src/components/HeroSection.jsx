@@ -91,8 +91,8 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.12]">
-              Invest Smarter.<br />
-              Trade Faster.<br />
+              GSP Invest<br />
+              Pvt Ltd<br />
               <span className="text-[#c28414] font-serif-accent italic font-normal tracking-normal text-4xl sm:text-5xl lg:text-[4rem]">
                 Grow Wealth
               </span>{" "}
