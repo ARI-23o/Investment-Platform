@@ -60,16 +60,20 @@ export default function ContactSection({ onCallbackSubmitted }) {
     }
 
     // 2. Central API save
-    await saveEnquiryToBackend(callbackRecord);
+    try {
+      await saveEnquiryToBackend(callbackRecord);
+    } catch (err) {
+      console.warn("Backend save error", err);
+    }
 
-    // 3. Webhook sync
+    // 3. Google Sheet Webhook sync (permanent)
     syncLeadToGoogleSheet(callbackRecord);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setConfirmedTicket(ticketId);
-      onCallbackSubmitted && onCallbackSubmitted(callbackRecord);
-    }, 700);
+    setIsSubmitting(false);
+    setConfirmedTicket(ticketId);
+    if (onCallbackSubmitted) {
+      onCallbackSubmitted(callbackRecord);
+    }
   };
 
   return (

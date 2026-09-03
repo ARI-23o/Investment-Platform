@@ -100,9 +100,7 @@ export default function App() {
   };
 
   const handleEnquiryRecorded = async (record) => {
-    await saveEnquiryToBackend(record);
     await refreshEnquiries();
-    showToast(`Enquiry for ${record.title || record.share} saved to Central Database!`);
   };
 
   const handleClearEnquiries = async () => {
