@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { ShieldCheck, Award, Users, Target, CheckCircle2, TrendingUp } from "lucide-react";
 
 export default function AboutSection() {
@@ -12,20 +12,20 @@ export default function AboutSection() {
               ABOUT GSP INVESTMENT
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
-              15+ Years of Guiding Investors to{" "}
+              1+ Year of Guiding Investors to{" "}
               <span className="font-serif-accent italic font-normal text-amber-600">
                 Financial Freedom
               </span>
             </h2>
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-              GSP Investment Pvt. Ltd. is a SEBI registered financial institution committed to democratizing access to Indian capital markets. From primary market IPO allotments to private unlisted equities and institutional-grade portfolio advisory, we bridge retail and HNI investors with superior market opportunities.
+              GSP Investment Pvt. Ltd. is a SEBI registered sub broker committed to democratizing access to Indian capital markets. From primary market IPO allotments to private unlisted equities and institutional-grade portfolio advisory, we bridge retail and HNI investors with superior market opportunities.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="flex items-start gap-3 p-4 rounded-2xl bg-[#f8faf9] border border-gray-200/80">
                 <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-bold text-gray-900">SEBI Registered</h4>
+                  <h4 className="text-sm font-bold text-gray-900">SEBI Registered Sub Broker</h4>
                   <p className="text-xs text-gray-500 mt-0.5">Strict regulatory compliance and investor grievance cell protection.</p>
                 </div>
               </div>

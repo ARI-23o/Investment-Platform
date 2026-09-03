@@ -52,9 +52,9 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
   // Statistics Count-Up
   const portfolioVal = useCountUp(1482350, 1600, 300);
   const dailyGainVal = useCountUp(124210, 1600, 300);
-  const yearsTrust = useCountUp(15, 1200, 450);
-  const investors = useCountUp(50, 1200, 550);
-  const assets = useCountUp(2400, 1400, 650);
+  const yearsTrust = useCountUp(1, 1000, 450);
+  const investors = useCountUp(5, 1200, 550);
+  const assets = useCountUp(50, 1400, 650);
 
   useEffect(() => {
     setIsMounted(true);
@@ -86,7 +86,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
             {/* Growth Priority Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs sm:text-sm font-semibold tracking-wide shadow-xs">
               <span className="text-emerald-600">🌱</span>
-              <span>Your Growth. Our Priority.</span>
+              <span>Smart Money, Start Here</span>
             </div>
 
             {/* Main Headline */}
@@ -101,7 +101,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg text-gray-600 max-w-2xl leading-relaxed font-normal">
-              GSP Investment Pvt. Ltd. is a SEBI Registered Stock Broker offering Equities, IPOs, Mutual Funds and Wealth Management Services across India.
+              GSP Investment Pvt. Ltd. is a SEBI Registered Sub Broker offering Equities, IPOs, Mutual Funds and Wealth Management Services across India.
             </p>
 
             {/* CTA Buttons */}
@@ -123,7 +123,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
               </button>
             </div>
 
-            {/* Stats Row matching PDF */}
+            {/* Stats Row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-gray-200/80">
               
               <div className="flex items-center gap-3">
@@ -132,7 +132,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
                 </div>
                 <div>
                   <div className="text-sm font-bold text-gray-900 leading-tight">SEBI Registered</div>
-                  <div className="text-xs text-gray-500 font-medium">Stock Broker</div>
+                  <div className="text-xs text-gray-500 font-medium">Sub Broker</div>
                 </div>
               </div>
 
@@ -144,7 +144,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
                   <div className="text-base font-black text-gray-900 leading-tight tabular-nums">
                     {yearsTrust}+
                   </div>
-                  <div className="text-xs text-gray-500 font-medium">Years of Trust</div>
+                  <div className="text-xs text-gray-500 font-medium">Year of Trust</div>
                 </div>
               </div>
 
@@ -156,7 +156,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
                   <div className="text-base font-black text-gray-900 leading-tight tabular-nums">
                     {investors}K+
                   </div>
-                  <div className="text-xs text-gray-500 font-medium">Active Investors</div>
+                  <div className="text-xs text-gray-500 font-medium">Active Clients</div>
                 </div>
               </div>
 
@@ -166,7 +166,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
                 </div>
                 <div>
                   <div className="text-base font-black text-gray-900 leading-tight tabular-nums">
-                    ₹{assets.toLocaleString("en-IN")}Cr+
+                    ₹{assets}Cr+
                   </div>
                   <div className="text-xs text-gray-500 font-medium">Assets Advisory</div>
                 </div>

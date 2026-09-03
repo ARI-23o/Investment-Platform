@@ -33,7 +33,7 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
             </div>
 
             <p className="text-xs sm:text-sm text-emerald-200/70 leading-relaxed max-w-sm font-normal">
-              GSP Investment Pvt. Ltd. is a SEBI registered stock broker and wealth advisory firm empowering Indian investors with equities, IPOs, direct mutual funds, and pre-IPO unlisted shares.
+              GSP Investment Pvt. Ltd. is a SEBI registered sub broker and wealth advisory firm empowering Indian investors with equities, IPOs, direct mutual funds, and pre-IPO unlisted shares.
             </p>
 
             <div className="pt-2 text-xs text-emerald-400 font-medium space-y-1">
