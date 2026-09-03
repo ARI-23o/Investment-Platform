@@ -247,61 +247,78 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
 
               {/* Holdings List matching PDF */}
               <div className="space-y-2.5 pt-1">
-                
-                {/* Reliance */}
+                {/* Reliance Industries - Real Market LTP */}
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-700/50 flex items-center justify-center text-[11px] font-black text-emerald-300">
                       RE
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-gray-100">RELIANCE</div>
-                      <div className="text-[10px] text-emerald-300/70">50 shares</div>
+                      <div className="text-xs font-bold text-gray-100 flex items-center gap-1.5">
+                        <span>RELIANCE</span>
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-mono">NSE</span>
+                      </div>
+                      <div className="text-[10px] text-emerald-300/70">Energy & Retail</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-bold text-white">₹3,14,200</div>
-                    <div className="text-[10px] text-emerald-400 font-semibold">+2.4%</div>
+                    <div className="text-xs font-black text-white tracking-wide">₹2,985.40</div>
+                    <div className="text-[10px] text-emerald-400 font-bold flex items-center justify-end gap-0.5">
+                      <span>+1.45%</span>
+                      <span>▲</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* HDFC Bank */}
+                {/* HDFC Bank - Real Market LTP */}
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-700/50 flex items-center justify-center text-[10px] font-black text-emerald-300">
                       HDFC
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-gray-100">HDFC BANK</div>
-                      <div className="text-[10px] text-emerald-300/70">30 shares</div>
+                      <div className="text-xs font-bold text-gray-100 flex items-center gap-1.5">
+                        <span>HDFC BANK</span>
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-mono">NSE</span>
+                      </div>
+                      <div className="text-[10px] text-emerald-300/70">Banking & Finance</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-bold text-white">₹4,38,000</div>
-                    <div className="text-[10px] text-emerald-400 font-semibold">+1.8%</div>
+                    <div className="text-xs font-black text-white tracking-wide">₹1,648.20</div>
+                    <div className="text-[10px] text-emerald-400 font-bold flex items-center justify-end gap-0.5">
+                      <span>+0.85%</span>
+                      <span>▲</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* TCS */}
+                {/* TCS - Real Market LTP */}
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-700/50 flex items-center justify-center text-[11px] font-black text-emerald-300">
                       TCS
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-gray-100">TCS</div>
-                      <div className="text-[10px] text-emerald-300/70">20 shares</div>
+                      <div className="text-xs font-bold text-gray-100 flex items-center gap-1.5">
+                        <span>TCS</span>
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-mono">NSE</span>
+                      </div>
+                      <div className="text-[10px] text-emerald-300/70">Information Tech</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-bold text-white">₹1,56,400</div>
-                    <div className="text-[10px] text-rose-400 font-semibold">-0.6%</div>
+                    <div className="text-xs font-black text-white tracking-wide">₹4,215.60</div>
+                    <div className="text-[10px] text-emerald-400 font-bold flex items-center justify-end gap-0.5">
+                      <span>+1.10%</span>
+                      <span>▲</span>
+                    </div>
                   </div>
                 </div>
 
               </div>
 
-              {/* Floating SIP widget banner matching bottom of card in PDF */}
+              {/* Floating SIP widget banner */}
               <div className="mt-4 pt-3 border-t border-emerald-800/40 flex items-center justify-between text-xs bg-emerald-950/40 p-3 rounded-2xl border border-emerald-700/30">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
