@@ -26,53 +26,105 @@ export default function ContactSection({ onCallbackSubmitted }) {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedTicket, setConfirmedTicket] = useState(null);
+  const [errors, setErrors] = useState({});
+
+  // Strict Phone Handler - Digits Only, Max 10 digits
+  const handleMobileChange = (e) => {
+    const raw = e.target.value;
+    const digitsOnly = raw.replace(/\D/g, "").slice(0, 10);
+    setMobile(digitsOnly);
+    if (errors.mobile) {
+      setErrors((prev) => ({ ...prev, mobile: null }));
+    }
+  };
+
+  const handleNameChange = (e) => {
+    setFullName(e.target.value);
+    if (errors.fullName) {
+      setErrors((prev) => ({ ...prev, fullName: null }));
+    }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!fullName.trim() || !mobile.trim()) {
-      alert("Please provide your name and mobile number.");
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    // Validation
+    const validationErrors = {};
+    if (!fullName.trim() || fullName.trim().length < 2) {
+      validationErrors.fullName = "Please enter your full name (minimum 2 characters)";
+    }
+
+    if (!mobile.trim()) {
+      validationErrors.mobile = "Mobile number is required";
+    } else if (mobile.length !== 10) {
+      validationErrors.mobile = `Please enter complete 10-digit mobile number (${mobile.length}/10 digits entered)`;
+    } else if (!/^[6-9]\d{9}$/.test(mobile)) {
+      validationErrors.mobile = "Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8 or 9";
+    }
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
+
+    setErrors({});
     setIsSubmitting(true);
 
-    const ticketId = "CB-" + Math.floor(100000 + Math.random() * 900000);
-    const callbackRecord = {
-      id: ticketId,
-      type: "callback",
-      title: `Callback Request: ${interestedIn}`,
-      fullName: fullName.trim(),
-      mobile: mobile.trim(),
-      email: email.trim(),
-      service: interestedIn,
-      message: message.trim() || "Requested priority callback during market hours",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      date: new Date().toLocaleDateString('en-IN'),
-      status: "Assigned to Senior Wealth Manager",
-    };
-
-    // 1. Save to Local Storage safely
     try {
-      const existing = JSON.parse(localStorage.getItem("gsp_enquiries") || "[]");
-      existing.unshift(callbackRecord);
-      localStorage.setItem("gsp_enquiries", JSON.stringify(existing));
+      const ticketId = "CB-" + Math.floor(100000 + Math.random() * 900000);
+      const callbackRecord = {
+        id: ticketId,
+        type: "callback",
+        title: `Callback Request: ${interestedIn}`,
+        fullName: fullName.trim(),
+        mobile: mobile.trim(),
+        email: email.trim(),
+        service: interestedIn,
+        message: message.trim() || "Requested priority callback during market hours",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        date: new Date().toLocaleDateString('en-IN'),
+        status: "Assigned to Senior Wealth Manager",
+      };
+
+      // 1. Save to Local Storage safely
+      try {
+        const existing = JSON.parse(localStorage.getItem("gsp_enquiries") || "[]");
+        existing.unshift(callbackRecord);
+        localStorage.setItem("gsp_enquiries", JSON.stringify(existing));
+      } catch (err) {
+        console.warn("Storage write error", err);
+      }
+
+      // 2. Central API save
+      try {
+        await saveEnquiryToBackend(callbackRecord);
+      } catch (err) {
+        console.warn("Backend save error", err);
+      }
+
+      // 3. Google Sheet Webhook sync (permanent)
+      try {
+        syncLeadToGoogleSheet(callbackRecord);
+      } catch (err) {
+        console.warn("Google Sheet sync error", err);
+      }
+
+      setIsSubmitting(false);
+      setConfirmedTicket(ticketId);
+
+      if (onCallbackSubmitted) {
+        try {
+          onCallbackSubmitted(callbackRecord);
+        } catch (e) {
+          console.warn("Parent callback handler error:", e);
+        }
+      }
     } catch (err) {
-      console.warn("Storage write error", err);
-    }
-
-    // 2. Central API save
-    try {
-      await saveEnquiryToBackend(callbackRecord);
-    } catch (err) {
-      console.warn("Backend save error", err);
-    }
-
-    // 3. Google Sheet Webhook sync (permanent)
-    syncLeadToGoogleSheet(callbackRecord);
-
-    setIsSubmitting(false);
-    setConfirmedTicket(ticketId);
-    if (onCallbackSubmitted) {
-      onCallbackSubmitted(callbackRecord);
+      console.error("Submission failed:", err);
+      setIsSubmitting(false);
     }
   };
 
@@ -318,12 +370,14 @@ export default function ContactSection({ onCallbackSubmitted }) {
                     </p>
                   </div>
                   <button
+                    type="button"
                     onClick={() => {
                       setConfirmedTicket(null);
                       setFullName("");
                       setMobile("");
                       setEmail("");
                       setMessage("");
+                      setErrors({});
                     }}
                     className="text-xs font-bold text-emerald-800 underline cursor-pointer pt-1"
                   >
@@ -331,41 +385,69 @@ export default function ContactSection({ onCallbackSubmitted }) {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} noValidate className="space-y-4">
                   
                   {/* Name */}
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
-                      Full Name
+                      Full Name <span className="text-rose-500">*</span>
                     </label>
                     <input 
                       type="text"
                       placeholder="e.g. Vikramaditya Singhania"
                       value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none focus:border-[#0f4b32] focus:ring-1 focus:ring-[#0f4b32]"
+                      onChange={handleNameChange}
+                      className={`w-full px-4 py-3 rounded-xl border text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none transition-all ${
+                        errors.fullName 
+                          ? "border-rose-400 bg-rose-50/30 focus:border-rose-600 focus:ring-1 focus:ring-rose-500" 
+                          : "border-gray-200 focus:border-[#0f4b32] focus:ring-1 focus:ring-[#0f4b32]"
+                      }`}
                       required
                     />
+                    {errors.fullName && (
+                      <p className="text-[11px] font-bold text-rose-600 mt-1 flex items-center gap-1">
+                        <span>⚠</span>
+                        <span>{errors.fullName}</span>
+                      </p>
+                    )}
                   </div>
 
-                  {/* Mobile */}
+                  {/* Mobile - Only 10 Digits Allowed */}
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
-                      Mobile Number
-                    </label>
-                    <div className="flex items-center rounded-xl border border-gray-200 overflow-hidden focus-within:border-[#0f4b32] focus-within:ring-1 focus-within:ring-[#0f4b32]">
-                      <span className="px-3 py-3 bg-gray-100 text-xs font-bold text-gray-600 border-r border-gray-200">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">
+                        Mobile Number <span className="text-rose-500">*</span>
+                      </label>
+                      <span className="text-[11px] font-medium text-gray-400 tabular-nums">
+                        {mobile.length}/10 digits
+                      </span>
+                    </div>
+                    <div className={`flex items-center rounded-xl border overflow-hidden transition-all ${
+                      errors.mobile 
+                        ? "border-rose-400 bg-rose-50/30 focus-within:border-rose-600 focus-within:ring-1 focus-within:ring-rose-500" 
+                        : "border-gray-200 focus-within:border-[#0f4b32] focus-within:ring-1 focus-within:ring-[#0f4b32]"
+                    }`}>
+                      <span className="px-3 py-3 bg-gray-100 text-xs font-bold text-gray-600 border-r border-gray-200 select-none">
                         🇮🇳 +91
                       </span>
                       <input 
                         type="tel"
-                        placeholder="98765 43210"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={10}
+                        placeholder="9876543210"
                         value={mobile}
-                        onChange={(e) => setMobile(e.target.value)}
-                        className="w-full px-3 py-3 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none"
+                        onChange={handleMobileChange}
+                        className="w-full px-3 py-3 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none bg-transparent font-mono"
                         required
                       />
                     </div>
+                    {errors.mobile && (
+                      <p className="text-[11px] font-bold text-rose-600 mt-1 flex items-center gap-1">
+                        <span>⚠</span>
+                        <span>{errors.mobile}</span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Interested In */}

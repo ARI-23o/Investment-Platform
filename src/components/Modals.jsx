@@ -351,11 +351,14 @@ export function OpenAccountModal({ isOpen, onClose, onRegisterSuccess }) {
                   </label>
                   <input
                     type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={10}
                     required
                     value={mobile}
-                    onChange={(e) => setMobile(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
+                    onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    placeholder="9876543210"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none font-mono"
                   />
                 </div>
 
@@ -526,15 +529,18 @@ export function QuickEnquiryModal({ isOpen, onClose, share, onSubmitted }) {
 
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                  Mobile Number
+                  Mobile Number *
                 </label>
                 <input
                   type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={10}
                   required
                   value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
-                  placeholder="10-digit mobile"
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 outline-none"
+                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  placeholder="9876543210"
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 outline-none font-mono"
                 />
               </div>
 

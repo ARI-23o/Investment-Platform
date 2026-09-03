@@ -471,18 +471,21 @@ export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuc
                   {/* Mobile Number */}
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
-                      Mobile Number
+                      Mobile Number <span className="text-rose-500">*</span>
                     </label>
                     <div className="flex items-center rounded-xl border border-gray-200 overflow-hidden focus-within:border-[#0f4b32] focus-within:ring-1 focus-within:ring-[#0f4b32]">
-                      <span className="px-3 py-2.5 bg-gray-100 text-xs font-bold text-gray-600 border-r border-gray-200">
+                      <span className="px-3 py-2.5 bg-gray-100 text-xs font-bold text-gray-600 border-r border-gray-200 select-none">
                         🇮🇳 +91
                       </span>
                       <input 
                         type="tel"
-                        placeholder="98765 43210"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={10}
+                        placeholder="9876543210"
                         value={mobile}
-                        onChange={(e) => setMobile(e.target.value)}
-                        className="w-full px-3 py-2.5 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none"
+                        onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                        className="w-full px-3 py-2.5 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none font-mono bg-transparent"
                         required
                       />
                     </div>
