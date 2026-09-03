@@ -237,12 +237,9 @@ export default function ContactSection({ onCallbackSubmitted }) {
                   <div className="font-extrabold text-gray-900 text-sm sm:text-base">
                     GSP Investment Pvt. Ltd.
                   </div>
-                  <p className="text-gray-600 leading-relaxed">
-                    Suite 402-404, Dalal Street Commercial Centre, Fort, Mumbai - 400 001, Maharashtra, India.
+                  <p className="text-gray-600 leading-relaxed font-medium">
+                    A-302 Aparna Niwas, Behind Tungareshwar sweet, Near Vasai road station, Vasai West, Vasai-Virar City, Maharashtra 401202.
                   </p>
-                  <div className="text-xs text-emerald-800 font-semibold pt-1">
-                    Branch Offices: New Delhi • Bengaluru • Ahmedabad • Kolkata
-                  </div>
                 </div>
               </div>
             </div>

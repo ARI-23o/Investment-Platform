@@ -129,7 +129,7 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
             </h4>
             <div className="space-y-2.5 text-xs text-emerald-200/80">
               <p className="leading-relaxed">
-                Regd. Off. : A-109, Everest Tower, Santoshi Mata Road, Opp. Maxi Ground, Kalyan (West) 421 301
+                Regd. Off. : A-302 Aparna Niwas, Behind Tungareshwar sweet, Near Vasai road station, Vasai West, Vasai-Virar City, Maharashtra 401202
               </p>
               <div className="pt-2">
                 <span className="text-emerald-400 block font-semibold">Toll-Free Helpline:</span>
