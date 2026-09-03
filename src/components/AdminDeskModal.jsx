@@ -18,7 +18,8 @@ import {
   Check,
   RotateCw
 } from "lucide-react";
-import { exportToCSV, syncLeadToGoogleSheet } from "../utils/exportUtils";
+import { exportToCSV, syncLeadToGoogleSheet, getSavedWebhookUrl } from "../utils/exportUtils";
+import { fetchSettingsFromBackend, saveSettingsToBackend } from "../services/api";
 
 export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll, onDeleteOne, onRefresh }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -28,13 +29,24 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
 
-  // Google Sheet Webhook URL state
+  // Google Sheet Webhook URL state with persistent multi-layer load
   const [webhookUrl, setWebhookUrl] = useState(() => {
-    return localStorage.getItem("gsp_google_sheet_webhook") || "";
+    return getSavedWebhookUrl();
   });
   const [webhookSaved, setWebhookSaved] = useState(false);
   const [testStatus, setTestStatus] = useState("");
   const [copiedCode, setCopiedCode] = useState(false);
+
+  // Sync settings whenever modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      fetchSettingsFromBackend().then((settings) => {
+        if (settings && settings.googleSheetWebhook) {
+          setWebhookUrl(settings.googleSheetWebhook);
+        }
+      });
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -48,11 +60,13 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
     }
   };
 
-  const handleSaveWebhook = (e) => {
+  const handleSaveWebhook = async (e) => {
     e.preventDefault();
-    localStorage.setItem("gsp_google_sheet_webhook", webhookUrl.trim());
+    const cleanUrl = webhookUrl.trim();
+    localStorage.setItem("gsp_google_sheet_webhook", cleanUrl);
+    await saveSettingsToBackend({ googleSheetWebhook: cleanUrl });
     setWebhookSaved(true);
-    setTimeout(() => setWebhookSaved(false), 3000);
+    setTimeout(() => setWebhookSaved(false), 3500);
   };
 
   const handleSendTestLead = async () => {
@@ -412,11 +426,23 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
                 {/* Step 1: Webhook URL Input */}
                 <div className="bg-white p-5 rounded-2xl border border-gray-200 space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">
-                      Step 1: Paste your Google Apps Script Web App URL or Google Form Action URL
-                    </label>
-                    <p className="text-[11px] text-gray-500 mb-2">
-                      Enter the published Web App URL from your Google Sheet (starts with <code>https://script.google.com/macros/s/.../exec</code>) or Google Form response URL.
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider">
+                        Google Sheet Webhook URL (Permanent Auto-Sync)
+                      </label>
+                      {webhookUrl ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                          <span>Active & Saved Permanently</span>
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-medium text-gray-400">
+                          Not configured yet
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-gray-500 mb-2.5">
+                      Save once — all enquiries across the website will continuously sync to this Google Sheet automatically until you change or remove it.
                     </p>
                     <form onSubmit={handleSaveWebhook} className="flex gap-2">
                       <input
@@ -424,13 +450,14 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
                         value={webhookUrl}
                         onChange={(e) => setWebhookUrl(e.target.value)}
                         placeholder="https://script.google.com/macros/s/AKfycby.../exec"
-                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-xs focus:border-emerald-600 outline-none font-mono"
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-xs focus:border-emerald-600 outline-none font-mono text-gray-900 bg-gray-50/50 focus:bg-white"
+                        required
                       />
                       <button
                         type="submit"
-                        className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shrink-0"
+                        className="px-6 py-2.5 rounded-xl text-xs font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shrink-0 shadow-sm"
                       >
-                        {webhookSaved ? "Saved!" : "Save Webhook"}
+                        {webhookSaved ? "Saved Permanently! ✅" : "Save Webhook Link"}
                       </button>
                     </form>
                   </div>

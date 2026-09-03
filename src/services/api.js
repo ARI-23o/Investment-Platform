@@ -1,4 +1,4 @@
-﻿// Central Data Service (Shared Across All Browsers & Devices via Backend API)
+// Central Data Service (Shared Across All Browsers & Devices via Backend API)
 
 export async function fetchAllEnquiries() {
   try {
@@ -70,4 +70,49 @@ export async function registerUserBackend(user) {
     console.warn("Backend user registration error:", err);
   }
   return user;
+}
+
+export async function fetchSettingsFromBackend() {
+  try {
+    const res = await fetch("/api/settings");
+    if (res.ok) {
+      const settings = await res.json();
+      if (settings.googleSheetWebhook) {
+        localStorage.setItem("gsp_google_sheet_webhook", settings.googleSheetWebhook);
+      }
+      localStorage.setItem("gsp_settings", JSON.stringify(settings));
+      return settings;
+    }
+  } catch (err) {
+    console.warn("Backend settings fetch error:", err);
+  }
+  try {
+    return JSON.parse(localStorage.getItem("gsp_settings") || "{}");
+  } catch {
+    return {};
+  }
+}
+
+export async function saveSettingsToBackend(newSettings) {
+  try {
+    if (newSettings.googleSheetWebhook) {
+      localStorage.setItem("gsp_google_sheet_webhook", newSettings.googleSheetWebhook);
+    }
+    const existing = JSON.parse(localStorage.getItem("gsp_settings") || "{}");
+    const merged = { ...existing, ...newSettings };
+    localStorage.setItem("gsp_settings", JSON.stringify(merged));
+
+    const res = await fetch("/api/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(merged),
+    });
+    if (res.ok) {
+      const result = await res.json();
+      return result.settings || merged;
+    }
+  } catch (err) {
+    console.warn("Backend settings save error:", err);
+  }
+  return newSettings;
 }

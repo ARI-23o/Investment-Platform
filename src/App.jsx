@@ -18,7 +18,8 @@ import {
   fetchAllEnquiries, 
   saveEnquiryToBackend, 
   deleteEnquiryFromBackend, 
-  clearAllEnquiriesFromBackend 
+  clearAllEnquiriesFromBackend,
+  fetchSettingsFromBackend
 } from "./services/api";
 
 export default function App() {
@@ -53,9 +54,10 @@ export default function App() {
     }
   };
 
-  // Sync across all browsers: Poll server every 2.5 seconds
+  // Sync across all browsers: Poll server and fetch settings
   useEffect(() => {
     refreshEnquiries();
+    fetchSettingsFromBackend();
     const interval = setInterval(refreshEnquiries, 2500);
     return () => clearInterval(interval);
   }, []);
