@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   PhoneCall, 
   MessageSquare, 
@@ -13,7 +13,10 @@ import {
   ShieldCheck, 
   Vote, 
   Send,
-  Lock
+  Lock,
+  X,
+  RotateCw,
+  Sparkles
 } from "lucide-react";
 import { syncLeadToGoogleSheet } from "../utils/exportUtils";
 import { saveEnquiryToBackend } from "../services/api";
@@ -25,8 +28,40 @@ export default function ContactSection({ onCallbackSubmitted }) {
   const [interestedIn, setInterestedIn] = useState("Equity Trading");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [confirmedTicket, setConfirmedTicket] = useState(null);
   const [errors, setErrors] = useState({});
+
+  // 10-second Countdown Success Modal State
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [submittedLead, setSubmittedLead] = useState(null);
+  const [countdown, setCountdown] = useState(10);
+
+  // 10s Countdown Timer Effect
+  useEffect(() => {
+    let timer;
+    if (isSuccessModalOpen && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    } else if (isSuccessModalOpen && countdown === 0) {
+      // 10 seconds expired: gracefully refresh the page
+      window.location.reload();
+    }
+    return () => clearInterval(timer);
+  }, [isSuccessModalOpen, countdown]);
+
+  const handleManualRefresh = () => {
+    window.location.reload();
+  };
+
+  const handleCloseModal = () => {
+    setIsSuccessModalOpen(false);
+    setFullName("");
+    setMobile("");
+    setEmail("");
+    setMessage("");
+    setErrors({});
+    setCountdown(10);
+  };
 
   // Strict Phone Handler - Digits Only, Max 10 digits
   const handleMobileChange = (e) => {
@@ -113,7 +148,9 @@ export default function ContactSection({ onCallbackSubmitted }) {
       }
 
       setIsSubmitting(false);
-      setConfirmedTicket(ticketId);
+      setSubmittedLead(callbackRecord);
+      setCountdown(10);
+      setIsSuccessModalOpen(true);
 
       if (onCallbackSubmitted) {
         try {
@@ -354,173 +391,141 @@ export default function ContactSection({ onCallbackSubmitted }) {
                 </p>
               </div>
 
-              {/* Confirmation state */}
-              {confirmedTicket ? (
-                <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto shadow-md">
-                    <CheckCircle2 className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-base font-black text-gray-900">Callback Scheduled!</h4>
-                    <p className="text-xs text-gray-600 mt-1">
-                      Ticket Ref: <strong className="font-mono text-emerald-900">{confirmedTicket}</strong>
+              <form onSubmit={handleSubmit} noValidate className="space-y-4">
+                
+                {/* Name */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                    Full Name <span className="text-rose-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    placeholder="e.g. Vikramaditya Singhania"
+                    value={fullName}
+                    onChange={handleNameChange}
+                    className={`w-full px-4 py-3 rounded-xl border text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none transition-all ${
+                      errors.fullName 
+                        ? "border-rose-400 bg-rose-50/30 focus:border-rose-600 focus:ring-1 focus:ring-rose-500" 
+                        : "border-gray-200 focus:border-[#0f4b32] focus:ring-1 focus:ring-[#0f4b32]"
+                    }`}
+                    required
+                  />
+                  {errors.fullName && (
+                    <p className="text-[11px] font-bold text-rose-600 mt-1 flex items-center gap-1">
+                      <span>⚠</span>
+                      <span>{errors.fullName}</span>
                     </p>
-                    <p className="text-xs text-emerald-800 mt-2 font-medium">
-                      Our Wealth Relationship Manager will call your registered number within 15 minutes during trading hours.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setConfirmedTicket(null);
-                      setFullName("");
-                      setMobile("");
-                      setEmail("");
-                      setMessage("");
-                      setErrors({});
-                    }}
-                    className="text-xs font-bold text-emerald-800 underline cursor-pointer pt-1"
-                  >
-                    Submit another request
-                  </button>
+                  )}
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} noValidate className="space-y-4">
-                  
-                  {/* Name */}
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
-                      Full Name <span className="text-rose-500">*</span>
+
+                {/* Mobile - Only 10 Digits Allowed */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">
+                      Mobile Number <span className="text-rose-500">*</span>
                     </label>
+                    <span className="text-[11px] font-medium text-gray-400 tabular-nums">
+                      {mobile.length}/10 digits
+                    </span>
+                  </div>
+                  <div className={`flex items-center rounded-xl border overflow-hidden transition-all ${
+                    errors.mobile 
+                      ? "border-rose-400 bg-rose-50/30 focus-within:border-rose-600 focus-within:ring-1 focus-within:ring-rose-500" 
+                      : "border-gray-200 focus-within:border-[#0f4b32] focus-within:ring-1 focus-within:ring-[#0f4b32]"
+                  }`}>
+                    <span className="px-3 py-3 bg-gray-100 text-xs font-bold text-gray-600 border-r border-gray-200 select-none">
+                      🇮🇳 +91
+                    </span>
                     <input 
-                      type="text"
-                      placeholder="e.g. Vikramaditya Singhania"
-                      value={fullName}
-                      onChange={handleNameChange}
-                      className={`w-full px-4 py-3 rounded-xl border text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none transition-all ${
-                        errors.fullName 
-                          ? "border-rose-400 bg-rose-50/30 focus:border-rose-600 focus:ring-1 focus:ring-rose-500" 
-                          : "border-gray-200 focus:border-[#0f4b32] focus:ring-1 focus:ring-[#0f4b32]"
-                      }`}
+                      type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={10}
+                      placeholder="9876543210"
+                      value={mobile}
+                      onChange={handleMobileChange}
+                      className="w-full px-3 py-3 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none bg-transparent font-mono"
                       required
                     />
-                    {errors.fullName && (
-                      <p className="text-[11px] font-bold text-rose-600 mt-1 flex items-center gap-1">
-                        <span>⚠</span>
-                        <span>{errors.fullName}</span>
-                      </p>
-                    )}
                   </div>
+                  {errors.mobile && (
+                    <p className="text-[11px] font-bold text-rose-600 mt-1 flex items-center gap-1">
+                      <span>⚠</span>
+                      <span>{errors.mobile}</span>
+                    </p>
+                  )}
+                </div>
 
-                  {/* Mobile - Only 10 Digits Allowed */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">
-                        Mobile Number <span className="text-rose-500">*</span>
-                      </label>
-                      <span className="text-[11px] font-medium text-gray-400 tabular-nums">
-                        {mobile.length}/10 digits
-                      </span>
-                    </div>
-                    <div className={`flex items-center rounded-xl border overflow-hidden transition-all ${
-                      errors.mobile 
-                        ? "border-rose-400 bg-rose-50/30 focus-within:border-rose-600 focus-within:ring-1 focus-within:ring-rose-500" 
-                        : "border-gray-200 focus-within:border-[#0f4b32] focus-within:ring-1 focus-within:ring-[#0f4b32]"
-                    }`}>
-                      <span className="px-3 py-3 bg-gray-100 text-xs font-bold text-gray-600 border-r border-gray-200 select-none">
-                        🇮🇳 +91
-                      </span>
-                      <input 
-                        type="tel"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        maxLength={10}
-                        placeholder="9876543210"
-                        value={mobile}
-                        onChange={handleMobileChange}
-                        className="w-full px-3 py-3 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none bg-transparent font-mono"
-                        required
-                      />
-                    </div>
-                    {errors.mobile && (
-                      <p className="text-[11px] font-bold text-rose-600 mt-1 flex items-center gap-1">
-                        <span>⚠</span>
-                        <span>{errors.mobile}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Interested In */}
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
-                      Interested In
-                    </label>
-                    <select
-                      value={interestedIn}
-                      onChange={(e) => setInterestedIn(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 outline-none focus:border-[#0f4b32] cursor-pointer bg-white"
-                    >
-                      <option value="Equity Trading">Equity & Derivative Trading</option>
-                      <option value="Demat Account">Free Demat Account Opening</option>
-                      <option value="Mutual Funds & SIP">Mutual Funds & Systematic Investment Plan (SIP)</option>
-                      <option value="Unlisted Shares">Pre-IPO & Unlisted Shares</option>
-                      <option value="Wealth Management">HNIs Wealth Management & Advisory</option>
-                      <option value="Loan Solutions">Loan Solutions & Financing</option>
-                      <option value="Other Assistance">Other General Query</option>
-                    </select>
-                  </div>
-
-                  {/* Optional Email */}
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
-                      Email Address (Optional)
-                    </label>
-                    <input 
-                      type="email"
-                      placeholder="vikram@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none focus:border-[#0f4b32]"
-                    />
-                  </div>
-
-                  {/* Message / Preferred Time */}
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
-                      Message / Best Time to Call
-                    </label>
-                    <textarea 
-                      rows={2}
-                      placeholder="e.g. Please call between 2 PM and 5 PM"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs font-medium text-gray-900 placeholder-gray-400 outline-none focus:border-[#0f4b32]"
-                    />
-                  </div>
-
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-4 px-6 rounded-full text-sm font-black bg-[#0f4b32] hover:bg-[#093523] text-white shadow-lg shadow-emerald-950/20 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 hover:-translate-y-0.5"
+                {/* Interested In */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                    Interested In
+                  </label>
+                  <select
+                    value={interestedIn}
+                    onChange={(e) => setInterestedIn(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 outline-none focus:border-[#0f4b32] cursor-pointer bg-white"
                   >
-                    {isSubmitting ? (
-                      <span>Scheduling Callback...</span>
-                    ) : (
-                      <>
-                        <span>Request Callback</span>
-                        <Send className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
+                    <option value="Equity Trading">Equity & Derivative Trading</option>
+                    <option value="Demat Account">Free Demat Account Opening</option>
+                    <option value="Mutual Funds & SIP">Mutual Funds & Systematic Investment Plan (SIP)</option>
+                    <option value="Unlisted Shares">Pre-IPO & Unlisted Shares</option>
+                    <option value="Wealth Management">HNIs Wealth Management & Advisory</option>
+                    <option value="Loan Solutions">Loan Solutions & Financing</option>
+                    <option value="Other Assistance">Other General Query</option>
+                  </select>
+                </div>
 
-                  <div className="text-[11px] text-gray-400 text-center flex items-center justify-center gap-1.5 pt-1">
-                    <Lock className="w-3 h-3 text-emerald-700" />
-                    <span>Your privacy is protected • Zero spam guarantee</span>
-                  </div>
+                {/* Optional Email */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                    Email Address (Optional)
+                  </label>
+                  <input 
+                    type="email"
+                    placeholder="vikram@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none focus:border-[#0f4b32]"
+                  />
+                </div>
 
-                </form>
-              )}
+                {/* Message / Preferred Time */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                    Message / Best Time to Call
+                  </label>
+                  <textarea 
+                    rows={2}
+                    placeholder="e.g. Please call between 2 PM and 5 PM"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs font-medium text-gray-900 placeholder-gray-400 outline-none focus:border-[#0f4b32]"
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-4 px-6 rounded-full text-sm font-black bg-[#0f4b32] hover:bg-[#093523] text-white shadow-lg shadow-emerald-950/20 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 hover:-translate-y-0.5"
+                >
+                  {isSubmitting ? (
+                    <span>Scheduling Callback...</span>
+                  ) : (
+                    <>
+                      <span>Request Callback</span>
+                      <Send className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+
+                <div className="text-[11px] text-gray-400 text-center flex items-center justify-center gap-1.5 pt-1">
+                  <Lock className="w-3 h-3 text-emerald-700" />
+                  <span>Your privacy is protected • Zero spam guarantee</span>
+                </div>
+
+              </form>
 
             </div>
           </div>
@@ -528,6 +533,116 @@ export default function ContactSection({ onCallbackSubmitted }) {
         </div>
 
       </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          CELEBRATORY SUCCESS MODAL WITH 10-SECOND COUNTDOWN & AUTO-REFRESH
+      ───────────────────────────────────────────────────────────── */}
+      {isSuccessModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-emerald-100 relative overflow-hidden animate-scale-up text-center space-y-5">
+            
+            {/* Ambient Background Glow */}
+            <div className="absolute -top-20 -right-20 w-44 h-44 bg-emerald-100/70 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute -bottom-20 -left-20 w-44 h-44 bg-amber-100/60 rounded-full blur-3xl pointer-events-none"></div>
+
+            {/* Close Button */}
+            <button 
+              type="button"
+              onClick={handleCloseModal}
+              className="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+              title="Close & Stay on Page"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Glowing Success Icon */}
+            <div className="relative mx-auto w-20 h-20">
+              <div className="absolute inset-0 rounded-full bg-emerald-400/30 animate-ping"></div>
+              <div className="relative w-20 h-20 rounded-3xl bg-gradient-to-tr from-[#063321] to-[#10b981] text-white flex items-center justify-center shadow-xl shadow-emerald-900/20">
+                <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
+              </div>
+            </div>
+
+            {/* Heading & Subtitle */}
+            <div className="space-y-1">
+              <span className="text-[11px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                ✓ Request Confirmed
+              </span>
+              <h3 className="text-2xl font-black text-gray-900 tracking-tight pt-1">
+                Callback Scheduled!
+              </h3>
+              <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
+                Thank you, <strong className="text-gray-900">{submittedLead?.fullName}</strong>! Your inquiry has been securely routed to our senior wealth advisor.
+              </p>
+            </div>
+
+            {/* Ticket & Details Card */}
+            <div className="p-4 rounded-2xl bg-[#f8faf9] border border-gray-200 text-left space-y-2 text-xs">
+              <div className="flex items-center justify-between pb-2 border-b border-gray-200/80">
+                <span className="text-gray-500 font-semibold">Ticket Ref:</span>
+                <span className="font-mono font-black text-emerald-950 bg-emerald-100 px-2 py-0.5 rounded-md">
+                  {submittedLead?.id}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-500 font-medium">Mobile Number:</span>
+                <span className="font-bold text-gray-900 font-mono">+91 {submittedLead?.mobile}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-500 font-medium">Service Type:</span>
+                <span className="font-bold text-gray-900">{submittedLead?.service}</span>
+              </div>
+              <div className="flex items-center justify-between pt-1 text-emerald-800 font-semibold text-[11px]">
+                <span>Response Time:</span>
+                <span>Within 15 mins (Market Hours)</span>
+              </div>
+            </div>
+
+            {/* 10-Second Countdown Banner with Animated Bar */}
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-950 space-y-2">
+              <div className="flex items-center justify-between font-bold">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-amber-700 animate-spin" style={{ animationDuration: '4s' }} />
+                  <span>Auto-refreshing page in:</span>
+                </div>
+                <div className="w-8 h-8 rounded-xl bg-amber-200/90 text-amber-950 font-black font-mono text-sm flex items-center justify-center shadow-xs">
+                  {countdown}s
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full h-1.5 bg-amber-200/60 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-amber-600 rounded-full transition-all duration-1000 ease-linear"
+                  style={{ width: `${(countdown / 10) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={handleManualRefresh}
+                className="w-full sm:flex-1 py-3 px-4 rounded-xl text-xs font-black bg-[#0f4b32] hover:bg-[#093523] text-white shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 hover:-translate-y-0.5"
+              >
+                <RotateCw className="w-3.5 h-3.5" />
+                <span>Refresh Now</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="w-full sm:flex-1 py-3 px-4 rounded-xl text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all cursor-pointer"
+              >
+                Close & Stay
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </section>
   );
 }
