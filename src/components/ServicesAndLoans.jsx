@@ -125,10 +125,10 @@ export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
     {
       id: "portfolio-advisory",
       title: "Portfolio Advisory",
-      badge: "SEBI Registered",
+      badge: "Expert Managed",
       badgeColor: "bg-emerald-100 text-emerald-800",
       icon: Crown,
-      description: "Custom stock and fund portfolios curated and actively rebalanced by experienced SEBI-registered portfolio managers and analysts.",
+      description: "Custom stock and fund portfolios curated and actively rebalanced by experienced professional portfolio managers and market analysts.",
     },
   ];
 

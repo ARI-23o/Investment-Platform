@@ -346,7 +346,7 @@ export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuc
               <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-100 text-xs sm:text-sm text-emerald-900 space-y-1.5">
                 <div className="font-bold flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                  <span>SEBI Registered Escrow & Demat Transfer Protocol</span>
+                  <span>Secure Escrow & Demat Transfer Protocol</span>
                 </div>
                 <p className="text-emerald-800/80 leading-normal">
                   All unlisted share transactions are settled off-market via CDSL/NSDL DIS (Delivery Instruction Slip) or Easiest portal with verified bank escrow protection.

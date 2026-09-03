@@ -222,7 +222,7 @@ export default function ContactSection({ onCallbackSubmitted }) {
                 </div>
               </div>
               <p className="text-xs text-amber-900/90 leading-relaxed pt-1">
-                Direct Escalation: <strong>+91 22 6982 4599</strong> • Email: <a href="mailto:grievance@gspinvestment.com" className="underline font-bold">grievance@gspinvestment.com</a>. For unaddressed concerns, file directly on SEBI SCORES portal (<a href="https://scores.sebi.gov.in" target="_blank" rel="noreferrer" className="underline font-bold">scores.sebi.gov.in</a>).
+                Direct Escalation: <strong>+91 22 6982 4599</strong> • Email: <a href="mailto:grievance@gspinvestment.com" className="underline font-bold">grievance@gspinvestment.com</a>. For unaddressed concerns, connect with our designated Grievance Redressal desk.
               </p>
             </div>
 
@@ -272,13 +272,11 @@ export default function ContactSection({ onCallbackSubmitted }) {
               </a>
 
               <a 
-                href="https://www.sebi.gov.in" 
-                target="_blank" 
-                rel="noreferrer"
+                href="#about"
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:text-emerald-800 hover:border-emerald-500/50 transition-colors shadow-2xs"
               >
                 <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                <span>SEBI Investor Charter</span>
+                <span>Investor Protection Charter</span>
                 <ExternalLink className="w-3 h-3 text-gray-400" />
               </a>
             </div>

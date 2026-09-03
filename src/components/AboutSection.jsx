@@ -18,15 +18,15 @@ export default function AboutSection() {
               </span>
             </h2>
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-              GSP Investment Pvt. Ltd. is a SEBI registered sub broker committed to democratizing access to Indian capital markets. From primary market IPO allotments to private unlisted equities and institutional-grade portfolio advisory, we bridge retail and HNI investors with superior market opportunities.
+              GSP Investment Pvt. Ltd. is committed to democratizing access to Indian capital markets. From primary market IPO allotments to private unlisted equities and institutional-grade portfolio advisory, we bridge retail and HNI investors with superior market opportunities.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="flex items-start gap-3 p-4 rounded-2xl bg-[#f8faf9] border border-gray-200/80">
                 <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-bold text-gray-900">SEBI Registered Sub Broker</h4>
-                  <p className="text-xs text-gray-500 mt-0.5">Strict regulatory compliance and investor grievance cell protection.</p>
+                  <h4 className="text-sm font-bold text-gray-900">Institutional Escrow</h4>
+                  <p className="text-xs text-gray-500 mt-0.5">Strict security standards and client asset protection protocols.</p>
                 </div>
               </div>
 
@@ -66,8 +66,8 @@ export default function AboutSection() {
                   <span className="font-bold text-white">GSP Investment Pvt. Ltd.</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-emerald-800/60">
-                  <span className="text-emerald-200/80">SEBI Registration:</span>
-                  <span className="font-bold text-amber-300">INZ000213456</span>
+                  <span className="text-emerald-200/80">Corporate CIN:</span>
+                  <span className="font-bold text-amber-300">U67120MH2008PTC182940</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-emerald-800/60">
                   <span className="text-emerald-200/80">NSE Member ID:</span>

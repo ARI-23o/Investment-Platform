@@ -101,7 +101,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg text-gray-600 max-w-2xl leading-relaxed font-normal">
-              GSP Investment Pvt. Ltd. is a SEBI Registered Sub Broker offering Equities, IPOs, Mutual Funds and Wealth Management Services across India.
+              GSP Investment Pvt. Ltd. offers Equities, IPOs, Mutual Funds and Wealth Management Services across India.
             </p>
 
             {/* CTA Buttons */}
@@ -131,8 +131,8 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-gray-900 leading-tight">SEBI Registered</div>
-                  <div className="text-xs text-gray-500 font-medium">Sub Broker</div>
+                  <div className="text-sm font-bold text-gray-900 leading-tight">100% Safe</div>
+                  <div className="text-xs text-gray-500 font-medium">Bank-Grade Escrow</div>
                 </div>
               </div>
 

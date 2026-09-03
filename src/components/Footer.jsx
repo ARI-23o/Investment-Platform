@@ -33,11 +33,11 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
             </div>
 
             <p className="text-xs sm:text-sm text-emerald-200/70 leading-relaxed max-w-sm font-normal">
-              GSP Investment Pvt. Ltd. is a SEBI registered sub broker and wealth advisory firm empowering Indian investors with equities, IPOs, direct mutual funds, and pre-IPO unlisted shares.
+              GSP Investment Pvt. Ltd. is a premier investment and wealth advisory firm empowering Indian investors with equities, IPOs, direct mutual funds, and pre-IPO unlisted shares.
             </p>
 
             <div className="pt-2 text-xs text-emerald-400 font-medium space-y-1">
-              <div>SEBI Regn. No.: INZ000213456 • CDSL DP ID: 12081600</div>
+              <div>CIN: U67120MH2008PTC182940 • CDSL DP ID: 12081600</div>
               <div>NSE Member Code: 14238 • BSE Member Code: 6521</div>
             </div>
           </div>
@@ -148,7 +148,7 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
 
         </div>
 
-        {/* Regulatory Disclaimers & SEBI Notice */}
+        {/* Regulatory Disclaimers & Statutory Notice */}
         <div className="py-8 border-b border-emerald-900/60 text-[11px] text-emerald-300/60 space-y-2.5 leading-relaxed">
           <p>
             <strong>Regulatory Disclaimer:</strong> Investments in securities market are subject to market risks; read all the related documents carefully before investing. Unlisted shares/securities are subject to illiquidity risk, higher price volatility, and are indicative for informational purposes only. GSP Investment Pvt. Ltd. does not guarantee returns on any financial products.

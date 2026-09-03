@@ -138,7 +138,7 @@ export default function InvestorServiceCentre({ onSelectService }) {
             <span className="hidden sm:inline text-gray-300">•</span>
             <span>Bank-Grade 256-bit Encryption</span>
             <span className="hidden sm:inline text-gray-300">•</span>
-            <span>SEBI / Exchange Compliant</span>
+            <span>Exchange & Industry Compliant</span>
           </div>
         </div>
 
