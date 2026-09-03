@@ -83,9 +83,9 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
           {/* Left Column (Content) with Headline Fade / Slide */}
           <div className={`lg:col-span-7 space-y-6 transition-all duration-700 ease-out ${isMounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
             
-            {/* Growth Priority Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs sm:text-sm font-semibold tracking-wide shadow-xs">
-              <span className="text-emerald-600">🌱</span>
+            {/* Top Pill Badge: Smart Money, Start Here */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/90 text-emerald-900 text-xs sm:text-sm font-extrabold tracking-wide shadow-xs">
+              <span className="text-emerald-600 text-sm">🌱</span>
               <span>Smart Money, Start Here</span>
             </div>
 
