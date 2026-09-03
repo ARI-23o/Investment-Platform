@@ -14,7 +14,7 @@ export const UNLISTED_SHARES = [
     low52: "₹4.10",
     marketCap: "₹2,840 Cr",
     popular: false,
-    description: "Metropolitan Stock Exchange of India Limited (MSE) is a SEBI recognized electronic stock exchange offering a transparent, hi-tech platform for trading in Capital Market, Futures & Options, Currency Derivatives and Debt segments.",
+    description: "Metropolitan Stock Exchange of India Limited (MSE) is a recognized electronic stock exchange offering a transparent, hi-tech platform for trading in Capital Market, Futures & Options, Currency Derivatives and Debt segments.",
     sector: "Financial Services & Exchange",
     color: "amber",
   },

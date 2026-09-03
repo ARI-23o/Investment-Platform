@@ -83,7 +83,7 @@ export default function AboutSection() {
                 </div>
                 <div className="flex justify-between py-2">
                   <span className="text-emerald-200/80">Active Assets Advisory:</span>
-                  <span className="font-bold text-emerald-400">₹2,400+ Crores</span>
+                  <span className="font-bold text-emerald-400">₹50+ Crores</span>
                 </div>
               </div>
             </div>
