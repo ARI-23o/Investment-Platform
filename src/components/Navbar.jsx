@@ -72,40 +72,26 @@ export default function Navbar({
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         
-        {/* Brand Logo with Tagline matching sketch: { Invest Smarter, Trade Faster } GSP Investment Pvt. Ltd. */}
+        {/* Brand Logo matching PDF */}
         <div 
           onClick={() => navigateTo("home")} 
           className="flex items-center gap-3 cursor-pointer group select-none"
         >
-          {/* Left Tagline with Connecting Brace */}
-          <div className="hidden sm:flex items-center gap-1.5 text-right border-r border-gray-200 pr-3">
-            <div className="flex flex-col text-[11px] font-bold tracking-tight text-gray-600 leading-tight">
-              <span className="text-gray-700">Invest Smarter</span>
-              <span className="text-[#c28414] font-extrabold">Trade Faster</span>
-            </div>
-            <div className="text-2xl font-light text-emerald-800 leading-none select-none font-serif opacity-70">
-              &#125;
+          <div className="relative flex items-center justify-center">
+            <div className="flex items-baseline font-black tracking-tighter text-2xl">
+              <span className="text-[#0a482d] text-2xl md:text-3xl font-extrabold tracking-tight">G</span>
+              <span className="text-[#d97706] text-2xl md:text-3xl font-extrabold tracking-tight">S</span>
+              <span className="text-[#0a482d] text-2xl md:text-3xl font-extrabold tracking-tight">P</span>
+              <div className="w-2 h-2 rounded-full bg-emerald-500 absolute -top-0.5 left-4.5 animate-pulse"></div>
             </div>
           </div>
-
-          {/* GSP Investment Pvt. Ltd. Logo */}
-          <div className="flex items-center gap-2">
-            <div className="relative flex items-center justify-center">
-              <div className="flex items-baseline font-black tracking-tighter text-2xl md:text-3xl">
-                <span className="text-[#0a482d] font-black tracking-tight">G</span>
-                <span className="text-[#d97706] font-black tracking-tight">S</span>
-                <span className="text-[#0a482d] font-black tracking-tight">P</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 absolute -top-0.5 left-4 animate-pulse"></div>
-              </div>
-            </div>
-            <div className="flex flex-col pl-1.5">
-              <span className="text-xs md:text-sm font-black tracking-wider text-[#0e3b27] uppercase leading-tight">
-                Investment
-              </span>
-              <span className="text-[10px] md:text-[11px] font-bold tracking-widest text-gray-500 uppercase leading-none">
-                Pvt. Ltd.
-              </span>
-            </div>
+          <div className="flex flex-col border-l border-gray-300 pl-2.5">
+            <span className="text-xs md:text-sm font-black tracking-wider text-[#0e3b27] uppercase leading-none">
+              Investment
+            </span>
+            <span className="text-[10px] md:text-[11px] font-semibold tracking-widest text-gray-500 uppercase leading-tight">
+              Pvt. Ltd.
+            </span>
           </div>
         </div>
 

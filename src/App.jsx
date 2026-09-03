@@ -133,7 +133,7 @@ export default function App() {
   };
 
   const handlePlatformClick = (platform) => {
-    showToast(`Launching ${platform.toUpperCase()} Platform... Please connect your credentials.`);
+    showToast(`Launching ${platform.toUpperCase()} Terminal... Please connect your credentials.`);
   };
 
   return (
