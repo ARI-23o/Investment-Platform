@@ -87,7 +87,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.14]">
               GSP Investment<br />
               Pvt. Ltd.<br />
-              <span className="text-[#c28414] font-bold">
+              <span className="text-[#c28414] font-serif-accent italic font-normal tracking-normal">
                 Your Trusted
               </span>{" "}
               Partner in Wealth Creation & Financial Growth.
