@@ -4,7 +4,6 @@ import HeroSection from "./components/HeroSection";
 import AboutSection from "./components/AboutSection";
 import UnlistedSharesSection from "./components/UnlistedSharesSection";
 import InvestorServiceCentre from "./components/InvestorServiceCentre";
-import DeviceSection from "./components/DeviceSection";
 import ServicesAndLoans from "./components/ServicesAndLoans";
 import SipCalculatorSection from "./components/SipCalculatorSection";
 import MarketInsightsSection from "./components/MarketInsightsSection";
@@ -214,11 +213,6 @@ export default function App() {
                   handleServiceClick(service);
                 }
               }}
-            />
-
-            {/* Page 4: Work On Every Device */}
-            <DeviceSection
-              onOpenPlatform={handlePlatformClick}
             />
 
             {/* Page 5: Our Services & Loan Solutions */}
