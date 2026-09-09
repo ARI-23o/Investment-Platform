@@ -56,7 +56,7 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
       setIsAuthenticated(true);
       setPinError("");
     } else {
-      setPinError("Invalid Admin PIN. (Default PIN is: admin123)");
+      setPinError("Invalid Admin PIN. Please check and try again.");
     }
   };
 
@@ -181,7 +181,7 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
                   type="password"
                   value={adminPin}
                   onChange={(e) => setAdminPin(e.target.value)}
-                  placeholder="PIN: admin123"
+                  placeholder=""
                   autoFocus
                   required
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none font-mono"
@@ -199,14 +199,6 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
                 className="w-full py-3 rounded-xl text-sm font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shadow-md"
               >
                 Unlock Admin Desk →
-              </button>
-
-              <button
-                type="button"
-                onClick={() => { setAdminPin("admin123"); setIsAuthenticated(true); }}
-                className="w-full py-2 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
-              >
-                ⚡ 1-Click Demo Unlock (admin123)
               </button>
             </form>
           </div>
