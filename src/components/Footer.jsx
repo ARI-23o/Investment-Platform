@@ -20,14 +20,22 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
               <img 
                 src="/assets/gsp_logo_white.png" 
                 alt="GSP Logo" 
-                className="h-11 md:h-12 w-auto object-contain" 
+                className="h-12 sm:h-14 w-auto object-contain" 
               />
-              <div className="flex flex-col border-l border-emerald-800 pl-2.5">
-                <span className="text-sm font-black tracking-wider text-emerald-100 uppercase leading-none">
-                  Investment
+              <div className="flex flex-col justify-center border-l border-emerald-800/80 pl-3">
+                <span className="text-sm sm:text-base font-black tracking-[0.14em] text-white uppercase leading-tight font-serif-accent">
+                  GSP INVESTMENT
                 </span>
-                <span className="text-[11px] font-semibold tracking-widest text-emerald-400 uppercase leading-tight">
-                  Pvt. Ltd.
+                <div className="flex items-center gap-1.5 my-0.5">
+                  <span className="h-[1px] w-3 bg-amber-400"></span>
+                  <span className="text-[9px] sm:text-[10px] font-bold tracking-[0.22em] text-amber-400 uppercase leading-none">
+                    PVT. LTD.
+                  </span>
+                  <span className="h-[1px] w-8 bg-amber-400"></span>
+                </div>
+                <span className="text-[10px] sm:text-[11px] font-semibold leading-none tracking-normal">
+                  <span className="text-amber-400">Smart Money</span>{" "}
+                  <span className="text-emerald-200">Starts Here.</span>
                 </span>
               </div>
             </div>

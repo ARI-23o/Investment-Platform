@@ -72,7 +72,7 @@ export default function Navbar({
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         
-        {/* Brand Logo with Official GSP Graphic */}
+        {/* Brand Logo with Official GSP Typography Lockup */}
         <div 
           onClick={() => navigateTo("home")} 
           className="flex items-center gap-3 cursor-pointer group select-none py-0.5"
@@ -80,14 +80,27 @@ export default function Navbar({
           <img 
             src="/assets/gsp_logo.png" 
             alt="GSP Logo" 
-            className="h-10 md:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-105" 
+            className="h-10 sm:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-105" 
           />
-          <div className="flex flex-col border-l border-gray-300 pl-2.5">
-            <span className="text-xs md:text-sm font-black tracking-wider text-[#0e3b27] uppercase leading-none">
-              Investment
+          <div className="flex flex-col justify-center border-l border-gray-300/90 pl-3">
+            {/* GSP INVESTMENT */}
+            <span className="text-xs sm:text-sm font-extrabold tracking-[0.14em] text-[#0a482d] uppercase leading-tight font-serif-accent">
+              GSP INVESTMENT
             </span>
-            <span className="text-[10px] md:text-[11px] font-semibold tracking-widest text-gray-500 uppercase leading-tight">
-              Pvt. Ltd.
+            
+            {/* ── PVT. LTD. ── */}
+            <div className="flex items-center gap-1.5 my-0.5">
+              <span className="h-[1px] w-2.5 bg-[#c28414]"></span>
+              <span className="text-[8px] sm:text-[9px] font-bold tracking-[0.22em] text-[#c28414] uppercase leading-none">
+                PVT. LTD.
+              </span>
+              <span className="h-[1px] w-5 sm:w-8 bg-[#c28414]"></span>
+            </div>
+
+            {/* Smart Money Starts Here. */}
+            <span className="text-[9px] sm:text-[10px] font-bold leading-none tracking-normal">
+              <span className="text-[#c28414]">Smart Money</span>{" "}
+              <span className="text-[#0a482d]">Starts Here.</span>
             </span>
           </div>
         </div>
