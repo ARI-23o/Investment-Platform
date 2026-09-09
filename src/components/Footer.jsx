@@ -195,14 +195,14 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
             <button onClick={() => scrollTo("privacy")} className="hover:text-white cursor-pointer transition-colors">
               Privacy Policy
             </button>
+            <button onClick={() => scrollTo("careers")} className="hover:text-white cursor-pointer transition-colors">
+              Career
+            </button>
             <button 
               onClick={onOpenAdmin}
               className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer bg-white/5 hover:bg-white/10 px-3 py-1 rounded-lg border border-amber-400/30 transition-colors"
             >
               <span>Admin Desk & Excel 🔐</span>
-            </button>
-            <button onClick={() => scrollTo("careers")} className="hover:text-white cursor-pointer transition-colors">
-              Careers
             </button>
           </div>
         </div>

@@ -217,161 +217,8 @@ export default function Navbar({
           />
         </div>
 
-        {/* Global Search Bar in Center Area */}
-        <div ref={searchContainerRef} className="relative flex-1 max-w-xs sm:max-w-sm md:max-w-md hidden md:block">
-          <div className="relative flex items-center">
-            <Search className="w-4 h-4 text-emerald-800 absolute left-3.5 pointer-events-none" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                if (!isSearchOpen) setIsSearchOpen(true);
-              }}
-              onFocus={() => setIsSearchOpen(true)}
-              placeholder="Search shares, loans, insurance, calculators..."
-              className="w-full pl-9 pr-14 py-2 text-xs font-semibold text-gray-900 bg-gray-50/90 hover:bg-gray-100/90 focus:bg-white border border-gray-200 focus:border-emerald-700 rounded-full outline-none transition-all shadow-2xs focus:ring-2 focus:ring-emerald-700/10"
-            />
-            <div className="absolute right-2.5 flex items-center gap-1 pointer-events-none">
-              <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 text-[10px] font-bold text-gray-400 bg-white border border-gray-200 rounded shadow-2xs font-mono">
-                Ctrl K
-              </kbd>
-            </div>
-          </div>
-
-          {/* Search Dropdown Overlay */}
-          {isSearchOpen && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden z-50 animate-fade-in max-h-[480px] flex flex-col">
-              
-              {/* Dropdown Header */}
-              <div className="px-4 py-2.5 bg-emerald-50/70 border-b border-gray-100 flex items-center justify-between text-xs">
-                <span className="font-bold text-emerald-950 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Global Platform Search</span>
-                </span>
-                <span className="text-[11px] text-gray-500 font-medium">
-                  {searchQuery.trim() ? `${searchResults.length} results` : "Quick Navigation"}
-                </span>
-              </div>
-
-              {/* Results List */}
-              <div className="overflow-y-auto divide-y divide-gray-100 flex-1 p-1">
-                {searchQuery.trim() ? (
-                  searchResults.length > 0 ? (
-                    searchResults.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => handleSearchResultClick(item)}
-                        className="w-full p-2.5 rounded-xl hover:bg-emerald-50/80 text-left transition-colors flex items-center justify-between gap-3 group cursor-pointer"
-                      >
-                        <div className="flex items-start gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
-                            {item.category === "Unlisted Shares" && <Coins className="w-4 h-4 text-amber-600" />}
-                            {item.category === "Insurance" && <ShieldCheck className="w-4 h-4 text-emerald-700" />}
-                            {item.category === "Loans" && <Briefcase className="w-4 h-4 text-emerald-700" />}
-                            {item.category === "Calculators" && <Calculator className="w-4 h-4 text-emerald-700" />}
-                            {item.category === "Careers" && <Sparkles className="w-4 h-4 text-amber-500" />}
-                            {item.category === "Legal" && <Scale className="w-4 h-4 text-gray-700" />}
-                            {item.category === "Services" && <TrendingUp className="w-4 h-4 text-emerald-700" />}
-                            {item.category === "Market Insights" && <FileText className="w-4 h-4 text-emerald-700" />}
-                            {!["Unlisted Shares", "Insurance", "Loans", "Calculators", "Careers", "Legal", "Services", "Market Insights"].includes(item.category) && (
-                              <Search className="w-4 h-4 text-emerald-700" />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-xs font-bold text-gray-900 group-hover:text-emerald-900">
-                                {item.title}
-                              </span>
-                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-gray-100 text-gray-600 font-semibold uppercase">
-                                {item.category}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-gray-500 truncate mt-0.5">
-                              {item.subtitle}
-                            </p>
-                          </div>
-                        </div>
-
-                        {item.badge && (
-                          <span className="text-[11px] font-mono font-extrabold text-emerald-800 bg-emerald-50 px-2 py-1 rounded-md shrink-0 border border-emerald-100">
-                            {item.badge}
-                          </span>
-                        )}
-                      </button>
-                    ))
-                  ) : (
-                    <div className="p-8 text-center space-y-2">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto">
-                        <Search className="w-5 h-5" />
-                      </div>
-                      <div className="text-xs font-bold text-gray-700">No matching results for "{searchQuery}"</div>
-                      <p className="text-[11px] text-gray-500 max-w-xs mx-auto">
-                        Try searching for keywords like "MSEI", "SIP", "Health Insurance", "Home Loan", "Careers", or "Helpline".
-                      </p>
-                    </div>
-                  )
-                ) : (
-                  /* Instant Quick Links when Search is focused without query */
-                  <div className="p-2 space-y-1 text-xs">
-                    <div className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                      Popular Searches & Quick Access
-                    </div>
-                    <div className="grid grid-cols-2 gap-1">
-                      <button
-                        onClick={() => navigateTo("unlisted-shares")}
-                        className="p-2 rounded-lg hover:bg-emerald-50 text-left font-medium text-gray-800 flex items-center gap-2 cursor-pointer"
-                      >
-                        <Coins className="w-3.5 h-3.5 text-amber-600" />
-                        <span>Unlisted Shares</span>
-                      </button>
-                      <button
-                        onClick={() => navigateTo("insurance")}
-                        className="p-2 rounded-lg hover:bg-emerald-50 text-left font-medium text-gray-800 flex items-center gap-2 cursor-pointer"
-                      >
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Insurance Desk</span>
-                      </button>
-                      <button
-                        onClick={() => navigateTo("loans")}
-                        className="p-2 rounded-lg hover:bg-emerald-50 text-left font-medium text-gray-800 flex items-center gap-2 cursor-pointer"
-                      >
-                        <Briefcase className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Loan Solutions</span>
-                      </button>
-                      <button
-                        onClick={() => navigateTo("calculator")}
-                        className="p-2 rounded-lg hover:bg-emerald-50 text-left font-medium text-gray-800 flex items-center gap-2 cursor-pointer"
-                      >
-                        <Calculator className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>SIP Calculator</span>
-                      </button>
-                      <button
-                        onClick={() => navigateTo("contact")}
-                        className="p-2 rounded-lg hover:bg-emerald-50 text-left font-medium text-gray-800 flex items-center gap-2 cursor-pointer"
-                      >
-                        <PhoneCall className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Helpline: 0250 359 4768</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer info in search modal */}
-              <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
-                <span>Navigate: Click or Press Enter</span>
-                <span>ESC to dismiss</span>
-              </div>
-
-            </div>
-          )}
-        </div>
-
-        {/* Desktop Nav Items (Market Insights REMOVED) */}
-        <nav className="hidden lg:flex items-center gap-5 text-[14px] font-medium text-gray-700">
+        {/* Desktop Nav Items */}
+        <nav className="hidden lg:flex items-center gap-7 text-[14px] font-medium text-gray-700">
           <button 
             onClick={() => navigateTo("home")}
             className={`transition-colors py-1 cursor-pointer font-semibold ${
@@ -455,8 +302,25 @@ export default function Navbar({
           </button>
         </nav>
 
-        {/* Action Buttons & Profile */}
+        {/* Action Buttons & Search Icon & Profile */}
         <div className="flex items-center gap-2.5">
+          
+          {/* Compact Search Trigger Icon Button */}
+          <button
+            onClick={() => {
+              setIsSearchOpen(true);
+              setTimeout(() => searchInputRef.current?.focus(), 60);
+            }}
+            className="p-2 sm:px-3 sm:py-1.5 rounded-full text-gray-600 hover:text-emerald-900 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-300 transition-all flex items-center gap-2 cursor-pointer shadow-2xs group"
+            title="Search entire website (Ctrl + K or /)"
+            aria-label="Search website"
+          >
+            <Search className="w-4 h-4 text-emerald-800 group-hover:scale-110 transition-transform" />
+            <span className="hidden md:inline text-xs font-medium text-gray-500 group-hover:text-emerald-900">Search</span>
+            <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 text-[9px] font-bold text-gray-400 bg-gray-100 border border-gray-200 rounded font-mono">
+              Ctrl K
+            </kbd>
+          </button>
           
           {/* User Logged In State or Login/Register Buttons */}
           {currentUser ? (
@@ -652,6 +516,190 @@ export default function Navbar({
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Global Search Popup Modal */}
+      {isSearchOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-gray-950/50 backdrop-blur-xs animate-fade-in"
+          onClick={() => setIsSearchOpen(false)}
+        >
+          <div 
+            ref={searchContainerRef}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col max-h-[82vh] animate-scale-up"
+          >
+            {/* Search Input Bar */}
+            <div className="p-3.5 sm:p-4 border-b border-gray-100 flex items-center gap-3 bg-white">
+              <Search className="w-5 h-5 text-emerald-700 shrink-0" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search shares, loans, insurance, calculators, services..."
+                className="w-full text-sm sm:text-base font-semibold text-gray-900 placeholder-gray-400 bg-transparent outline-none"
+                autoFocus
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 cursor-pointer"
+                  title="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(false)}
+                className="px-2.5 py-1 text-xs font-bold text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer transition-colors"
+              >
+                ESC
+              </button>
+            </div>
+
+            {/* Sub-header info */}
+            <div className="px-4 py-2 bg-emerald-50/70 border-b border-gray-100 flex items-center justify-between text-xs">
+              <span className="font-bold text-emerald-950 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Global Platform Search</span>
+              </span>
+              <span className="text-[11px] text-gray-500 font-medium">
+                {searchQuery.trim() ? `${searchResults.length} results found` : "Quick Navigation"}
+              </span>
+            </div>
+
+            {/* Results or Quick Access */}
+            <div className="overflow-y-auto divide-y divide-gray-100 flex-1 p-1 max-h-[420px]">
+              {searchQuery.trim() ? (
+                searchResults.length > 0 ? (
+                  searchResults.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => handleSearchResultClick(item)}
+                      className="w-full p-3 rounded-xl hover:bg-emerald-50/80 text-left transition-colors flex items-center justify-between gap-3 group cursor-pointer"
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+                          {item.category === "Unlisted Shares" && <Coins className="w-4 h-4 text-amber-600" />}
+                          {item.category === "Insurance" && <ShieldCheck className="w-4 h-4 text-emerald-700" />}
+                          {item.category === "Loans" && <Briefcase className="w-4 h-4 text-emerald-700" />}
+                          {item.category === "Calculators" && <Calculator className="w-4 h-4 text-emerald-700" />}
+                          {item.category === "Careers" && <Sparkles className="w-4 h-4 text-amber-500" />}
+                          {item.category === "Services" && <TrendingUp className="w-4 h-4 text-emerald-700" />}
+                          {item.category === "Market Insights" && <FileText className="w-4 h-4 text-emerald-700" />}
+                          {!["Unlisted Shares", "Insurance", "Loans", "Calculators", "Careers", "Services", "Market Insights"].includes(item.category) && (
+                            <Search className="w-4 h-4 text-emerald-700" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs sm:text-sm font-bold text-gray-900 group-hover:text-emerald-900">
+                              {item.title}
+                            </span>
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-gray-100 text-gray-600 font-semibold uppercase">
+                              {item.category}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-gray-500 truncate mt-0.5">
+                            {item.subtitle}
+                          </p>
+                        </div>
+                      </div>
+
+                      {item.badge && (
+                        <span className="text-[11px] font-mono font-extrabold text-emerald-800 bg-emerald-50 px-2 py-1 rounded-md shrink-0 border border-emerald-100">
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  ))
+                ) : (
+                  <div className="p-8 text-center space-y-2">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto">
+                      <Search className="w-5 h-5" />
+                    </div>
+                    <div className="text-xs font-bold text-gray-700">No matching results for "{searchQuery}"</div>
+                    <p className="text-[11px] text-gray-500 max-w-xs mx-auto">
+                      Try searching for keywords like "MSEI", "SIP", "Health Insurance", "Home Loan", "Career", or "Helpline".
+                    </p>
+                  </div>
+                )
+              ) : (
+                /* Instant Quick Links when Search is opened without query */
+                <div className="p-3 space-y-2 text-xs">
+                  <div className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                    Popular Searches & Quick Access
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    <button
+                      onClick={() => navigateTo("unlisted-shares")}
+                      className="p-2.5 rounded-xl hover:bg-emerald-50 text-left font-medium text-gray-800 flex items-center gap-2.5 cursor-pointer border border-gray-100"
+                    >
+                      <Coins className="w-4 h-4 text-amber-600" />
+                      <div>
+                        <div className="font-bold text-gray-900">Unlisted Shares</div>
+                        <div className="text-[10px] text-gray-400">Pre-IPO investment rates</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => navigateTo("insurance")}
+                      className="p-2.5 rounded-xl hover:bg-emerald-50 text-left font-medium text-gray-800 flex items-center gap-2.5 cursor-pointer border border-gray-100"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <div>
+                        <div className="font-bold text-gray-900">Insurance Desk</div>
+                        <div className="text-[10px] text-gray-400">Term, health & motor</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => navigateTo("loans")}
+                      className="p-2.5 rounded-xl hover:bg-emerald-50 text-left font-medium text-gray-800 flex items-center gap-2.5 cursor-pointer border border-gray-100"
+                    >
+                      <Briefcase className="w-4 h-4 text-emerald-600" />
+                      <div>
+                        <div className="font-bold text-gray-900">Loan Solutions</div>
+                        <div className="text-[10px] text-gray-400">Home, LAP & MSME loans</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => navigateTo("calculator")}
+                      className="p-2.5 rounded-xl hover:bg-emerald-50 text-left font-medium text-gray-800 flex items-center gap-2.5 cursor-pointer border border-gray-100"
+                    >
+                      <Calculator className="w-4 h-4 text-emerald-600" />
+                      <div>
+                        <div className="font-bold text-gray-900">SIP Calculator</div>
+                        <div className="text-[10px] text-gray-400">Estimate compounding wealth</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => navigateTo("contact")}
+                      className="p-2.5 rounded-xl hover:bg-emerald-50 text-left font-medium text-gray-800 flex items-center gap-2.5 cursor-pointer border border-gray-100 sm:col-span-2"
+                    >
+                      <PhoneCall className="w-4 h-4 text-emerald-600" />
+                      <div>
+                        <div className="font-bold text-gray-900">Helpline Desk: 0250 359 4768</div>
+                        <div className="text-[10px] text-gray-400">Investor support & compliance</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
+              <span>Click any result to visit immediately</span>
+              <div className="flex items-center gap-2">
+                <span>ESC to dismiss</span>
+              </div>
+            </div>
+
           </div>
         </div>
       )}
