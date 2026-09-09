@@ -88,13 +88,13 @@ export default function Navbar({
               GSP INVESTMENT
             </span>
             
-            {/* ── PVT. LTD. ── */}
-            <div className="flex items-center gap-1.5 my-0.5">
-              <span className="h-[1px] w-2.5 bg-[#c28414]"></span>
-              <span className="text-[8px] sm:text-[9px] font-bold tracking-[0.22em] text-[#c28414] uppercase leading-none">
+            {/* ── PVT. LTD. ── Centered with equal lines */}
+            <div className="flex items-center gap-1.5 my-0.5 w-full">
+              <span className="h-[1px] flex-1 bg-[#c28414]"></span>
+              <span className="text-[8px] sm:text-[9px] font-bold tracking-[0.22em] text-[#c28414] uppercase leading-none shrink-0">
                 PVT. LTD.
               </span>
-              <span className="h-[1px] w-5 sm:w-8 bg-[#c28414]"></span>
+              <span className="h-[1px] flex-1 bg-[#c28414]"></span>
             </div>
 
             {/* Smart Money Starts Here. */}

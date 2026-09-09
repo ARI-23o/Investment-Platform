@@ -26,12 +26,12 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
                 <span className="text-sm sm:text-base font-black tracking-[0.14em] text-white uppercase leading-tight font-serif-accent">
                   GSP INVESTMENT
                 </span>
-                <div className="flex items-center gap-1.5 my-0.5">
-                  <span className="h-[1px] w-3 bg-amber-400"></span>
-                  <span className="text-[9px] sm:text-[10px] font-bold tracking-[0.22em] text-amber-400 uppercase leading-none">
+                <div className="flex items-center gap-1.5 my-0.5 w-full">
+                  <span className="h-[1px] flex-1 bg-amber-400"></span>
+                  <span className="text-[9px] sm:text-[10px] font-bold tracking-[0.22em] text-amber-400 uppercase leading-none shrink-0">
                     PVT. LTD.
                   </span>
-                  <span className="h-[1px] w-8 bg-amber-400"></span>
+                  <span className="h-[1px] flex-1 bg-amber-400"></span>
                 </div>
                 <span className="text-[10px] sm:text-[11px] font-semibold leading-none tracking-normal">
                   <span className="text-amber-400">Smart Money</span>{" "}
