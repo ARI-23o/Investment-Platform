@@ -174,6 +174,17 @@ export default function App() {
         onLogout={handleLogout}
         currentSection={currentView}
         setCurrentSection={setCurrentView}
+        onSelectShare={handleSelectShare}
+        onSelectArticle={handleSelectArticle}
+        onNavigateCareers={() => {
+          setCurrentView("careers");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        onNavigateLegal={(tab) => {
+          setLegalTab(tab || "disclaimer");
+          setCurrentView("legal");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
       />
 
       {/* Main Content Area */}
