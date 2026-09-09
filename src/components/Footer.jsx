@@ -33,9 +33,13 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
               GSP Investment Pvt. Ltd. is a premier investment and wealth advisory firm empowering Indian investors with equities, IPOs, direct mutual funds, and pre-IPO unlisted shares.
             </p>
 
-            <div className="pt-2 text-xs text-emerald-400 font-medium space-y-1">
-              <div>Corporate CIN: U64990MH2025PTC449205 • Reg. No: 449205</div>
-              <div>ROC: ROC Mumbai • GSTIN: 27AAMCG0815G1ZP</div>
+            <div className="pt-2 text-xs text-emerald-400 font-medium space-y-1 font-mono">
+              <div>CIN: U64990MH2025PTC449205</div>
+              <div>Reg. No: 449205</div>
+              <div className="flex flex-wrap items-center gap-6">
+                <span>ROC: ROC Mumbai</span>
+                <span>GSTIN: 27AAMCG0815G1ZP</span>
+              </div>
             </div>
           </div>
 

@@ -81,7 +81,7 @@ export default function AboutSection() {
                   <span className="font-bold text-white">GSP Investment Pvt. Ltd.</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-emerald-800/60">
-                  <span className="text-emerald-200/80">Corporate CIN:</span>
+                  <span className="text-emerald-200/80">CIN:</span>
                   <span className="font-bold text-amber-300">U64990MH2025PTC449205</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-emerald-800/60">
