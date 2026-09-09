@@ -74,6 +74,10 @@ export default function AboutSection() {
                   <span className="font-bold text-white font-mono">449205</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-emerald-800/60">
+                  <span className="text-emerald-200/80">ROC:</span>
+                  <span className="font-bold text-white">ROC Mumbai</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-emerald-800/60">
                   <span className="text-emerald-200/80">GSTIN:</span>
                   <span className="font-bold text-white font-mono">27AAMCG0815G1ZP</span>
                 </div>

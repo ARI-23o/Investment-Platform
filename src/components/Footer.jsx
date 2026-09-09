@@ -30,7 +30,7 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
 
             <div className="pt-2 text-xs text-emerald-400 font-medium space-y-1">
               <div>Corporate CIN: U64990MH2025PTC449205 • Reg. No: 449205</div>
-              <div>GSTIN: 27AAMCG0815G1ZP</div>
+              <div>ROC: ROC Mumbai • GSTIN: 27AAMCG0815G1ZP</div>
             </div>
           </div>
 
