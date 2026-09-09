@@ -40,6 +40,58 @@ export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
   const loanScrollRef = useRef(null);
   const isHoveredRef = useRef(false);
 
+  // Insurance Auto-Scroll Engine State & Refs
+  const [isInsuranceAutoScrolling, setIsInsuranceAutoScrolling] = useState(true);
+  const insuranceScrollRef = useRef(null);
+  const isInsuranceHoveredRef = useRef(false);
+
+  // Smooth Infinite Auto-Scrolling Engine for Insurance Solutions
+  useEffect(() => {
+    const el = insuranceScrollRef.current;
+    if (!el) return;
+
+    const initializePosition = () => {
+      if (el.scrollWidth > el.clientWidth) {
+        const oneSetWidth = el.scrollWidth / 3;
+        if (el.scrollLeft === 0) {
+          el.scrollLeft = oneSetWidth;
+        }
+      }
+    };
+    const timer = setTimeout(initializePosition, 100);
+
+    let animationFrameId;
+    const scrollStep = () => {
+      if (isInsuranceAutoScrolling && !isInsuranceHoveredRef.current && el) {
+        el.scrollLeft += 0.85;
+
+        const oneSetWidth = el.scrollWidth / 3;
+        if (oneSetWidth > 0) {
+          if (el.scrollLeft >= oneSetWidth * 2) {
+            el.scrollLeft -= oneSetWidth;
+          } else if (el.scrollLeft <= 5) {
+            el.scrollLeft += oneSetWidth;
+          }
+        }
+      }
+      animationFrameId = requestAnimationFrame(scrollStep);
+    };
+
+    animationFrameId = requestAnimationFrame(scrollStep);
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isInsuranceAutoScrolling]);
+
+  const scrollInsurance = (direction) => {
+    if (insuranceScrollRef.current) {
+      const el = insuranceScrollRef.current;
+      const scrollAmount = direction === "left" ? -340 : 340;
+      el.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
   // Smooth Infinite Auto-Scrolling Engine for Loans when expanded
   useEffect(() => {
     if (!isLoansExpanded) return;
@@ -357,13 +409,13 @@ export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          PART 2: INSURANCE SERVICES (8 POLICY TYPES)
+          PART 2: INSURANCE SERVICES (8 POLICY TYPES) - AUTO SCROLL CAROUSEL
       ───────────────────────────────────────────────────────────── */}
       <div id="insurance" className="py-16 sm:py-20 bg-[#f4f8f6] border-t border-emerald-950/10 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
           {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-14">
+          <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/80 border border-emerald-200 text-emerald-900 text-xs font-bold mb-2">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
               <span>PROTECTION & RISK MANAGEMENT</span>
@@ -380,38 +432,106 @@ export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
             </div>
           </div>
 
-          {/* 8 Insurance Policy Cards Grid (2 rows of 4) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {insuranceSolutions.map((item) => {
+          {/* Carousel Controls Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h4 className="text-lg font-bold text-gray-900">
+                Explore 8 Comprehensive Insurance Verticals
+              </h4>
+              <p className="text-xs text-gray-500">
+                Compare institutional coverage, tax benefits & instant cashless claims.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              {/* Play / Pause Toggle Button */}
+              <button 
+                type="button"
+                onClick={() => setIsInsuranceAutoScrolling(!isInsuranceAutoScrolling)}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 bg-white hover:bg-emerald-50 text-xs font-bold text-gray-700 hover:text-emerald-900 shadow-2xs transition-all cursor-pointer"
+                title={isInsuranceAutoScrolling ? "Pause auto-scroll" : "Resume auto-scroll"}
+              >
+                {isInsuranceAutoScrolling ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <Pause className="w-3.5 h-3.5 text-emerald-800" />
+                    <span className="hidden sm:inline">Auto-Scroll</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 text-emerald-700 fill-emerald-700" />
+                    <span className="hidden sm:inline">Play</span>
+                  </>
+                )}
+              </button>
+
+              <button 
+                type="button"
+                onClick={() => scrollInsurance("left")} 
+                className="p-2 rounded-xl border border-gray-200 bg-white hover:bg-emerald-50 text-gray-700 hover:text-emerald-900 shadow-2xs transition-all cursor-pointer"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button 
+                type="button"
+                onClick={() => scrollInsurance("right")} 
+                className="p-2 rounded-xl border border-gray-200 bg-white hover:bg-emerald-50 text-gray-700 hover:text-emerald-900 shadow-2xs transition-all cursor-pointer"
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* 8 Insurance Policy Auto-Scrolling Carousel */}
+          <div 
+            ref={insuranceScrollRef}
+            onMouseEnter={() => { isInsuranceHoveredRef.current = true; }}
+            onMouseLeave={() => { isInsuranceHoveredRef.current = false; }}
+            onTouchStart={() => { isInsuranceHoveredRef.current = true; }}
+            onTouchEnd={() => { setTimeout(() => { isInsuranceHoveredRef.current = false; }, 2000); }}
+            className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 pt-1 px-1 focus:outline-none cursor-grab active:cursor-grabbing select-none"
+            style={{ 
+              scrollSnapType: isInsuranceAutoScrolling ? 'none' : 'x mandatory',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
+            }}
+          >
+            {[...insuranceSolutions, ...insuranceSolutions, ...insuranceSolutions].map((item, idx) => {
               const Icon = item.icon;
               return (
                 <div
-                  key={item.id}
+                  key={`${item.id}-${idx}`}
                   onClick={() => onSelectService(item)}
-                  className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 border border-gray-200/90 group cursor-pointer flex flex-col justify-between"
+                  className="snap-start shrink-0 w-[270px] sm:w-[300px] md:w-[320px] bg-white rounded-3xl p-6 sm:p-7 border border-gray-200/90 hover:border-emerald-500/70 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between cursor-pointer group text-left"
                 >
                   <div>
-                    <div className="flex items-start justify-between mb-3.5">
-                      <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-800 group-hover:bg-[#0f4b32] group-hover:text-white flex items-center justify-center transition-colors shadow-xs">
-                        <Icon className="w-6 h-6 stroke-[1.75]" />
+                    {/* Top Row: Icon & Tag Badge */}
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="w-14 h-14 rounded-2xl bg-emerald-50 group-hover:bg-[#0f4b32] text-emerald-800 group-hover:text-white flex items-center justify-center transition-colors duration-300 shadow-xs">
+                        <Icon className="w-7 h-7 stroke-[1.75]" />
                       </div>
-                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80">
+                      <span className="text-xs font-bold text-emerald-800 bg-emerald-50/90 px-3 py-1 rounded-full border border-emerald-200/80">
                         {item.tag}
                       </span>
                     </div>
 
-                    <h3 className="text-base sm:text-lg font-bold text-gray-900 group-hover:text-emerald-900 transition-colors mb-2">
+                    {/* Title */}
+                    <h3 className="font-bold text-lg sm:text-xl text-gray-900 mb-3 leading-snug group-hover:text-emerald-900 transition-colors">
                       {item.title}
                     </h3>
 
-                    <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-normal">
+                    {/* Description */}
+                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed font-normal">
                       {item.description}
                     </p>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-emerald-800 group-hover:text-emerald-950">
+                  {/* Card Bottom CTA */}
+                  <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-sm font-bold text-emerald-800 group-hover:text-emerald-950">
                     <span>Consult Advisor</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               );
