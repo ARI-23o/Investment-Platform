@@ -69,6 +69,14 @@ export default function AboutSection() {
                   <span className="text-emerald-200/80">Corporate CIN:</span>
                   <span className="font-bold text-amber-300">U64990MH2025PTC449205</span>
                 </div>
+                <div className="flex justify-between py-2 border-b border-emerald-800/60">
+                  <span className="text-emerald-200/80">Registration Number:</span>
+                  <span className="font-bold text-white font-mono">449205</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-emerald-800/60">
+                  <span className="text-emerald-200/80">GSTIN:</span>
+                  <span className="font-bold text-white font-mono">27AAMCG0815G1ZP</span>
+                </div>
                 <div className="flex justify-between py-2">
                   <span className="text-emerald-200/80">Active Assets Advisory:</span>
                   <span className="font-bold text-emerald-400">₹50+ Crores</span>
