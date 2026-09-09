@@ -13,21 +13,25 @@ import {
   CheckCircle2, 
   ExternalLink,
   ChevronRight,
-  Info
+  Info,
+  RotateCcw
 } from "lucide-react";
 
-export default function LegalPoliciesView({ initialTab = "disclaimer", onBack, onNavigateTab }) {
-  const [activeTab, setActiveTab] = useState(initialTab); // 'disclaimer', 'terms', 'privacy'
+export default function LegalPoliciesView({ initialTab = "risk", onBack, onNavigateTab }) {
+  // Normalize 'disclaimer' to 'risk' if passed
+  const getNormalizedTab = (tab) => (tab === "disclaimer" ? "risk" : tab);
+  const [activeTab, setActiveTab] = useState(getNormalizedTab(initialTab)); // 'risk', 'terms', 'privacy', 'refund'
 
   useEffect(() => {
     if (initialTab) {
-      setActiveTab(initialTab);
+      setActiveTab(getNormalizedTab(initialTab));
     }
   }, [initialTab]);
 
   const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    if (onNavigateTab) onNavigateTab(tab);
+    const normalized = getNormalizedTab(tab);
+    setActiveTab(normalized);
+    if (onNavigateTab) onNavigateTab(normalized);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -62,13 +66,14 @@ export default function LegalPoliciesView({ initialTab = "disclaimer", onBack, o
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-              {activeTab === "disclaimer" && "Disclaimer & Risk Disclosure"}
-              {activeTab === "terms" && "Terms of Use & Service Agreement"}
+              {(activeTab === "risk" || activeTab === "disclaimer") && "Risk Disclosure & Statutory Notice"}
+              {activeTab === "terms" && "Term & Conditions"}
               {activeTab === "privacy" && "Privacy Policy & Data Protection"}
+              {activeTab === "refund" && "Refund & Cancellation Policy"}
             </h1>
 
             <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-normal">
-              Official policies governing access, information usage, and advisory services provided by <strong>GSP Investment Pvt. Ltd.</strong>
+              Official regulatory disclosures, terms of operation, privacy protocols, and refund guidelines governed by <strong>GSP Investment Pvt. Ltd.</strong>
             </p>
 
             <div className="pt-2 text-[11px] text-emerald-300/80 flex items-center gap-2">
@@ -89,16 +94,16 @@ export default function LegalPoliciesView({ initialTab = "disclaimer", onBack, o
               </div>
 
               <button
-                onClick={() => handleTabChange("disclaimer")}
+                onClick={() => handleTabChange("risk")}
                 className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer ${
-                  activeTab === "disclaimer"
+                  (activeTab === "risk" || activeTab === "disclaimer")
                     ? "bg-[#0f4b32] text-white shadow-md"
                     : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-900"
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <AlertTriangle className={`w-4 h-4 ${activeTab === "disclaimer" ? "text-amber-400" : "text-amber-600"}`} />
-                  <span>Disclaimer</span>
+                  <AlertTriangle className={`w-4 h-4 ${(activeTab === "risk" || activeTab === "disclaimer") ? "text-amber-400" : "text-amber-600"}`} />
+                  <span>Risk Disclosure</span>
                 </div>
                 <ChevronRight className="w-4 h-4 opacity-70" />
               </button>
@@ -113,7 +118,7 @@ export default function LegalPoliciesView({ initialTab = "disclaimer", onBack, o
               >
                 <div className="flex items-center gap-2.5">
                   <FileText className={`w-4 h-4 ${activeTab === "terms" ? "text-emerald-300" : "text-emerald-700"}`} />
-                  <span>Terms of Use</span>
+                  <span>Term & Conditions</span>
                 </div>
                 <ChevronRight className="w-4 h-4 opacity-70" />
               </button>
@@ -128,7 +133,22 @@ export default function LegalPoliciesView({ initialTab = "disclaimer", onBack, o
               >
                 <div className="flex items-center gap-2.5">
                   <Lock className={`w-4 h-4 ${activeTab === "privacy" ? "text-emerald-300" : "text-emerald-700"}`} />
-                  <span>Privacy Policy</span>
+                  <span>Privacy</span>
+                </div>
+                <ChevronRight className="w-4 h-4 opacity-70" />
+              </button>
+
+              <button
+                onClick={() => handleTabChange("refund")}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer ${
+                  activeTab === "refund"
+                    ? "bg-[#0f4b32] text-white shadow-md"
+                    : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-900"
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <RotateCcw className={`w-4 h-4 ${activeTab === "refund" ? "text-amber-400" : "text-emerald-700"}`} />
+                  <span>Refund Policy</span>
                 </div>
                 <ChevronRight className="w-4 h-4 opacity-70" />
               </button>
@@ -159,17 +179,17 @@ export default function LegalPoliciesView({ initialTab = "disclaimer", onBack, o
           <div className="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-10 border border-gray-200 shadow-sm leading-relaxed text-gray-800 space-y-8">
             
             {/* ─────────────────────────────────────────────────────────────
-                TAB 1: DISCLAIMER
+                TAB 1: RISK DISCLOSURE
             ───────────────────────────────────────────────────────────── */}
-            {activeTab === "disclaimer" && (
+            {(activeTab === "risk" || activeTab === "disclaimer") && (
               <div className="space-y-6 text-xs sm:text-sm">
                 
                 <div className="border-b border-gray-100 pb-4">
                   <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
-                    Statutory Disclaimer & Information Notice
+                    Risk Disclosure & Statutory Information Notice
                   </h2>
                   <p className="text-xs text-gray-500 mt-1">
-                    Please read this statutory disclaimer carefully before using the services of GSP Investment Pvt. Ltd.
+                    Please read this statutory risk disclosure carefully before using the services of GSP Investment Pvt. Ltd.
                   </p>
                 </div>
 
@@ -233,7 +253,7 @@ export default function LegalPoliciesView({ initialTab = "disclaimer", onBack, o
                 <div className="space-y-3 pt-2">
                   <h3 className="text-base font-bold text-gray-900">6. Governing Law & Jurisdiction</h3>
                   <p className="text-gray-600">
-                    This disclaimer and any disputes arising out of the use of this website shall be governed by the <strong>Laws of India</strong> and shall be subject to the exclusive jurisdiction of the competent courts in <strong>Maharashtra (Mumbai / Vasai / Thane)</strong>.
+                    This risk disclosure and any disputes arising out of the use of this website shall be governed by the <strong>Laws of India</strong> and shall be subject to the exclusive jurisdiction of the competent courts in <strong>Maharashtra (Mumbai / Vasai / Thane)</strong>.
                   </p>
                 </div>
 
@@ -241,14 +261,14 @@ export default function LegalPoliciesView({ initialTab = "disclaimer", onBack, o
             )}
 
             {/* ─────────────────────────────────────────────────────────────
-                TAB 2: TERMS OF USE
+                TAB 2: TERMS OF USE (TERM & CONDITIONS)
             ───────────────────────────────────────────────────────────── */}
             {activeTab === "terms" && (
               <div className="space-y-6 text-xs sm:text-sm">
                 
                 <div className="border-b border-gray-100 pb-4">
                   <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
-                    Terms of Use & Service Agreement
+                    Term & Conditions
                   </h2>
                   <p className="text-xs text-gray-500 mt-1">
                     Electronic Agreement under Information Technology Act, 2000
@@ -261,7 +281,7 @@ export default function LegalPoliciesView({ initialTab = "disclaimer", onBack, o
                     This document is an electronic record generated by a computer system and does not require physical or digital signatures. It is published in accordance with the provisions of Rule 3(1) of the Information Technology (Intermediaries Guidelines) Rules, 2011.
                   </p>
                   <p className="text-gray-600">
-                    By accessing, browsing, registering, or submitting enquiries on <strong>www.gspinvestment.com</strong>, you agree to be bound by these Terms of Use, our Privacy Policy, and our Disclaimer. If you do not agree to these terms, please refrain from using this website.
+                    By accessing, browsing, registering, or submitting enquiries on <strong>www.gspinvestment.com</strong>, you agree to be bound by these Term & Conditions, our Privacy policy, Risk Disclosure, and Refund Policy. If you do not agree to these terms, please refrain from using this website.
                   </p>
                 </div>
 
@@ -327,14 +347,14 @@ export default function LegalPoliciesView({ initialTab = "disclaimer", onBack, o
             )}
 
             {/* ─────────────────────────────────────────────────────────────
-                TAB 3: PRIVACY POLICY
+                TAB 3: PRIVACY
             ───────────────────────────────────────────────────────────── */}
             {activeTab === "privacy" && (
               <div className="space-y-6 text-xs sm:text-sm">
                 
                 <div className="border-b border-gray-100 pb-4">
                   <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
-                    Privacy Policy & Data Protection
+                    Privacy & Data Protection
                   </h2>
                   <p className="text-xs text-gray-500 mt-1">
                     In compliance with the Information Technology Act, 2000 & SPDI Rules, 2011
@@ -405,6 +425,90 @@ export default function LegalPoliciesView({ initialTab = "disclaimer", onBack, o
                     <div><strong>Email:</strong> <a href="mailto:gspbackoffice6@gmail.com" className="text-emerald-800 font-bold underline">gspbackoffice6@gmail.com</a></div>
                     <div><strong>Support Email:</strong> <a href="mailto:gspinvestment6@gmail.com" className="text-emerald-800 font-bold underline">gspinvestment6@gmail.com</a></div>
                     <div><strong>Office:</strong> A-302 Aparna Niwas, Behind Tungareshwar sweet, Near Vasai road station, Vasai West, Vasai-Virar City, Maharashtra 401202.</div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* ─────────────────────────────────────────────────────────────
+                TAB 4: REFUND POLICY
+            ───────────────────────────────────────────────────────────── */}
+            {activeTab === "refund" && (
+              <div className="space-y-6 text-xs sm:text-sm">
+                
+                <div className="border-b border-gray-100 pb-4">
+                  <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
+                    Refund & Cancellation Policy
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Applicable for investment transactions, advisory services, and off-market processing
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs leading-relaxed space-y-2">
+                  <div className="font-extrabold uppercase flex items-center gap-1.5 text-emerald-900 text-[11px] tracking-wide">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                    <span>Client Protection & Transparent Refund Framework</span>
+                  </div>
+                  <p>
+                    <strong>GSP Investment Pvt. Ltd.</strong> operates with complete transparency and regulatory adherence under Indian financial regulations. This policy outlines clear guidelines regarding order cancellations, settlement finality, and refund eligibility.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="text-base font-bold text-gray-900">1. Settlement Finality in Securities & Demat Transfers</h3>
+                  <p className="text-gray-600">
+                    As per Indian securities laws and Depository Participant (CDSL / NSDL) regulations, once an unlisted share transfer, off-market transaction, or secondary market execution is confirmed and credited to the investor's designated Demat account, <strong>the transaction is considered final, irreversible, and non-refundable</strong>.
+                  </p>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <h3 className="text-base font-bold text-gray-900">2. 100% Refund on Failed Allocations / Unfulfilled Orders</h3>
+                  <p className="text-gray-600">
+                    If an investor places a purchase request or advance for pre-IPO / unlisted shares and GSP Investment Pvt. Ltd. is unable to execute the transaction due to corporate unavailability, registry non-allotment, or regulatory compliance rejection, <strong>the client is entitled to a 100% full refund</strong> of the advance funds.
+                  </p>
+                  <div className="p-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-xs text-gray-700 space-y-1">
+                    <div><strong>Processing Window:</strong> Refund will be credited within <strong>3 to 7 business working days</strong>.</div>
+                    <div><strong>Destination Account:</strong> Transferred directly to the verified originating bank account of the client.</div>
+                  </div>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <h3 className="text-base font-bold text-gray-900">3. Excess or Duplicate Debits</h3>
+                  <p className="text-gray-600">
+                    In case of technical errors, duplicate banking transactions, or excess debits occurring during online payment processing or banking transfers, the excess amount will be refunded automatically or upon verification within <strong>2 to 5 business working days</strong>.
+                  </p>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <h3 className="text-base font-bold text-gray-900">4. Statutory Taxes & Third-Party Regulatory Fees</h3>
+                  <p className="text-gray-600">
+                    Any statutory government charges, stamp duty levied by states, GST, or depository transfer fees already remitted to regulatory authorities (SEBI / CDSL / NSDL / ROC) are strictly non-refundable as they are consumed by statutory bodies during document and transfer processing.
+                  </p>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <h3 className="text-base font-bold text-gray-900">5. Refund Mode & Anti-Money Laundering (PMLA) Protocol</h3>
+                  <p className="text-gray-600">
+                    In strict accordance with Prevention of Money Laundering Act (PMLA) guidelines:
+                  </p>
+                  <ul className="space-y-2 list-disc list-inside text-gray-700 pl-1">
+                    <li>All refunds are issued exclusively via banking electronic channels (NEFT / RTGS / IMPS / UPI) to the investor's verified KYC bank account.</li>
+                    <li><strong>No cash refunds or third-party bank transfers are permitted under any circumstances.</strong></li>
+                  </ul>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <h3 className="text-base font-bold text-gray-900">6. How to Request a Refund / Grievance Escalation</h3>
+                  <p className="text-gray-600">
+                    To initiate a refund request or report a payment discrepancy, please submit your transaction reference number and bank confirmation receipt:
+                  </p>
+                  <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 text-xs space-y-1.5">
+                    <div><strong>Customer Support Desk:</strong> <a href="mailto:gspinvestment6@gmail.com" className="text-emerald-800 font-bold underline">gspinvestment6@gmail.com</a></div>
+                    <div><strong>Compliance & Accounts Desk:</strong> <a href="mailto:gspbackoffice6@gmail.com" className="text-emerald-800 font-bold underline">gspbackoffice6@gmail.com</a></div>
+                    <div><strong>Helpline:</strong> <a href="tel:02503594768" className="font-bold">0250 359 4768</a> | <strong>WhatsApp:</strong> <a href="https://wa.me/919096993499" className="font-bold">+91 9096993499</a></div>
+                    <div><strong>Registered Address:</strong> A-302 Aparna Niwas, Behind Tungareshwar sweet, Near Vasai road station, Vasai West, Vasai-Virar City, Maharashtra 401202.</div>
                   </div>
                 </div>
 

@@ -119,7 +119,7 @@ export default function Navbar({
       return;
     }
 
-    if (id === "disclaimer" || id === "terms" || id === "privacy") {
+    if (id === "disclaimer" || id === "risk" || id === "terms" || id === "privacy" || id === "refund") {
       if (onNavigateLegal) {
         onNavigateLegal(id);
       }

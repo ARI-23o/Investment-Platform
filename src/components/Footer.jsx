@@ -9,7 +9,7 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
         return;
       }
     }
-    if (id === "disclaimer" || id === "terms" || id === "privacy") {
+    if (id === "disclaimer" || id === "risk" || id === "terms" || id === "privacy" || id === "refund") {
       if (onNavigateLegal) {
         onNavigateLegal(id);
         return;
@@ -186,14 +186,17 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
             © {new Date().getFullYear()} GSP Investment Pvt. Ltd. All rights reserved.
           </div>
           <div className="flex flex-wrap items-center gap-6">
-            <button onClick={() => scrollTo("disclaimer")} className="hover:text-white cursor-pointer transition-colors">
-              Disclaimer
+            <button onClick={() => scrollTo("risk")} className="hover:text-white cursor-pointer transition-colors">
+              Risk Disclosure
             </button>
             <button onClick={() => scrollTo("terms")} className="hover:text-white cursor-pointer transition-colors">
-              Terms of Use
+              Term & Conditions
             </button>
             <button onClick={() => scrollTo("privacy")} className="hover:text-white cursor-pointer transition-colors">
-              Privacy Policy
+              Privacy
+            </button>
+            <button onClick={() => scrollTo("refund")} className="hover:text-white cursor-pointer transition-colors">
+              Refund Policy
             </button>
             <button onClick={() => scrollTo("careers")} className="hover:text-white cursor-pointer transition-colors">
               Career
