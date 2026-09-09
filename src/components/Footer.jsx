@@ -1,8 +1,14 @@
 import React from "react";
 import { ArrowUpRight, ShieldCheck, Heart } from "lucide-react";
 
-export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onOpenAdmin }) {
+export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onOpenAdmin, onNavigateCareers }) {
   const scrollTo = (id) => {
+    if (id === "careers") {
+      if (onNavigateCareers) {
+        onNavigateCareers();
+        return;
+      }
+    }
     if (id === "insurance") {
       window.dispatchEvent(new CustomEvent("open-insurance-drawer"));
     } else if (id === "loans") {
@@ -121,6 +127,12 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
                 </a>
               </li>
               <li>
+                <button onClick={() => scrollTo("careers")} className="text-amber-300 font-bold hover:text-amber-200 transition-colors flex items-center gap-1.5">
+                  <span>Careers (We're Hiring!)</span>
+                  <span className="px-1.5 py-0.2 text-[9px] bg-amber-400 text-gray-950 font-black rounded-sm">NEW</span>
+                </button>
+              </li>
+              <li>
                 <button onClick={() => scrollTo("contact")} className="hover:text-amber-400 transition-colors">
                   Contact Support
                 </button>
@@ -174,6 +186,9 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
             © {new Date().getFullYear()} GSP Investment Pvt. Ltd. All rights reserved.
           </div>
           <div className="flex flex-wrap items-center gap-6">
+            <button onClick={() => scrollTo("careers")} className="hover:text-amber-300 text-amber-400 font-bold cursor-pointer">
+              Careers & Hiring 🚀
+            </button>
             <span className="hover:text-white cursor-pointer">Privacy Policy</span>
             <span className="hover:text-white cursor-pointer">Terms & Conditions</span>
             <span className="hover:text-white cursor-pointer">Investor Charter</span>

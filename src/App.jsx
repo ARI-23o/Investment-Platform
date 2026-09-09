@@ -10,6 +10,7 @@ import SipCalculatorSection from "./components/SipCalculatorSection";
 import MarketInsightsSection from "./components/MarketInsightsSection";
 import ShareDetailsView from "./components/ShareDetailsView";
 import ArticleDetailsView from "./components/ArticleDetailsView";
+import CareersPage from "./components/CareersPage";
 import ContactSection from "./components/ContactSection";
 import Footer from "./components/Footer";
 import { LoginModal, OpenAccountModal, QuickEnquiryModal, ConsultAdvisorModal } from "./components/Modals";
@@ -210,6 +211,18 @@ export default function App() {
               });
             }}
           />
+        ) : currentView === "careers" ? (
+          /* Dedicated Careers & Job Application Page */
+          <CareersPage
+            onBack={() => {
+              setCurrentView("home");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            onApplicationSubmitted={(record) => {
+              handleEnquiryRecorded(record);
+              showToast("Application submitted! Our HR team at gspinvestment6@gmail.com has received your details.");
+            }}
+          />
         ) : (
           /* Home Layout Comprising all 9 Pages */
           <>
@@ -287,6 +300,10 @@ export default function App() {
         onOpenRegister={() => setRegisterModalOpen(true)}
         onSelectShare={handleSelectShare}
         onOpenAdmin={() => setEnquiriesDeskOpen(true)}
+        onNavigateCareers={() => {
+          setCurrentView("careers");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
       />
 
       {/* Interactive Modals */}

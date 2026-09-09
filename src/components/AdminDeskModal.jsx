@@ -316,16 +316,18 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                               item.type === "sell" 
                                 ? "bg-rose-100 text-rose-800" 
                                 : item.type === "callback" 
                                 ? "bg-blue-100 text-blue-800"
                                 : item.type === "account"
                                 ? "bg-purple-100 text-purple-800"
+                                : item.type === "career"
+                                ? "bg-amber-100 text-amber-900 border border-amber-300"
                                 : "bg-emerald-100 text-emerald-800"
                             }`}>
-                              {item.type ? item.type.toUpperCase() : "BUY"}
+                              {item.type === "career" ? "JOB APPLICATION" : (item.type ? item.type.toUpperCase() : "BUY")}
                             </span>
                             <span className="text-sm font-bold text-gray-900">
                               {item.title || item.share || "General Enquiry"}
