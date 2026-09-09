@@ -33,7 +33,7 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
               GSP Investment Pvt. Ltd. is a premier investment and wealth advisory firm empowering Indian investors with equities, IPOs, direct mutual funds, and pre-IPO unlisted shares.
             </p>
 
-            <div className="pt-2 text-xs text-emerald-400 font-medium space-y-1 font-mono">
+            <div className="pt-2 text-xs text-emerald-400 font-medium space-y-1">
               <div>CIN: U64990MH2025PTC449205</div>
               <div>Reg. No: 449205</div>
               <div className="flex flex-wrap items-center gap-6">
