@@ -9,6 +9,7 @@ import ServicesAndLoans from "./components/ServicesAndLoans";
 import SipCalculatorSection from "./components/SipCalculatorSection";
 import MarketInsightsSection from "./components/MarketInsightsSection";
 import ShareDetailsView from "./components/ShareDetailsView";
+import ArticleDetailsView from "./components/ArticleDetailsView";
 import ContactSection from "./components/ContactSection";
 import Footer from "./components/Footer";
 import { LoginModal, OpenAccountModal, QuickEnquiryModal, ConsultAdvisorModal } from "./components/Modals";
@@ -23,8 +24,9 @@ import {
 } from "./services/api";
 
 export default function App() {
-  const [currentView, setCurrentView] = useState("home"); // 'home' or 'share-details'
+  const [currentView, setCurrentView] = useState("home"); // 'home', 'share-details', or 'article-details'
   const [selectedShareId, setSelectedShareId] = useState("msei");
+  const [selectedArticleId, setSelectedArticleId] = useState("renewable-energy-unlisted");
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [enquiriesDeskOpen, setEnquiriesDeskOpen] = useState(false);
@@ -93,6 +95,12 @@ export default function App() {
   const handleSelectShare = (share) => {
     setSelectedShareId(share.id);
     setCurrentView("share-details");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleSelectArticle = (article) => {
+    setSelectedArticleId(article.id);
+    setCurrentView("article-details");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -179,6 +187,29 @@ export default function App() {
               handleEnquiryRecorded(record);
             }}
           />
+        ) : currentView === "article-details" ? (
+          /* Dedicated Research Article Details View */
+          <ArticleDetailsView
+            selectedArticleId={selectedArticleId}
+            onBack={() => {
+              setCurrentView("home");
+              setTimeout(() => {
+                const el = document.getElementById("market-insights");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }, 60);
+            }}
+            onSelectArticle={(art) => {
+              setSelectedArticleId(art.id);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            onConsultTopic={(topic) => {
+              setConsultAdvisorService({
+                title: topic.title,
+                tag: topic.tag || "Market Research",
+                badge: "Research Advisory"
+              });
+            }}
+          />
         ) : (
           /* Home Layout Comprising all 9 Pages */
           <>
@@ -236,7 +267,9 @@ export default function App() {
             />
 
             {/* Market Insights & Research Section */}
-            <MarketInsightsSection />
+            <MarketInsightsSection 
+              onSelectArticle={handleSelectArticle}
+            />
 
             {/* Page 9: Contact Us & Branch Network */}
             <ContactSection
