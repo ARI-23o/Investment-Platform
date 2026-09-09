@@ -90,7 +90,9 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
               <span className="text-[#c28414] font-serif-accent italic font-normal tracking-normal">
                 Your Trusted
               </span>{" "}
-              Partner in Wealth Creation & Financial Growth.
+              <span className="font-semibold text-gray-800">
+                Partner in Wealth Creation & Financial Growth.
+              </span>
             </h1>
 
             {/* Subtitle */}
