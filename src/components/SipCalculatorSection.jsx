@@ -207,13 +207,8 @@ export default function SipCalculatorSection({ onStartInvesting }) {
         {/* Main 2-Column Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           
-          {/* Left Column: Mutual Fund Centre */}
+          {/* Left Column: Wealth Growth & Planning */}
           <div className="lg:col-span-5 space-y-6">
-            
-            <div className="text-xs font-black uppercase tracking-widest text-emerald-800">
-              MUTUAL FUND CENTRE
-            </div>
-
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight">
               Grow Your Wealth<br />
               <span className="text-[#c28414] font-serif-accent italic font-normal text-4xl sm:text-5xl lg:text-6xl">
