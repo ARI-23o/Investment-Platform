@@ -11,6 +11,7 @@ import MarketInsightsSection from "./components/MarketInsightsSection";
 import ShareDetailsView from "./components/ShareDetailsView";
 import ArticleDetailsView from "./components/ArticleDetailsView";
 import CareersPage from "./components/CareersPage";
+import LegalPoliciesView from "./components/LegalPoliciesView";
 import ContactSection from "./components/ContactSection";
 import Footer from "./components/Footer";
 import { LoginModal, OpenAccountModal, QuickEnquiryModal, ConsultAdvisorModal } from "./components/Modals";
@@ -25,9 +26,10 @@ import {
 } from "./services/api";
 
 export default function App() {
-  const [currentView, setCurrentView] = useState("home"); // 'home', 'share-details', or 'article-details'
+  const [currentView, setCurrentView] = useState("home"); // 'home', 'share-details', 'article-details', 'careers', 'legal'
   const [selectedShareId, setSelectedShareId] = useState("msei");
   const [selectedArticleId, setSelectedArticleId] = useState("renewable-energy-unlisted");
+  const [legalTab, setLegalTab] = useState("disclaimer"); // 'disclaimer', 'terms', 'privacy'
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [enquiriesDeskOpen, setEnquiriesDeskOpen] = useState(false);
@@ -223,6 +225,16 @@ export default function App() {
               showToast("Application submitted! Our HR team at gspinvestment6@gmail.com has received your details.");
             }}
           />
+        ) : currentView === "legal" ? (
+          /* Dedicated Legal Policies: Disclaimer, Terms of Use, Privacy Policy */
+          <LegalPoliciesView
+            initialTab={legalTab}
+            onBack={() => {
+              setCurrentView("home");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            onNavigateTab={(tab) => setLegalTab(tab)}
+          />
         ) : (
           /* Home Layout Comprising all 9 Pages */
           <>
@@ -302,6 +314,11 @@ export default function App() {
         onOpenAdmin={() => setEnquiriesDeskOpen(true)}
         onNavigateCareers={() => {
           setCurrentView("careers");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        onNavigateLegal={(tab) => {
+          setLegalTab(tab || "disclaimer");
+          setCurrentView("legal");
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
       />

@@ -1,11 +1,17 @@
 import React from "react";
 import { ArrowUpRight, ShieldCheck, Heart } from "lucide-react";
 
-export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onOpenAdmin, onNavigateCareers }) {
+export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onOpenAdmin, onNavigateCareers, onNavigateLegal }) {
   const scrollTo = (id) => {
     if (id === "careers") {
       if (onNavigateCareers) {
         onNavigateCareers();
+        return;
+      }
+    }
+    if (id === "disclaimer" || id === "terms" || id === "privacy") {
+      if (onNavigateLegal) {
+        onNavigateLegal(id);
         return;
       }
     }
@@ -189,10 +195,15 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
             <button onClick={() => scrollTo("careers")} className="hover:text-amber-300 text-amber-400 font-bold cursor-pointer">
               Careers & Hiring 🚀
             </button>
-            <span className="hover:text-white cursor-pointer">Privacy Policy</span>
-            <span className="hover:text-white cursor-pointer">Terms & Conditions</span>
-            <span className="hover:text-white cursor-pointer">Investor Charter</span>
-            <span className="hover:text-white cursor-pointer">Risk Disclosure</span>
+            <button onClick={() => scrollTo("disclaimer")} className="hover:text-white cursor-pointer transition-colors">
+              Disclaimer
+            </button>
+            <button onClick={() => scrollTo("terms")} className="hover:text-white cursor-pointer transition-colors">
+              Terms of Use
+            </button>
+            <button onClick={() => scrollTo("privacy")} className="hover:text-white cursor-pointer transition-colors">
+              Privacy Policy
+            </button>
             <button 
               onClick={onOpenAdmin}
               className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer bg-white/5 hover:bg-white/10 px-3 py-1 rounded-lg border border-amber-400/30 transition-colors"
