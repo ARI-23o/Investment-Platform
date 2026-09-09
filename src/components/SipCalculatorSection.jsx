@@ -37,7 +37,7 @@ function CalculatorSlider({
             type="number" 
             value={value} 
             onChange={(e) => onChange(Math.max(min, Math.min(max, Number(e.target.value) || 0)))}
-            className="w-24 bg-transparent outline-none text-right font-black"
+            className="w-32 sm:w-36 bg-transparent outline-none text-right font-black"
             step={step}
             min={min}
             max={max}
@@ -215,11 +215,11 @@ export default function SipCalculatorSection({ onStartInvesting }) {
             </div>
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight">
-              Build Wealth<br />
+              Grow Your Wealth<br />
               <span className="text-[#c28414] font-serif-accent italic font-normal text-4xl sm:text-5xl lg:text-6xl">
                 Systematically
               </span><br />
-              With Mutual Funds
+              One Smart Step at a Time.
             </h2>
 
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
@@ -395,10 +395,10 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                       value={lumpsumAmount}
                       onChange={setLumpsumAmount}
                       min={10000}
-                      max={5000000}
-                      step={10000}
+                      max={50000000}
+                      step={25000}
                       prefix="₹"
-                      marks={["₹10,000", "₹25,00,000", "₹50,00,000"]}
+                      marks={["₹10,000", "₹2.5 Cr", "₹5 Cr"]}
                       accentColor="accent-[#0f4b32]"
                     />
 
@@ -436,10 +436,10 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                       value={swpTotalInvestment}
                       onChange={setSwpTotalInvestment}
                       min={100000}
-                      max={20000000}
-                      step={50000}
+                      max={100000000}
+                      step={100000}
                       prefix="₹"
-                      marks={["₹1,00,000", "₹1,00,00,000", "₹2,00,00,000"]}
+                      marks={["₹1,00,000", "₹5 Cr", "₹10 Cr"]}
                       accentColor="accent-[#0f4b32]"
                     />
 
@@ -448,11 +448,11 @@ export default function SipCalculatorSection({ onStartInvesting }) {
                       value={swpMonthlyWithdrawal}
                       onChange={setSwpMonthlyWithdrawal}
                       min={1000}
-                      max={200000}
-                      step={1000}
+                      max={1000000}
+                      step={5000}
                       prefix="₹"
                       suffix="/mo"
-                      marks={["₹1,000", "₹1,00,000", "₹2,00,000"]}
+                      marks={["₹1,000", "₹5,00,000", "₹10,00,000"]}
                       accentColor="accent-[#e8a317]"
                     />
 
