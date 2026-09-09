@@ -84,13 +84,13 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
           <div className={`lg:col-span-7 space-y-6 transition-all duration-700 ease-out ${isMounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.12]">
-              GSP Invest<br />
-              Pvt Ltd<br />
-              <span className="text-[#c28414] font-serif-accent italic font-normal tracking-normal text-4xl sm:text-5xl lg:text-[4rem]">
-                Grow Wealth
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.14]">
+              GSP Investment<br />
+              Pvt. Ltd.<br />
+              <span className="text-[#c28414] font-bold">
+                Your Trusted
               </span>{" "}
-              with Confidence.
+              Partner in Wealth Creation & Financial Growth.
             </h1>
 
             {/* Subtitle */}
