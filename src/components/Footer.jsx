@@ -3,6 +3,11 @@ import { ArrowUpRight, ShieldCheck, Heart } from "lucide-react";
 
 export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onOpenAdmin }) {
   const scrollTo = (id) => {
+    if (id === "insurance") {
+      window.dispatchEvent(new CustomEvent("open-insurance-drawer"));
+    } else if (id === "loans") {
+      window.dispatchEvent(new CustomEvent("open-loans-drawer"));
+    }
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };

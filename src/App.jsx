@@ -11,7 +11,7 @@ import MarketInsightsSection from "./components/MarketInsightsSection";
 import ShareDetailsView from "./components/ShareDetailsView";
 import ContactSection from "./components/ContactSection";
 import Footer from "./components/Footer";
-import { LoginModal, OpenAccountModal, QuickEnquiryModal } from "./components/Modals";
+import { LoginModal, OpenAccountModal, QuickEnquiryModal, ConsultAdvisorModal } from "./components/Modals";
 import AdminDeskModal from "./components/AdminDeskModal";
 import { CheckCircle2, X, Bell } from "lucide-react";
 import { 
@@ -29,6 +29,7 @@ export default function App() {
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [enquiriesDeskOpen, setEnquiriesDeskOpen] = useState(false);
   const [quickEnquiryShare, setQuickEnquiryShare] = useState(null);
+  const [consultAdvisorService, setConsultAdvisorService] = useState(null);
   const [toast, setToast] = useState(null);
 
   // Persistent User Session
@@ -225,10 +226,8 @@ export default function App() {
 
             {/* Page 5: Our Services & Loan Solutions */}
             <ServicesAndLoans
-              onApplyLoan={handleLoanClick}
-              onSelectService={(service) => {
-                showToast(`Selected service: ${service.title}`);
-              }}
+              onApplyLoan={(loan) => setConsultAdvisorService(loan)}
+              onSelectService={(service) => setConsultAdvisorService(service)}
             />
 
             {/* Page 6: Mutual Fund Centre & Interactive SIP Calculator */}
@@ -276,6 +275,17 @@ export default function App() {
         onClose={() => setQuickEnquiryShare(null)}
         onSubmitted={(shareName) => {
           handleEnquiryRecorded({ title: shareName, type: "buy" });
+        }}
+      />
+
+      {/* Consultation & Callback Modal for Insurance & Services */}
+      <ConsultAdvisorModal
+        isOpen={!!consultAdvisorService}
+        service={consultAdvisorService}
+        onClose={() => setConsultAdvisorService(null)}
+        onSubmitted={(record) => {
+          handleEnquiryRecorded(record);
+          showToast(`Advisor consultation booked for ${consultAdvisorService?.title || 'service'}.`);
         }}
       />
 

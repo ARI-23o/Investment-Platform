@@ -46,6 +46,12 @@ export default function Navbar({
     setServicesDropdown(false);
     setUserDropdown(false);
 
+    if (id === "insurance") {
+      window.dispatchEvent(new CustomEvent("open-insurance-drawer"));
+    } else if (id === "loans") {
+      window.dispatchEvent(new CustomEvent("open-loans-drawer"));
+    }
+
     if (currentSection !== "home") {
       setCurrentSection("home");
       setTimeout(() => {
