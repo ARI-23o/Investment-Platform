@@ -23,7 +23,15 @@ import {
   ChevronUp,
   Pause,
   Play,
-  ArrowRight
+  ArrowRight,
+  HeartPulse,
+  Heart,
+  Building,
+  Users,
+  ShieldPlus,
+  ShieldAlert,
+  Ship,
+  ShieldCheck
 } from "lucide-react";
 
 export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
@@ -129,6 +137,82 @@ export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
       badgeColor: "bg-emerald-100 text-emerald-800",
       icon: Crown,
       description: "Custom stock and fund portfolios curated and actively rebalanced by experienced professional portfolio managers and market analysts.",
+    },
+  ];
+
+  // Comprehensive Insurance Solutions (8 Policies)
+  const insuranceSolutions = [
+    {
+      id: "life-insurance",
+      title: "Life Insurance",
+      badge: "Family Protection",
+      badgeColor: "bg-emerald-100 text-emerald-800",
+      icon: HeartPulse,
+      description: "Comprehensive term life, whole life & retirement endowment plans designed to secure your family's future and financial independence.",
+      tag: "Term & Endowment",
+    },
+    {
+      id: "health-insurance",
+      title: "Health Insurance",
+      badge: "Cashless Medical",
+      badgeColor: "bg-emerald-100 text-emerald-800",
+      icon: Heart,
+      description: "Complete hospitalization, critical illness cover & family floater plans with extensive cashless hospital networks across India.",
+      tag: "Cashless Network",
+    },
+    {
+      id: "general-insurance",
+      title: "General Insurance",
+      badge: "Asset Security",
+      badgeColor: "bg-emerald-100 text-emerald-800",
+      icon: Building,
+      description: "Safeguard residential property, office infrastructure, machinery, and commercial assets against fire, burglary, and natural perils.",
+      tag: "Property & Fire",
+    },
+    {
+      id: "motor-insurance",
+      title: "Motor Insurance",
+      badge: "Instant Policy",
+      badgeColor: "bg-emerald-100 text-emerald-800",
+      icon: Car,
+      description: "Comprehensive and third-party protection for 4-wheelers, 2-wheelers, and commercial fleet vehicles with quick cashless garage claims.",
+      tag: "2W, 4W & Fleet",
+    },
+    {
+      id: "gmc-insurance",
+      title: "GMC Insurance",
+      badge: "Corporate & Group",
+      badgeColor: "bg-emerald-100 text-emerald-800",
+      icon: Users,
+      description: "Group Medical Claim (GMC) insurance tailored for corporate employers, startups, and MSME organizations with customized health benefits.",
+      tag: "Group Mediclaim",
+    },
+    {
+      id: "topup-policy",
+      title: "Top-up Policy",
+      badge: "High Sum Insured",
+      badgeColor: "bg-emerald-100 text-emerald-800",
+      icon: ShieldPlus,
+      description: "Super top-up health policies that exponentially increase your base medical coverage at highly economical and affordable premiums.",
+      tag: "Super Top-up",
+    },
+    {
+      id: "pa-policy",
+      title: "PA Policy",
+      badge: "Income Shield",
+      badgeColor: "bg-emerald-100 text-emerald-800",
+      icon: ShieldAlert,
+      description: "Personal Accident (PA) insurance providing 24×7 worldwide protection against accidental injury, permanent disability & income loss.",
+      tag: "Personal Accident",
+    },
+    {
+      id: "marine-insurance",
+      title: "Marine Insurance",
+      badge: "Cargo & Transit",
+      badgeColor: "bg-emerald-100 text-emerald-800",
+      icon: Ship,
+      description: "Comprehensive marine cargo, inland transit, and marine hull insurance for domestic transportation and global export-import shipments.",
+      tag: "Marine & Transit",
     },
   ];
 
@@ -273,7 +357,72 @@ export default function ServicesAndLoans({ onApplyLoan, onSelectService }) {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          PART 2: OTHER SERVICES - SEPARATE EXPANDABLE LOAN SERVICES
+          PART 2: INSURANCE SERVICES (8 POLICY TYPES)
+      ───────────────────────────────────────────────────────────── */}
+      <div id="insurance" className="py-16 sm:py-20 bg-[#f4f8f6] border-t border-emerald-950/10 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-14">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/80 border border-emerald-200 text-emerald-900 text-xs font-bold mb-2">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+              <span>PROTECTION & RISK MANAGEMENT</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">
+              Insurance Solutions
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-gray-600 font-normal">
+              Protect your family, assets, business, and health with tailor-made coverage across all 8 major insurance verticals.
+            </p>
+            <div className="flex items-center justify-center gap-1.5 mt-4">
+              <div className="w-10 h-1 rounded-full bg-emerald-600"></div>
+              <div className="w-2.5 h-1 rounded-full bg-[#f59e0b]"></div>
+            </div>
+          </div>
+
+          {/* 8 Insurance Policy Cards Grid (2 rows of 4) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {insuranceSolutions.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => onSelectService(item)}
+                  className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 border border-gray-200/90 group cursor-pointer flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-start justify-between mb-3.5">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-800 group-hover:bg-[#0f4b32] group-hover:text-white flex items-center justify-center transition-colors shadow-xs">
+                        <Icon className="w-6 h-6 stroke-[1.75]" />
+                      </div>
+                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80">
+                        {item.tag}
+                      </span>
+                    </div>
+
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 group-hover:text-emerald-900 transition-colors mb-2">
+                      {item.title}
+                    </h3>
+
+                    <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-normal">
+                      {item.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-emerald-800 group-hover:text-emerald-950">
+                    <span>Consult Advisor</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          PART 3: OTHER SERVICES - SEPARATE EXPANDABLE LOAN SERVICES
       ───────────────────────────────────────────────────────────── */}
       <div id="loans" className="border-t border-gray-100 bg-[#fafcfb]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">

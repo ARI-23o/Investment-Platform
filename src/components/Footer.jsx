@@ -61,6 +61,11 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
                 </button>
               </li>
               <li>
+                <button onClick={() => scrollTo("insurance")} className="hover:text-amber-400 transition-colors">
+                  Insurance Solutions
+                </button>
+              </li>
+              <li>
                 <button onClick={() => scrollTo("loans")} className="hover:text-amber-400 transition-colors">
                   Loan Solutions
                 </button>

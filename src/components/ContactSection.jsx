@@ -471,6 +471,14 @@ export default function ContactSection({ onCallbackSubmitted }) {
                     <option value="Mutual Funds & SIP">Mutual Funds & Systematic Investment Plan (SIP)</option>
                     <option value="Unlisted Shares">Pre-IPO & Unlisted Shares</option>
                     <option value="Wealth Management">HNIs Wealth Management & Advisory</option>
+                    <option value="Life Insurance">Life Insurance (Term & Endowment)</option>
+                    <option value="Health Insurance">Health Insurance (Cashless Mediclaim)</option>
+                    <option value="General Insurance">General Insurance (Fire & Property)</option>
+                    <option value="Motor Insurance">Motor Insurance (2W, 4W & Fleet)</option>
+                    <option value="GMC Insurance">GMC Insurance (Group Mediclaim)</option>
+                    <option value="Top-up Policy">Top-up & Super Top-up Policy</option>
+                    <option value="PA Policy">PA Policy (Personal Accident)</option>
+                    <option value="Marine Insurance">Marine & Transit Insurance</option>
                     <option value="Loan Solutions">Loan Solutions & Financing</option>
                     <option value="Other Assistance">Other General Query</option>
                   </select>

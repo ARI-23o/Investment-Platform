@@ -139,6 +139,13 @@ export default function Navbar({
                     Mutual Funds & SIP
                   </button>
                   <button 
+                    onClick={() => navigateTo("insurance")}
+                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium hover:bg-emerald-50 text-gray-700 hover:text-emerald-900 flex items-center gap-2.5 transition-colors cursor-pointer"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    Insurance Solutions
+                  </button>
+                  <button 
                     onClick={() => navigateTo("loans")}
                     className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium hover:bg-emerald-50 text-gray-700 hover:text-emerald-900 flex items-center gap-2.5 transition-colors cursor-pointer"
                   >
@@ -257,7 +264,19 @@ export default function Navbar({
             onClick={() => navigateTo("services")}
             className="block w-full text-left py-2 text-base font-medium text-gray-700 cursor-pointer"
           >
-            Services & Loans
+            Investment Products
+          </button>
+          <button 
+            onClick={() => navigateTo("insurance")}
+            className="block w-full text-left py-2 text-base font-medium text-gray-700 cursor-pointer"
+          >
+            Insurance Solutions
+          </button>
+          <button 
+            onClick={() => navigateTo("loans")}
+            className="block w-full text-left py-2 text-base font-medium text-gray-700 cursor-pointer"
+          >
+            Loan Solutions
           </button>
           <button 
             onClick={() => navigateTo("unlisted-shares")}
