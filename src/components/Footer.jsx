@@ -16,28 +16,12 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
           
           {/* Brand Column */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3 select-none">
+            <div className="flex items-center select-none">
               <img 
-                src="/assets/gsp_logo_white.png" 
-                alt="GSP Logo" 
-                className="h-12 sm:h-14 w-auto object-contain" 
+                src="/assets/gsp_full_logo_white.png" 
+                alt="GSP Investment Pvt. Ltd. - Smart Money Starts Here" 
+                className="h-12 sm:h-14 md:h-15 w-auto object-contain" 
               />
-              <div className="flex flex-col justify-center border-l border-emerald-800/80 pl-3">
-                <span className="text-sm sm:text-base font-black tracking-[0.14em] text-white uppercase leading-tight font-serif-accent">
-                  GSP INVESTMENT
-                </span>
-                <div className="flex items-center gap-1.5 my-0.5 w-full">
-                  <span className="h-[1px] flex-1 bg-amber-400"></span>
-                  <span className="text-[9px] sm:text-[10px] font-bold tracking-[0.22em] text-amber-400 uppercase leading-none shrink-0">
-                    PVT. LTD.
-                  </span>
-                  <span className="h-[1px] flex-1 bg-amber-400"></span>
-                </div>
-                <span className="text-[10px] sm:text-[11px] font-semibold leading-none tracking-normal">
-                  <span className="text-amber-400">Smart Money</span>{" "}
-                  <span className="text-emerald-200">Starts Here.</span>
-                </span>
-              </div>
             </div>
 
             <p className="text-xs sm:text-sm text-emerald-200/70 leading-relaxed max-w-sm font-normal">
