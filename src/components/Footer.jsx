@@ -33,13 +33,27 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
           
           {/* Brand Column */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center select-none">
+            <a 
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollTo("home");
+              }}
+              onDragStart={(e) => {
+                const websiteUrl = window.location.origin + "/";
+                e.dataTransfer.setData("text/uri-list", websiteUrl);
+                e.dataTransfer.setData("text/plain", websiteUrl);
+              }}
+              className="inline-flex items-center select-none cursor-pointer"
+              title="GSP Investment Pvt. Ltd. - Home"
+            >
               <img 
                 src="/assets/gsp_full_logo_white.png" 
                 alt="GSP Investment Pvt. Ltd. - Smart Money Starts Here" 
-                className="h-12 sm:h-14 md:h-15 w-auto object-contain" 
+                draggable="false"
+                className="h-12 sm:h-14 md:h-15 w-auto object-contain pointer-events-none select-none" 
               />
-            </div>
+            </a>
 
             <p className="text-xs sm:text-sm text-emerald-200/80 leading-relaxed max-w-sm font-normal">
               GSP Investment Pvt. Ltd. is a premier investment and wealth advisory firm empowering Indian investors with equities, IPOs, direct mutual funds, and pre-IPO unlisted shares.

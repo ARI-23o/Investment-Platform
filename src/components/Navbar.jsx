@@ -206,16 +206,27 @@ export default function Navbar({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
         
         {/* Official Complete GSP Brand Logo */}
-        <div 
-          onClick={() => navigateTo("home")} 
+        <a 
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            navigateTo("home");
+          }}
+          onDragStart={(e) => {
+            const websiteUrl = window.location.origin + "/";
+            e.dataTransfer.setData("text/uri-list", websiteUrl);
+            e.dataTransfer.setData("text/plain", websiteUrl);
+          }}
           className="flex items-center cursor-pointer group select-none py-1 shrink-0"
+          title="GSP Investment Pvt. Ltd. - Home"
         >
           <img 
             src="/assets/gsp_full_logo.png" 
             alt="GSP Investment Pvt. Ltd. - Smart Money Starts Here" 
-            className="h-9 sm:h-11 md:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]" 
+            draggable="false"
+            className="h-9 sm:h-11 md:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02] pointer-events-none select-none" 
           />
-        </div>
+        </a>
 
         {/* Desktop Nav Items */}
         <nav className="hidden lg:flex items-center gap-7 text-[14px] font-medium text-gray-700">
