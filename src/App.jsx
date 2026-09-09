@@ -4,6 +4,7 @@ import HeroSection from "./components/HeroSection";
 import AboutSection from "./components/AboutSection";
 import UnlistedSharesSection from "./components/UnlistedSharesSection";
 import InvestorServiceCentre from "./components/InvestorServiceCentre";
+import DeviceSection from "./components/DeviceSection";
 import ServicesAndLoans from "./components/ServicesAndLoans";
 import SipCalculatorSection from "./components/SipCalculatorSection";
 import MarketInsightsSection from "./components/MarketInsightsSection";
@@ -212,6 +213,13 @@ export default function App() {
                 } else {
                   handleServiceClick(service);
                 }
+              }}
+            />
+
+            {/* Digital Suite on Devices */}
+            <DeviceSection
+              onOpenPlatform={(platform) => {
+                showToast(`Digital Suite (${platform.toUpperCase()}) is a future upcoming release.`);
               }}
             />
 
