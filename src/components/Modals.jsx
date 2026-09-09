@@ -339,7 +339,7 @@ export function OpenAccountModal({ isOpen, onClose, onRegisterSuccess }) {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Vikram Sharma"
+                  placeholder="e.g. Ajay Shah"
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
                 />
               </div>
@@ -357,7 +357,7 @@ export function OpenAccountModal({ isOpen, onClose, onRegisterSuccess }) {
                     required
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                    placeholder="9876543210"
+                    placeholder="9096993499"
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none font-mono"
                   />
                 </div>
@@ -387,7 +387,7 @@ export function OpenAccountModal({ isOpen, onClose, onRegisterSuccess }) {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@email.com"
+                  placeholder="e.g. ajayshah@gmail.com"
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
                 />
               </div>
@@ -522,7 +522,7 @@ export function QuickEnquiryModal({ isOpen, onClose, share, onSubmitted }) {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Your Name"
+                  placeholder="e.g. Ajay Shah"
                   className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 outline-none"
                 />
               </div>
@@ -539,7 +539,7 @@ export function QuickEnquiryModal({ isOpen, onClose, share, onSubmitted }) {
                   required
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                  placeholder="9876543210"
+                  placeholder="9096993499"
                   className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 outline-none font-mono"
                 />
               </div>
@@ -676,7 +676,7 @@ export function ConsultAdvisorModal({ isOpen, onClose, service, onSubmitted }) {
                     setFullName(e.target.value);
                     if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: null }));
                   }}
-                  placeholder="e.g. Vikram Sharma"
+                  placeholder="e.g. Ajay Shah"
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 outline-none font-medium"
                 />
                 {errors.fullName && (
@@ -688,8 +688,11 @@ export function ConsultAdvisorModal({ isOpen, onClose, service, onSubmitted }) {
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                   Mobile Number (10 Digits) *
                 </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-sm font-bold text-gray-500">+91</span>
+                <div className="flex items-center rounded-xl border border-gray-200 overflow-hidden bg-white focus-within:border-emerald-600 focus-within:ring-1 focus-within:ring-emerald-600">
+                  <div className="flex items-center gap-1 px-3 py-2.5 bg-gray-50 text-gray-700 border-r border-gray-200 shrink-0 select-none">
+                    <span className="text-xs font-bold text-gray-600">IN</span>
+                    <span className="text-xs font-extrabold text-gray-900">+91</span>
+                  </div>
                   <input
                     type="tel"
                     inputMode="numeric"
@@ -697,8 +700,8 @@ export function ConsultAdvisorModal({ isOpen, onClose, service, onSubmitted }) {
                     maxLength={10}
                     value={mobile}
                     onChange={handleMobileChange}
-                    placeholder="9876543210"
-                    className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 outline-none font-bold text-gray-900"
+                    placeholder="9096993499"
+                    className="w-full px-3 py-2.5 text-sm outline-none font-bold text-gray-900 placeholder-gray-400 bg-transparent font-mono"
                   />
                 </div>
                 {errors.mobile && (
@@ -714,7 +717,7 @@ export function ConsultAdvisorModal({ isOpen, onClose, service, onSubmitted }) {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="vikram@example.com"
+                  placeholder="e.g. ajayshah@gmail.com"
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 outline-none"
                 />
               </div>

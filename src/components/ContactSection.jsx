@@ -100,6 +100,12 @@ export default function ContactSection({ onCallbackSubmitted }) {
       validationErrors.mobile = "Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8 or 9";
     }
 
+    if (!email.trim()) {
+      validationErrors.email = "Email address is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      validationErrors.email = "Please enter a valid email address (e.g. ajayshah@gmail.com)";
+    }
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
@@ -140,27 +146,24 @@ export default function ContactSection({ onCallbackSubmitted }) {
         console.warn("Backend save error", err);
       }
 
-      // 3. Google Sheet Webhook sync (permanent)
+      // 3. Optional Google Sheet sync
       try {
         syncLeadToGoogleSheet(callbackRecord);
       } catch (err) {
         console.warn("Google Sheet sync error", err);
       }
 
-      setIsSubmitting(false);
-      setSubmittedLead(callbackRecord);
-      setCountdown(10);
-      setIsSuccessModalOpen(true);
-
+      // 4. Trigger parent callback if provided
       if (onCallbackSubmitted) {
-        try {
-          onCallbackSubmitted(callbackRecord);
-        } catch (e) {
-          console.warn("Parent callback handler error:", e);
-        }
+        onCallbackSubmitted(callbackRecord);
       }
+
+      setSubmittedLead(callbackRecord);
+      setIsSuccessModalOpen(true);
+      setCountdown(10);
     } catch (err) {
-      console.error("Submission failed:", err);
+      console.error("Callback submission error:", err);
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -211,10 +214,10 @@ export default function ContactSection({ onCallbackSubmitted }) {
                   </div>
                 </div>
                 <a 
-                  href="tel:2503594768" 
-                  className="text-lg sm:text-xl font-extrabold text-gray-900 hover:text-emerald-800 transition-colors block"
+                  href="tel:02503594768" 
+                  className="text-lg sm:text-xl font-extrabold text-gray-900 hover:text-emerald-800 transition-colors block font-mono"
                 >
-                  2503594768
+                  0250 359 4768
                 </a>
                 <div className="text-[11px] text-gray-400 mt-2 flex items-center gap-1">
                   <Clock className="w-3 h-3" />
@@ -232,7 +235,7 @@ export default function ContactSection({ onCallbackSubmitted }) {
                     <h3 className="text-xs font-black uppercase tracking-wider text-gray-500">WhatsApp Support</h3>
                     <div className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      <span>Avg reply &lt; 5 mins</span>
+                      <span>Avg reply &lt; 24 hrs</span>
                     </div>
                   </div>
                 </div>
@@ -240,9 +243,9 @@ export default function ContactSection({ onCallbackSubmitted }) {
                   href="https://wa.me/919096993499?text=Hi%20GSP%20Investment%2C%20I%20would%20like%20to%20know%20more%20about%20your%20services" 
                   target="_blank" 
                   rel="noreferrer"
-                  className="text-lg sm:text-xl font-extrabold text-gray-900 hover:text-emerald-800 transition-colors block"
+                  className="text-lg sm:text-xl font-extrabold text-gray-900 hover:text-emerald-800 transition-colors block font-mono"
                 >
-                  9096993499
+                  +91 9096993499
                 </a>
                 <div className="text-xs text-gray-500 mt-1">
                   Instant portfolio quotes & queries
@@ -362,7 +365,7 @@ export default function ContactSection({ onCallbackSubmitted }) {
                   </label>
                   <input 
                     type="text"
-                    placeholder="e.g. Vikramaditya Singhania"
+                    placeholder="e.g. Ajay Shah"
                     value={fullName}
                     onChange={handleNameChange}
                     className={`w-full px-4 py-3 rounded-xl border text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none transition-all ${
@@ -380,7 +383,7 @@ export default function ContactSection({ onCallbackSubmitted }) {
                   )}
                 </div>
 
-                {/* Mobile - Only 10 Digits Allowed */}
+                {/* Mobile - Only 10 Digits Allowed with Clean IN +91 Prefix */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">
@@ -390,23 +393,24 @@ export default function ContactSection({ onCallbackSubmitted }) {
                       {mobile.length}/10 digits
                     </span>
                   </div>
-                  <div className={`flex items-center rounded-xl border overflow-hidden transition-all ${
+                  <div className={`flex items-center rounded-xl border bg-white overflow-hidden transition-all shadow-2xs ${
                     errors.mobile 
-                      ? "border-rose-400 bg-rose-50/30 focus-within:border-rose-600 focus-within:ring-1 focus-within:ring-rose-500" 
+                      ? "border-rose-400 bg-rose-50/20 focus-within:border-rose-600 focus-within:ring-1 focus-within:ring-rose-500" 
                       : "border-gray-200 focus-within:border-[#0f4b32] focus-within:ring-1 focus-within:ring-[#0f4b32]"
                   }`}>
-                    <span className="px-3 py-3 bg-gray-100 text-xs font-bold text-gray-600 border-r border-gray-200 select-none">
-                      🇮🇳 +91
-                    </span>
+                    <div className="flex items-center gap-1.5 px-3.5 py-3 bg-gray-50 text-gray-700 border-r border-gray-200 shrink-0 select-none">
+                      <span className="text-xs font-bold text-gray-700">IN</span>
+                      <span className="text-sm font-extrabold text-gray-900">+91</span>
+                    </div>
                     <input 
                       type="tel"
                       inputMode="numeric"
                       pattern="[0-9]*"
                       maxLength={10}
-                      placeholder="9876543210"
+                      placeholder="9096993499"
                       value={mobile}
                       onChange={handleMobileChange}
-                      className="w-full px-3 py-3 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none bg-transparent font-mono"
+                      className="w-full px-3.5 py-3 text-sm font-bold text-gray-900 placeholder-gray-400 outline-none bg-transparent font-mono tracking-wide"
                       required
                     />
                   </div>
@@ -446,18 +450,32 @@ export default function ContactSection({ onCallbackSubmitted }) {
                   </select>
                 </div>
 
-                {/* Optional Email */}
+                {/* Email Address - Required */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
-                    Email Address (Optional)
+                    Email Address <span className="text-rose-500">*</span>
                   </label>
                   <input 
                     type="email"
-                    placeholder="vikram@example.com"
+                    placeholder="e.g. ajayshah@gmail.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none focus:border-[#0f4b32]"
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) setErrors((prev) => ({ ...prev, email: null }));
+                    }}
+                    className={`w-full px-4 py-3 rounded-xl border text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none transition-all ${
+                      errors.email 
+                        ? "border-rose-400 bg-rose-50/30 focus:border-rose-600 focus:ring-1 focus:ring-rose-500" 
+                        : "border-gray-200 focus:border-[#0f4b32] focus:ring-1 focus:ring-[#0f4b32]"
+                    }`}
+                    required
                   />
+                  {errors.email && (
+                    <p className="text-[11px] font-bold text-rose-600 mt-1 flex items-center gap-1">
+                      <span>⚠</span>
+                      <span>{errors.email}</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Message / Preferred Time */}

@@ -135,11 +135,11 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
               </p>
               <div className="pt-2">
                 <span className="text-emerald-400 block font-semibold">Investor Helpline:</span>
-                <a href="tel:2503594768" className="text-white font-bold text-sm hover:text-amber-400 transition-colors">2503594768</a>
+                <a href="tel:02503594768" className="text-white font-bold text-sm hover:text-amber-400 transition-colors">0250 359 4768</a>
               </div>
               <div>
                 <span className="text-emerald-400 block font-semibold">WhatsApp:</span>
-                <a href="https://wa.me/919096993499" target="_blank" rel="noreferrer" className="text-white font-bold hover:text-amber-400 transition-colors">9096993499</a>
+                <a href="https://wa.me/919096993499" target="_blank" rel="noreferrer" className="text-white font-bold hover:text-amber-400 transition-colors">+91 9096993499</a>
               </div>
               <div>
                 <span className="text-emerald-400 block font-semibold">Customer Support:</span>

@@ -460,7 +460,7 @@ export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuc
                     </label>
                     <input 
                       type="text"
-                      placeholder="e.g. Rahul Sharma"
+                      placeholder="e.g. Ajay Shah"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none focus:border-[#0f4b32] focus:ring-1 focus:ring-[#0f4b32]"
@@ -474,15 +474,16 @@ export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuc
                       Mobile Number <span className="text-rose-500">*</span>
                     </label>
                     <div className="flex items-center rounded-xl border border-gray-200 overflow-hidden focus-within:border-[#0f4b32] focus-within:ring-1 focus-within:ring-[#0f4b32]">
-                      <span className="px-3 py-2.5 bg-gray-100 text-xs font-bold text-gray-600 border-r border-gray-200 select-none">
-                        🇮🇳 +91
-                      </span>
+                      <div className="flex items-center gap-1 px-3 py-2.5 bg-gray-50 text-gray-700 border-r border-gray-200 shrink-0 select-none">
+                        <span className="text-xs font-bold text-gray-600">IN</span>
+                        <span className="text-xs font-extrabold text-gray-900">+91</span>
+                      </div>
                       <input 
                         type="tel"
                         inputMode="numeric"
                         pattern="[0-9]*"
                         maxLength={10}
-                        placeholder="9876543210"
+                        placeholder="9096993499"
                         value={mobile}
                         onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
                         className="w-full px-3 py-2.5 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none font-mono bg-transparent"
@@ -498,7 +499,7 @@ export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuc
                     </label>
                     <input 
                       type="email"
-                      placeholder="rahul@example.com"
+                      placeholder="e.g. ajayshah@gmail.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none focus:border-[#0f4b32]"
