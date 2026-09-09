@@ -67,19 +67,7 @@ export default function AboutSection() {
                 </div>
                 <div className="flex justify-between py-2 border-b border-emerald-800/60">
                   <span className="text-emerald-200/80">Corporate CIN:</span>
-                  <span className="font-bold text-amber-300">U67120MH2008PTC182940</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-emerald-800/60">
-                  <span className="text-emerald-200/80">NSE Member ID:</span>
-                  <span className="font-bold text-white">14238</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-emerald-800/60">
-                  <span className="text-emerald-200/80">BSE Member ID:</span>
-                  <span className="font-bold text-white">6521</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-emerald-800/60">
-                  <span className="text-emerald-200/80">CDSL DP ID:</span>
-                  <span className="font-bold text-white">12081600</span>
+                  <span className="font-bold text-amber-300">U64990MH2025PTC449205</span>
                 </div>
                 <div className="flex justify-between py-2">
                   <span className="text-emerald-200/80">Active Assets Advisory:</span>

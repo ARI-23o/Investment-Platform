@@ -29,8 +29,7 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
             </p>
 
             <div className="pt-2 text-xs text-emerald-400 font-medium space-y-1">
-              <div>CIN: U67120MH2008PTC182940 • CDSL DP ID: 12081600</div>
-              <div>NSE Member Code: 14238 • BSE Member Code: 6521</div>
+              <div>Corporate CIN: U64990MH2025PTC449205</div>
             </div>
           </div>
 
