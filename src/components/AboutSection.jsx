@@ -68,21 +68,6 @@ export default function AboutSection() {
                 </div>
               </div>
             </div>
-
-            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-semibold text-gray-700">
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Zero Hidden Fees</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Dedicated Relationship Managers</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>24×7 Support</span>
-              </div>
-            </div>
           </div>
 
           <div className="lg:col-span-6">
