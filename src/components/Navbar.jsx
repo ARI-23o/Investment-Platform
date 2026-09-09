@@ -349,13 +349,6 @@ export default function Navbar({
                         <span>SIP Calculator</span>
                       </button>
                       <button
-                        onClick={() => navigateTo("careers")}
-                        className="p-2 rounded-lg hover:bg-emerald-50 text-left font-medium text-amber-700 font-bold flex items-center gap-2 cursor-pointer"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                        <span>Sales Careers 🚀</span>
-                      </button>
-                      <button
                         onClick={() => navigateTo("contact")}
                         className="p-2 rounded-lg hover:bg-emerald-50 text-left font-medium text-gray-800 flex items-center gap-2 cursor-pointer"
                       >
@@ -453,18 +446,6 @@ export default function Navbar({
               </div>
             )}
           </div>
-
-          <button 
-            onClick={() => navigateTo("careers")}
-            className={`transition-colors py-1 cursor-pointer flex items-center gap-1 ${
-              currentSection === "careers" 
-                ? "text-emerald-900 font-bold border-b-2 border-emerald-600" 
-                : "text-gray-700 hover:text-emerald-700"
-            }`}
-          >
-            <span>Careers</span>
-            <span className="px-1.5 py-0.2 text-[9px] bg-amber-400 text-gray-950 font-black rounded-sm">HIRING</span>
-          </button>
 
           <button 
             onClick={() => navigateTo("contact")}
@@ -631,13 +612,6 @@ export default function Navbar({
             className="block w-full text-left py-2 text-base font-medium text-gray-700 cursor-pointer"
           >
             SIP Calculator
-          </button>
-          <button 
-            onClick={() => navigateTo("careers")}
-            className="w-full text-left py-2 text-base font-bold text-amber-700 flex items-center justify-between cursor-pointer"
-          >
-            <span>Careers (We're Hiring!)</span>
-            <span className="px-2 py-0.5 text-[10px] bg-amber-400 text-gray-950 font-black rounded-md">NEW</span>
           </button>
           <button 
             onClick={() => navigateTo("contact")}
