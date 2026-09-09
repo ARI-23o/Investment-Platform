@@ -72,19 +72,16 @@ export default function Navbar({
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         
-        {/* Brand Logo matching PDF */}
+        {/* Brand Logo with Official GSP Graphic */}
         <div 
           onClick={() => navigateTo("home")} 
-          className="flex items-center gap-3 cursor-pointer group select-none"
+          className="flex items-center gap-3 cursor-pointer group select-none py-0.5"
         >
-          <div className="relative flex items-center justify-center">
-            <div className="flex items-baseline font-black tracking-tighter text-2xl">
-              <span className="text-[#0a482d] text-2xl md:text-3xl font-extrabold tracking-tight">G</span>
-              <span className="text-[#d97706] text-2xl md:text-3xl font-extrabold tracking-tight">S</span>
-              <span className="text-[#0a482d] text-2xl md:text-3xl font-extrabold tracking-tight">P</span>
-              <div className="w-2 h-2 rounded-full bg-emerald-500 absolute -top-0.5 left-4.5 animate-pulse"></div>
-            </div>
-          </div>
+          <img 
+            src="/assets/gsp_logo.png" 
+            alt="GSP Logo" 
+            className="h-10 md:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-105" 
+          />
           <div className="flex flex-col border-l border-gray-300 pl-2.5">
             <span className="text-xs md:text-sm font-black tracking-wider text-[#0e3b27] uppercase leading-none">
               Investment

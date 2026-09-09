@@ -17,11 +17,11 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
           {/* Brand Column */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3 select-none">
-              <div className="flex items-baseline font-black tracking-tighter text-2xl">
-                <span className="text-white text-3xl font-extrabold tracking-tight">G</span>
-                <span className="text-[#e8a317] text-3xl font-extrabold tracking-tight">S</span>
-                <span className="text-white text-3xl font-extrabold tracking-tight">P</span>
-              </div>
+              <img 
+                src="/assets/gsp_logo_white.png" 
+                alt="GSP Logo" 
+                className="h-11 md:h-12 w-auto object-contain" 
+              />
               <div className="flex flex-col border-l border-emerald-800 pl-2.5">
                 <span className="text-sm font-black tracking-wider text-emerald-100 uppercase leading-none">
                   Investment
