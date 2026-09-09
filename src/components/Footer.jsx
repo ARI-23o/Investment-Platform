@@ -41,11 +41,11 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
               />
             </div>
 
-            <p className="text-xs sm:text-sm text-emerald-200/70 leading-relaxed max-w-sm font-normal">
+            <p className="text-xs sm:text-sm text-emerald-200/80 leading-relaxed max-w-sm font-normal">
               GSP Investment Pvt. Ltd. is a premier investment and wealth advisory firm empowering Indian investors with equities, IPOs, direct mutual funds, and pre-IPO unlisted shares.
             </p>
 
-            <div className="pt-2 text-xs text-emerald-400 font-medium space-y-1">
+            <div className="pt-2 text-xs sm:text-sm text-emerald-200/80 font-normal space-y-1">
               <div>CIN: U64990MH2025PTC449205</div>
               <div>Reg. No: 449205</div>
               <div className="flex flex-wrap items-center gap-6">
@@ -62,37 +62,37 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
             </h4>
             <ul className="space-y-2.5 text-xs sm:text-sm text-emerald-200/80">
               <li>
-                <button onClick={() => scrollTo("services")} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => scrollTo("services")} className="hover:text-white transition-colors">
                   Equity Trading
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollTo("unlisted-shares")} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => scrollTo("unlisted-shares")} className="hover:text-white transition-colors">
                   Unlisted Shares
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollTo("services")} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => scrollTo("services")} className="hover:text-white transition-colors">
                   IPO Investments
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollTo("calculator")} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => scrollTo("calculator")} className="hover:text-white transition-colors">
                   Mutual Funds & SIP
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollTo("insurance")} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => scrollTo("insurance")} className="hover:text-white transition-colors">
                   Insurance Solutions
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollTo("loans")} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => scrollTo("loans")} className="hover:text-white transition-colors">
                   Loan Solutions
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollTo("services")} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => scrollTo("services")} className="hover:text-white transition-colors">
                   Wealth Management
                 </button>
               </li>
@@ -106,34 +106,34 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
             </h4>
             <ul className="space-y-2.5 text-xs sm:text-sm text-emerald-200/80">
               <li>
-                <button onClick={() => scrollTo("services-centre")} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => scrollTo("services-centre")} className="hover:text-white transition-colors">
                   Open Demat Account
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollTo("services-centre")} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => scrollTo("services-centre")} className="hover:text-white transition-colors">
                   KYC Updation
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollTo("services-centre")} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => scrollTo("services-centre")} className="hover:text-white transition-colors">
                   Fund Transfer Desk
                 </button>
               </li>
               <li>
-                <a href="https://evoting.cdslindia.com/Evoting/EvotingLogin" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors flex items-center gap-1">
+                <a href="https://evoting.cdslindia.com/Evoting/EvotingLogin" target="_blank" rel="noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
                   <span>CDSL E-Voting</span>
                   <ArrowUpRight className="w-3 h-3" />
                 </a>
               </li>
               <li>
-                <a href="https://www.evoting.nsdl.com/" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors flex items-center gap-1">
+                <a href="https://www.evoting.nsdl.com/" target="_blank" rel="noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
                   <span>NSDL E-Voting</span>
                   <ArrowUpRight className="w-3 h-3" />
                 </a>
               </li>
               <li>
-                <button onClick={() => scrollTo("contact")} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => scrollTo("contact")} className="hover:text-white transition-colors">
                   Contact Support
                 </button>
               </li>
@@ -145,25 +145,25 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
             <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">
               Head Office
             </h4>
-            <div className="space-y-2.5 text-xs text-emerald-200/80">
+            <div className="space-y-2.5 text-xs sm:text-sm text-emerald-200/80">
               <p className="leading-relaxed">
                 Regd. Off. : A-302 Aparna Niwas, Behind Tungareshwar sweet, Near Vasai road station, Vasai West, Vasai-Virar City, Maharashtra 401202
               </p>
               <div className="pt-2">
-                <span className="text-emerald-400 block font-semibold">Investor Helpline:</span>
-                <a href="tel:02503594768" className="text-white font-bold text-sm hover:text-amber-400 transition-colors">0250 359 4768</a>
+                <span className="block">Investor Helpline:</span>
+                <a href="tel:02503594768" className="hover:text-white transition-colors">0250 359 4768</a>
               </div>
               <div>
-                <span className="text-emerald-400 block font-semibold">WhatsApp:</span>
-                <a href="https://wa.me/919096993499" target="_blank" rel="noreferrer" className="text-white font-bold hover:text-amber-400 transition-colors">+91 9096993499</a>
+                <span className="block">WhatsApp:</span>
+                <a href="https://wa.me/919096993499" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">+91 9096993499</a>
               </div>
               <div>
-                <span className="text-emerald-400 block font-semibold">Customer Support:</span>
-                <a href="mailto:gspinvestment6@gmail.com" className="text-white hover:text-amber-400 transition-colors break-all">gspinvestment6@gmail.com</a>
+                <span className="block">Customer Support:</span>
+                <a href="mailto:gspinvestment6@gmail.com" className="hover:text-white transition-colors break-all">gspinvestment6@gmail.com</a>
               </div>
               <div>
-                <span className="text-emerald-400 block font-semibold">Compliance:</span>
-                <a href="mailto:gspbackoffice6@gmail.com" className="text-white hover:text-amber-400 transition-colors break-all">gspbackoffice6@gmail.com</a>
+                <span className="block">Compliance:</span>
+                <a href="mailto:gspbackoffice6@gmail.com" className="hover:text-white transition-colors break-all">gspbackoffice6@gmail.com</a>
               </div>
             </div>
           </div>
