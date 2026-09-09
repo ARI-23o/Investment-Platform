@@ -5,8 +5,8 @@ import {
   PieChart, 
   FileCheck, 
   Briefcase, 
-  ArrowLeftRight,
-  ArrowRight,
+  Coins,
+  ArrowRight, 
   ShieldCheck
 } from "lucide-react";
 
@@ -58,13 +58,13 @@ export default function InvestorServiceCentre({ onSelectService }) {
       description: "Transparent and hassle-free account closure request and stock transfer guide.",
     },
     {
-      id: "fund-transfer",
-      title: "Fund Transfer",
-      subtitle: "Transfer funds",
-      icon: ArrowLeftRight,
+      id: "unlisted-shares",
+      title: "Unlisted Shares",
+      subtitle: "Pre-IPO equities",
+      icon: Coins,
       color: "emerald",
-      tag: "Instant Payout",
-      description: "Deposit or withdraw funds via UPI, Net Banking, or NEFT/RTGS with zero charges.",
+      tag: "Verified Pre-IPO",
+      description: "Access curated unlisted shares and pre-IPO equities with seamless DIS transfer.",
     },
   ];
 
@@ -82,11 +82,8 @@ export default function InvestorServiceCentre({ onSelectService }) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Section Header */}
+        {/* Section Header without SELF SERVICE */}
         <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
-          <div className="text-xs font-black uppercase tracking-widest text-emerald-800 mb-2">
-            SELF SERVICE
-          </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
             Investor Service Centre
           </h2>
@@ -131,7 +128,7 @@ export default function InvestorServiceCentre({ onSelectService }) {
         <div className="mt-8 sm:mt-12 bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
           <div className="flex items-center gap-2 font-medium text-gray-700 text-center sm:text-left">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-            <span>24/7 Digital Self-Service Portal for GSP Account Holders</span>
+            <span>24/7 Digital Investor Service Portal for GSP Account Holders</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-emerald-800 font-semibold text-[11px] sm:text-xs">
             <span>Instant Resolution</span>
