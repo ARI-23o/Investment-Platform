@@ -105,20 +105,20 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
                 </button>
               </li>
               <li>
-                <a href="https://www.evotingindia.com/" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors flex items-center gap-1">
+                <a href="https://evoting.cdslindia.com/Evoting/EvotingLogin" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors flex items-center gap-1">
                   <span>CDSL E-Voting</span>
                   <ArrowUpRight className="w-3 h-3" />
                 </a>
               </li>
               <li>
-                <a href="https://www.eservices.nsdl.com/" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors flex items-center gap-1">
+                <a href="https://www.evoting.nsdl.com/" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors flex items-center gap-1">
                   <span>NSDL E-Voting</span>
                   <ArrowUpRight className="w-3 h-3" />
                 </a>
               </li>
               <li>
                 <button onClick={() => scrollTo("contact")} className="hover:text-amber-400 transition-colors">
-                  Grievance Redressal
+                  Contact Support
                 </button>
               </li>
             </ul>
@@ -134,16 +134,20 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
                 Regd. Off. : A-302 Aparna Niwas, Behind Tungareshwar sweet, Near Vasai road station, Vasai West, Vasai-Virar City, Maharashtra 401202
               </p>
               <div className="pt-2">
-                <span className="text-emerald-400 block font-semibold">Toll-Free Helpline:</span>
-                <span className="text-white font-bold text-sm">1800-123-4567</span>
+                <span className="text-emerald-400 block font-semibold">Investor Helpline:</span>
+                <a href="tel:2503594768" className="text-white font-bold text-sm hover:text-amber-400 transition-colors">2503594768</a>
               </div>
               <div>
                 <span className="text-emerald-400 block font-semibold">WhatsApp:</span>
-                <span className="text-white font-bold">9323986654</span>
+                <a href="https://wa.me/919096993499" target="_blank" rel="noreferrer" className="text-white font-bold hover:text-amber-400 transition-colors">9096993499</a>
               </div>
               <div>
-                <span className="text-emerald-400 block font-semibold">Email:</span>
-                <span className="text-white">support@shreetisai.com</span>
+                <span className="text-emerald-400 block font-semibold">Customer Support:</span>
+                <a href="mailto:gspinvestment6@gmail.com" className="text-white hover:text-amber-400 transition-colors break-all">gspinvestment6@gmail.com</a>
+              </div>
+              <div>
+                <span className="text-emerald-400 block font-semibold">Compliance:</span>
+                <a href="mailto:gspbackoffice6@gmail.com" className="text-white hover:text-amber-400 transition-colors break-all">gspbackoffice6@gmail.com</a>
               </div>
             </div>
           </div>

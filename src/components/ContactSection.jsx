@@ -189,7 +189,7 @@ export default function ContactSection({ onCallbackSubmitted }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           
           {/* ─────────────────────────────────────────────────────────────
-              LEFT COLUMN: CONTACT & BRANCH NETWORK
+              LEFT COLUMN: CONTACT & HEAD OFFICE
           ───────────────────────────────────────────────────────────── */}
           <div className="lg:col-span-7 space-y-4">
             
@@ -206,19 +206,16 @@ export default function ContactSection({ onCallbackSubmitted }) {
                     <h3 className="text-xs font-black uppercase tracking-wider text-gray-500">Investor Helpline</h3>
                     <div className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      <span>Toll-Free Support</span>
+                      <span>Support Desk</span>
                     </div>
                   </div>
                 </div>
                 <a 
-                  href="tel:18002094500" 
+                  href="tel:2503594768" 
                   className="text-lg sm:text-xl font-extrabold text-gray-900 hover:text-emerald-800 transition-colors block"
                 >
-                  1800 209 4500
+                  2503594768
                 </a>
-                <div className="text-xs text-gray-500 mt-1">
-                  Desk: <a href="tel:+912269824500" className="hover:underline text-gray-700 font-medium">+91 22 6982 4500</a>
-                </div>
                 <div className="text-[11px] text-gray-400 mt-2 flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   <span>Mon - Fri: 9:00 AM - 6:00 PM IST</span>
@@ -240,19 +237,19 @@ export default function ContactSection({ onCallbackSubmitted }) {
                   </div>
                 </div>
                 <a 
-                  href="https://wa.me/919323986654?text=Hi%20GSP%20Investment%2C%20I%20would%20like%20to%20know%20more%20about%20your%20services" 
+                  href="https://wa.me/919096993499?text=Hi%20GSP%20Investment%2C%20I%20would%20like%20to%20know%20more%20about%20your%20services" 
                   target="_blank" 
                   rel="noreferrer"
                   className="text-lg sm:text-xl font-extrabold text-gray-900 hover:text-emerald-800 transition-colors block"
                 >
-                  +91 93239 86654
+                  9096993499
                 </a>
                 <div className="text-xs text-gray-500 mt-1">
                   Instant portfolio quotes & queries
                 </div>
                 <div className="mt-2">
                   <a 
-                    href="https://wa.me/919323986654" 
+                    href="https://wa.me/919096993499" 
                     target="_blank" 
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 hover:underline"
@@ -273,50 +270,24 @@ export default function ContactSection({ onCallbackSubmitted }) {
                 </div>
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-wider text-gray-500">Official Email Desk</h3>
-                  <div className="text-xs text-gray-700 font-semibold">Support, Dealing & Compliance</div>
+                  <div className="text-xs text-gray-700 font-semibold">Customer Support & Compliance</div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                  <span className="text-gray-400 block text-[10px] font-bold uppercase">Customer Support</span>
-                  <a href="mailto:support@gspinvestment.com" className="font-bold text-gray-900 hover:text-emerald-800 transition-colors break-all">
-                    support@gspinvestment.com
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <span className="text-gray-400 block text-[10px] font-bold uppercase mb-0.5">Customer Support</span>
+                  <a href="mailto:gspinvestment6@gmail.com" className="font-bold text-gray-900 hover:text-emerald-800 transition-colors break-all">
+                    gspinvestment6@gmail.com
                   </a>
                 </div>
-                <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                  <span className="text-gray-400 block text-[10px] font-bold uppercase">Dealing Desk</span>
-                  <a href="mailto:dealing@gspinvestment.com" className="font-bold text-gray-900 hover:text-emerald-800 transition-colors break-all">
-                    dealing@gspinvestment.com
-                  </a>
-                </div>
-                <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                  <span className="text-gray-400 block text-[10px] font-bold uppercase">Compliance Desk</span>
-                  <a href="mailto:compliance@gspinvestment.com" className="font-bold text-gray-900 hover:text-emerald-800 transition-colors break-all">
-                    compliance@gspinvestment.com
+                <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <span className="text-gray-400 block text-[10px] font-bold uppercase mb-0.5">Compliance Desk</span>
+                  <a href="mailto:gspbackoffice6@gmail.com" className="font-bold text-gray-900 hover:text-emerald-800 transition-colors break-all">
+                    gspbackoffice6@gmail.com
                   </a>
                 </div>
               </div>
-            </div>
-
-            {/* ⚠ Grievance & Escalation Officer */}
-            <div className="bg-amber-50/70 rounded-3xl p-5 sm:p-6 border border-amber-200/80 shadow-2xs space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center shrink-0 border border-amber-200">
-                  <AlertTriangle className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-black uppercase tracking-wider text-amber-900">
-                    Grievance Redressal & Escalation
-                  </h3>
-                  <div className="text-xs text-amber-800 font-medium">
-                    Designated Grievance Officer: Mr. Amit Deshmukh
-                  </div>
-                </div>
-              </div>
-              <p className="text-xs text-amber-900/90 leading-relaxed pt-1">
-                Direct Escalation: <strong>+91 22 6982 4599</strong> • Email: <a href="mailto:grievance@gspinvestment.com" className="underline font-bold">grievance@gspinvestment.com</a>. For unaddressed concerns, connect with our designated Grievance Redressal desk.
-              </p>
             </div>
 
             {/* 📍 Head Office & Registered Address */}
@@ -337,13 +308,13 @@ export default function ContactSection({ onCallbackSubmitted }) {
               </div>
             </div>
 
-            {/* E-Voting & Regulatory Quick Links */}
+            {/* E-Voting Quick Links */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <a 
-                href="https://www.evotingindia.com" 
+                href="https://evoting.cdslindia.com/Evoting/EvotingLogin" 
                 target="_blank" 
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:text-emerald-800 hover:border-emerald-500/50 transition-colors shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:text-emerald-800 hover:border-emerald-500/50 transition-colors shadow-2xs"
               >
                 <Vote className="w-4 h-4 text-emerald-700" />
                 <span>CDSL E-Voting</span>
@@ -351,22 +322,13 @@ export default function ContactSection({ onCallbackSubmitted }) {
               </a>
 
               <a 
-                href="https://www.eservices.nsdl.com" 
+                href="https://www.evoting.nsdl.com/" 
                 target="_blank" 
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:text-emerald-800 hover:border-emerald-500/50 transition-colors shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:text-emerald-800 hover:border-emerald-500/50 transition-colors shadow-2xs"
               >
                 <Vote className="w-4 h-4 text-amber-700" />
                 <span>NSDL E-Voting</span>
-                <ExternalLink className="w-3 h-3 text-gray-400" />
-              </a>
-
-              <a 
-                href="#about"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:text-emerald-800 hover:border-emerald-500/50 transition-colors shadow-2xs"
-              >
-                <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                <span>Investor Protection Charter</span>
                 <ExternalLink className="w-3 h-3 text-gray-400" />
               </a>
             </div>
