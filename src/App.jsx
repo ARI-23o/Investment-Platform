@@ -271,7 +271,7 @@ export default function App() {
               onSelectArticle={handleSelectArticle}
             />
 
-            {/* Page 9: Contact Us & Branch Network */}
+            {/* Page 9: Contact Us & Head Office */}
             <ContactSection
               onCallbackSubmitted={(record) => {
                 handleEnquiryRecorded(record);

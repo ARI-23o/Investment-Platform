@@ -177,7 +177,7 @@ export default function ContactSection({ onCallbackSubmitted }) {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">
             Contact &{" "}
             <span className="font-serif-accent italic font-normal text-amber-600">
-              Branch Network
+              Head Office
             </span>
           </h2>
           <p className="mt-3 text-sm sm:text-base text-gray-600 font-normal">
