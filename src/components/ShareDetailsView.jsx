@@ -170,7 +170,7 @@ export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuc
             className="inline-flex items-center gap-2 text-sm font-bold text-gray-700 hover:text-emerald-900 transition-colors cursor-pointer bg-white px-4 py-2 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs w-fit"
           >
             <ArrowLeft className="w-4 h-4 text-emerald-800" />
-            <span>← Back to All Unlisted Shares & Home</span>
+            <span>Back to All Unlisted Shares</span>
           </button>
 
           {/* Quick Switch Dropdown */}

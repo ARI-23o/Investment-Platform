@@ -132,7 +132,7 @@ export default function AllUnlistedSharesPage({
             className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-700 hover:text-emerald-900 transition-colors cursor-pointer bg-white px-4 py-2.5 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs w-fit"
           >
             <ArrowLeft className="w-4 h-4 text-emerald-800" />
-            <span>← Back to Home</span>
+            <span>Back to Home</span>
           </button>
 
           <div className="flex items-center gap-2 text-xs text-gray-500">

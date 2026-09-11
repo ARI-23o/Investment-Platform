@@ -46,7 +46,7 @@ export default function LegalPoliciesView({ initialTab = "risk", onBack, onNavig
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-200 text-xs sm:text-sm font-bold text-gray-700 hover:text-emerald-800 hover:border-emerald-500/50 transition-colors shadow-2xs cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>← Back to Home</span>
+            <span>Back to Home</span>
           </button>
 
           <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
