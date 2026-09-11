@@ -14,6 +14,7 @@ import {
   Info
 } from "lucide-react";
 import { syncLeadToGoogleSheet } from "../utils/exportUtils";
+import { saveEnquiryToBackend, registerUserInBackend } from "../services/api";
 
 export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   const [authMode, setAuthMode] = useState("password"); // 'password' or 'otp'
@@ -260,39 +261,49 @@ export function OpenAccountModal({ isOpen, onClose, onRegisterSuccess }) {
     }
 
     setLoading(true);
-    setTimeout(() => {
+    setTimeout(async () => {
       const newUser = {
         id: "USER-" + Date.now(),
-        name,
-        mobile,
-        pan: pan.toUpperCase(),
-        email: email || `${mobile}@gspinvestor.com`,
+        name: name.trim(),
+        mobile: mobile.trim(),
+        pan: pan.toUpperCase().trim(),
+        email: email.trim() || `${mobile.trim()}@gspinvestor.com`,
         clientId: "GSP" + Math.floor(100000 + Math.random() * 900000),
         registeredAt: new Date().toLocaleString(),
       };
 
-      // Save user in localStorage
-      const existing = JSON.parse(localStorage.getItem("gsp_users") || "[]");
-      existing.push(newUser);
-      localStorage.setItem("gsp_users", JSON.stringify(existing));
+      // 1. Save user locally and to backend
+      try {
+        const existingUsers = JSON.parse(localStorage.getItem("gsp_users") || "[]");
+        existingUsers.push(newUser);
+        localStorage.setItem("gsp_users", JSON.stringify(existingUsers));
+        await registerUserInBackend(newUser);
+      } catch (err) {
+        console.warn("User register storage error:", err);
+      }
 
-      // Also record in enquiries desk
+      // 2. Also record in enquiries desk
       const accountLead = {
         id: "ACC-" + Date.now(),
         type: "account",
         title: "Demat & Trading Account Opening",
-        fullName: name,
-        mobile,
-        pan: pan.toUpperCase(),
-        email,
+        fullName: name.trim(),
+        mobile: mobile.trim(),
+        pan: pan.toUpperCase().trim(),
+        email: email.trim(),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         status: "Approved",
       };
-      existingEnquiries.unshift(accountLead);
-      localStorage.setItem("gsp_enquiries", JSON.stringify(existingEnquiries));
 
-      // Sync to Google Sheet if configured
-      syncLeadToGoogleSheet(accountLead);
+      try {
+        const existingEnquiries = JSON.parse(localStorage.getItem("gsp_enquiries") || "[]");
+        existingEnquiries.unshift(accountLead);
+        localStorage.setItem("gsp_enquiries", JSON.stringify(existingEnquiries));
+        await saveEnquiryToBackend(accountLead);
+        syncLeadToGoogleSheet(accountLead);
+      } catch (err) {
+        console.warn("Account lead sync error:", err);
+      }
 
       setLoading(false);
       setStep(2);
@@ -302,7 +313,7 @@ export function OpenAccountModal({ isOpen, onClose, onRegisterSuccess }) {
         setStep(1);
         onClose();
       }, 2000);
-    }, 1000);
+    }, 800);
   };
 
   return (
@@ -455,7 +466,8 @@ export function QuickEnquiryModal({ isOpen, onClose, share, onSubmitted }) {
     existingEnquiries.unshift(enquiryRecord);
     localStorage.setItem("gsp_enquiries", JSON.stringify(existingEnquiries));
 
-    // Sync to Google Sheet if configured
+    // Save to Backend and sync to Google Sheet
+    saveEnquiryToBackend(enquiryRecord);
     syncLeadToGoogleSheet(enquiryRecord);
 
     setTimeout(() => {
@@ -621,6 +633,7 @@ export function ConsultAdvisorModal({ isOpen, onClose, service, onSubmitted }) {
     existingEnquiries.unshift(enquiryRecord);
     localStorage.setItem("gsp_enquiries", JSON.stringify(existingEnquiries));
 
+    saveEnquiryToBackend(enquiryRecord);
     syncLeadToGoogleSheet(enquiryRecord);
 
     setTimeout(() => {

@@ -72,6 +72,8 @@ export async function registerUserBackend(user) {
   return user;
 }
 
+export const registerUserInBackend = registerUserBackend;
+
 export async function fetchSettingsFromBackend() {
   try {
     const res = await fetch("/api/settings");
