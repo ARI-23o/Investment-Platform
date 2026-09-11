@@ -64,29 +64,60 @@ export default function App() {
     }
   };
 
-  // Sync across all browsers: Poll server and fetch settings
+  // Sync across all browsers: Poll server, settings, and Google Sheet products
   useEffect(() => {
     refreshEnquiries();
-    fetchSettingsFromBackend();
-    
-    // Fetch unlisted shares from Google Sheet
-    fetchUnlistedSharesFromSheet().then((shares) => {
-      if (shares && shares.length > 0) {
-        setUnlistedShares(shares);
+
+    // Helper to fetch and update unlisted shares state
+    const syncShares = async (url = null) => {
+      try {
+        const res = await fetchUnlistedSharesFromSheet(url);
+        if (res && res.products && Array.isArray(res.products) && res.products.length > 0) {
+          setUnlistedShares(res.products);
+        }
+      } catch (err) {
+        console.warn("Sync shares error:", err);
+      }
+    };
+
+    // 1. Initial immediate sync
+    syncShares();
+
+    // 2. Fetch central settings & sync with configured webhook
+    fetchSettingsFromBackend().then((settings) => {
+      if (settings && settings.googleSheetWebhook) {
+        syncShares(settings.googleSheetWebhook);
       }
     });
 
+    // 3. React to custom event whenever dynamic shares update
     const handleSharesUpdated = (e) => {
-      if (e.detail && Array.isArray(e.detail)) {
+      if (e.detail && Array.isArray(e.detail) && e.detail.length > 0) {
         setUnlistedShares(e.detail);
       }
     };
     window.addEventListener("unlisted-shares-updated", handleSharesUpdated);
 
-    const interval = setInterval(refreshEnquiries, 2500);
+    // 4. Background real-time polling
+    const enquiriesInterval = setInterval(refreshEnquiries, 2500);
+    const sharesInterval = setInterval(() => {
+      syncShares();
+    }, 10000); // Check for sheet updates every 10 seconds
+
+    // 5. Sync when user switches back to browser tab
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshEnquiries();
+        syncShares();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
-      clearInterval(interval);
+      clearInterval(enquiriesInterval);
+      clearInterval(sharesInterval);
       window.removeEventListener("unlisted-shares-updated", handleSharesUpdated);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 

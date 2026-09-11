@@ -105,14 +105,18 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
     setIsSyncingProducts(true);
     setProductSyncMsg("Connecting to your Google Sheet...");
     try {
-      const items = await fetchUnlistedSharesFromSheet(webhookUrl);
-      setSyncedProducts(items);
-      setProductSyncMsg(`✅ Successfully synced ${items.length} unlisted shares from Google Sheet!`);
+      const res = await fetchUnlistedSharesFromSheet(webhookUrl);
+      if (res && res.products && Array.isArray(res.products) && res.products.length > 0) {
+        setSyncedProducts(res.products);
+        setProductSyncMsg(`✅ Successfully synced ${res.products.length} unlisted shares in real-time from Google Sheet!`);
+      } else {
+        setProductSyncMsg(`⚠️ ${res?.reason || res?.message || res?.error || "No dynamic rows found. Default catalog active."}`);
+      }
     } catch (err) {
       setProductSyncMsg("⚠️ Could not load from sheet. Fallback default products are active.");
     } finally {
       setIsSyncingProducts(false);
-      setTimeout(() => setProductSyncMsg(""), 5000);
+      setTimeout(() => setProductSyncMsg(""), 6000);
     }
   };
 
@@ -579,10 +583,10 @@ function doPost(e) {
                         setTimeout(() => setCopiedAllShares(false), 2500);
                       }}
                       className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#107c41] hover:bg-[#0c6233] text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
-                      title="Copy all 17 website stocks with full columns ready to paste starting at cell A1 in your Google Sheet"
+                      title="Copy all 40 website stocks with full columns ready to paste starting at cell A1 in your Google Sheet"
                     >
                       {copiedAllShares ? <Check className="w-3.5 h-3.5 text-emerald-200" /> : <FileSpreadsheet className="w-3.5 h-3.5" />}
-                      <span>{copiedAllShares ? "All 17 Stocks Copied! ✅" : "📋 Copy All Stocks for Google Sheet"}</span>
+                      <span>{copiedAllShares ? "All 40 Stocks Copied! ✅" : "📋 Copy All 40 Stocks for Google Sheet"}</span>
                     </button>
 
                     <button
