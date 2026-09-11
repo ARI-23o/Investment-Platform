@@ -12,6 +12,7 @@ import ShareDetailsView from "./components/ShareDetailsView";
 import ArticleDetailsView from "./components/ArticleDetailsView";
 import CareersPage from "./components/CareersPage";
 import LegalPoliciesView from "./components/LegalPoliciesView";
+import AllUnlistedSharesPage from "./components/AllUnlistedSharesPage";
 import ContactSection from "./components/ContactSection";
 import Footer from "./components/Footer";
 import { LoginModal, OpenAccountModal, QuickEnquiryModal, ConsultAdvisorModal } from "./components/Modals";
@@ -27,7 +28,8 @@ import {
 import { getLocalUnlistedShares, fetchUnlistedSharesFromSheet } from "./services/unlistedSharesService";
 
 export default function App() {
-  const [currentView, setCurrentView] = useState("home"); // 'home', 'share-details', 'article-details', 'careers', 'legal'
+  const [currentView, setCurrentView] = useState("home"); // 'home', 'all-shares', 'share-details', 'article-details', 'careers', 'legal'
+  const [previousView, setPreviousView] = useState("home");
   const [unlistedShares, setUnlistedShares] = useState(getLocalUnlistedShares);
   const [selectedShareId, setSelectedShareId] = useState("msei");
   const [selectedArticleId, setSelectedArticleId] = useState("renewable-energy-unlisted");
@@ -116,6 +118,7 @@ export default function App() {
   };
 
   const handleSelectShare = (share) => {
+    setPreviousView(currentView);
     setSelectedShareId(share.id);
     setCurrentView("share-details");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -209,13 +212,32 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1">
-        {currentView === "share-details" ? (
-          /* Page 8: Dedicated Details For Shares */
+        {currentView === "all-shares" ? (
+          /* Dedicated All Unlisted Shares Catalog View */
+          <AllUnlistedSharesPage
+            shares={unlistedShares}
+            onSelectShare={handleSelectShare}
+            onEnquireShare={handleEnquireShare}
+            onBack={() => {
+              setCurrentView("home");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          />
+        ) : currentView === "share-details" ? (
+          /* Dedicated Details For A Single Particular Share */
           <ShareDetailsView
             selectedShareId={selectedShareId}
             shares={unlistedShares}
             onBack={() => {
-              setCurrentView("home");
+              if (previousView === "all-shares") {
+                setCurrentView("all-shares");
+              } else {
+                setCurrentView("home");
+                setTimeout(() => {
+                  const el = document.getElementById("unlisted-shares");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }, 60);
+              }
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             onEnquirySuccess={(record) => {
@@ -289,8 +311,8 @@ export default function App() {
               onSelectShare={handleSelectShare}
               onEnquireShare={handleEnquireShare}
               onViewAllShares={() => {
-                setSelectedShareId(unlistedShares[0]?.id || "msei");
-                setCurrentView("share-details");
+                setPreviousView("home");
+                setCurrentView("all-shares");
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
             />
