@@ -30,12 +30,12 @@ export default function ContactSection({ onCallbackSubmitted }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // 10-second Countdown Success Modal State
+  // Success Modal State & Auto-Dismiss Timer
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [submittedLead, setSubmittedLead] = useState(null);
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(8);
 
-  // 10s Countdown Timer Effect
+  // Auto-dismiss modal after 8s without reloading the page
   useEffect(() => {
     let timer;
     if (isSuccessModalOpen && countdown > 0) {
@@ -43,15 +43,10 @@ export default function ContactSection({ onCallbackSubmitted }) {
         setCountdown((prev) => prev - 1);
       }, 1000);
     } else if (isSuccessModalOpen && countdown === 0) {
-      // 10 seconds expired: gracefully refresh the page
-      window.location.reload();
+      handleCloseModal();
     }
     return () => clearInterval(timer);
   }, [isSuccessModalOpen, countdown]);
-
-  const handleManualRefresh = () => {
-    window.location.reload();
-  };
 
   const handleCloseModal = () => {
     setIsSuccessModalOpen(false);
@@ -60,7 +55,7 @@ export default function ContactSection({ onCallbackSubmitted }) {
     setEmail("");
     setMessage("");
     setErrors({});
-    setCountdown(10);
+    setCountdown(8);
   };
 
   // Strict Phone Handler - Digits Only, Max 10 digits
@@ -586,44 +581,36 @@ export default function ContactSection({ onCallbackSubmitted }) {
               </div>
             </div>
 
-            {/* 10-Second Countdown Banner with Animated Bar */}
-            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-950 space-y-2">
+            {/* Auto-Dismiss Notice with Animated Bar */}
+            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 space-y-2">
               <div className="flex items-center justify-between font-bold">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-amber-700 animate-spin" style={{ animationDuration: '4s' }} />
-                  <span>Auto-refreshing page in:</span>
+                <div className="flex items-center gap-2 text-emerald-900">
+                  <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Our advisor will call you shortly. Auto-closing in:</span>
                 </div>
-                <div className="w-8 h-8 rounded-xl bg-amber-200/90 text-amber-950 font-black font-mono text-sm flex items-center justify-center shadow-xs">
+                <div className="w-8 h-8 rounded-xl bg-emerald-200/90 text-emerald-950 font-black font-mono text-sm flex items-center justify-center shadow-xs">
                   {countdown}s
                 </div>
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full h-1.5 bg-amber-200/60 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-emerald-200/60 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-amber-600 rounded-full transition-all duration-1000 ease-linear"
-                  style={{ width: `${(countdown / 10) * 100}%` }}
+                  className="h-full bg-emerald-600 rounded-full transition-all duration-1000 ease-linear"
+                  style={{ width: `${(countdown / 8) * 100}%` }}
                 ></div>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-1">
-              <button
-                type="button"
-                onClick={handleManualRefresh}
-                className="w-full sm:flex-1 py-3 px-4 rounded-xl text-xs font-black bg-[#0f4b32] hover:bg-[#093523] text-white shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 hover:-translate-y-0.5"
-              >
-                <RotateCw className="w-3.5 h-3.5" />
-                <span>Refresh Now</span>
-              </button>
-
+            {/* Action Button */}
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="w-full sm:flex-1 py-3 px-4 rounded-xl text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all cursor-pointer"
+                className="w-full py-3.5 px-6 rounded-2xl text-sm font-black bg-[#0f4b32] hover:bg-[#093523] text-white shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 hover:-translate-y-0.5"
               >
-                Close & Stay
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Done • Return to Platform</span>
               </button>
             </div>
 
