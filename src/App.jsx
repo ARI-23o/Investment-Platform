@@ -27,19 +27,112 @@ import {
 } from "./services/api";
 import { getLocalUnlistedShares, fetchUnlistedSharesFromSheet } from "./services/unlistedSharesService";
 
+// Parse route and parameters from URL query, hash, or pathname
+function parseRouteFromUrl() {
+  if (typeof window === "undefined") return { view: "home" };
+  const hash = window.location.hash || "";
+  const params = new URLSearchParams(window.location.search);
+  const path = window.location.pathname.toLowerCase();
+
+  // 1. Search params (?share=msei or ?view=all-shares)
+  if (params.get("share")) {
+    return { view: "share-details", shareId: params.get("share") };
+  }
+  if (params.get("view") === "all-shares" || params.get("view") === "unlisted-shares") {
+    return { view: "all-shares" };
+  }
+  if (params.get("article")) {
+    return { view: "article-details", articleId: params.get("article") };
+  }
+
+  // 2. Hash routing (#/all-shares, #/share/msei, #/careers, #/legal)
+  if (hash.startsWith("#/share/") || hash.startsWith("#/shares/") || hash.startsWith("#share/")) {
+    const cleanId = hash.replace(/^#\/?(shares|share)\//, "").split("?")[0].split("#")[0].trim();
+    if (cleanId) return { view: "share-details", shareId: cleanId };
+  }
+
+  if (
+    hash === "#/all-shares" ||
+    hash === "#/unlisted-shares" ||
+    hash === "#/all-unlisted-shares" ||
+    hash === "#all-shares" ||
+    hash === "#/shares" ||
+    hash === "#all-unlisted"
+  ) {
+    return { view: "all-shares" };
+  }
+
+  if (hash.startsWith("#/article/") || hash.startsWith("#article/")) {
+    const cleanId = hash.replace(/^#\/?article\//, "").split("?")[0].split("#")[0].trim();
+    if (cleanId) return { view: "article-details", articleId: cleanId };
+  }
+
+  if (hash === "#/careers" || hash === "#careers") {
+    return { view: "careers" };
+  }
+
+  if (hash.startsWith("#/legal") || hash.startsWith("#legal")) {
+    const tabMatch = hash.match(/tab=([a-z]+)/);
+    return { view: "legal", legalTab: tabMatch ? tabMatch[1] : "disclaimer" };
+  }
+
+  // 3. Pathname routing
+  if (path.endsWith("/all-shares") || path.endsWith("/unlisted-shares")) {
+    return { view: "all-shares" };
+  }
+  if (path.endsWith("/careers")) {
+    return { view: "careers" };
+  }
+
+  return { view: "home" };
+}
+
 export default function App() {
-  const [currentView, setCurrentView] = useState("home"); // 'home', 'all-shares', 'share-details', 'article-details', 'careers', 'legal'
+  const initialRoute = parseRouteFromUrl();
+  const [currentView, setCurrentView] = useState(() => initialRoute.view || "home"); // 'home', 'all-shares', 'share-details', 'article-details', 'careers', 'legal'
   const [previousView, setPreviousView] = useState("home");
   const [unlistedShares, setUnlistedShares] = useState(getLocalUnlistedShares);
-  const [selectedShareId, setSelectedShareId] = useState("msei");
-  const [selectedArticleId, setSelectedArticleId] = useState("renewable-energy-unlisted");
-  const [legalTab, setLegalTab] = useState("disclaimer"); // 'disclaimer', 'terms', 'privacy'
+  const [selectedShareId, setSelectedShareId] = useState(() => initialRoute.shareId || "msei");
+  const [selectedArticleId, setSelectedArticleId] = useState(() => initialRoute.articleId || "renewable-energy-unlisted");
+  const [legalTab, setLegalTab] = useState(() => initialRoute.legalTab || "disclaimer"); // 'disclaimer', 'terms', 'privacy'
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [enquiriesDeskOpen, setEnquiriesDeskOpen] = useState(false);
   const [quickEnquiryShare, setQuickEnquiryShare] = useState(null);
   const [consultAdvisorService, setConsultAdvisorService] = useState(null);
   const [toast, setToast] = useState(null);
+
+  // Central routing helper with browser History & URL hash sync
+  const navigateToView = (view, extra = {}) => {
+    setPreviousView(currentView);
+    setCurrentView(view);
+
+    if (view === "home") {
+      if (window.location.hash.startsWith("#/")) {
+        window.history.pushState(null, "", window.location.pathname + window.location.search);
+      }
+    } else if (view === "all-shares") {
+      window.history.pushState(null, "", "#/all-shares");
+    } else if (view === "share-details") {
+      const sId = extra.shareId || selectedShareId;
+      if (sId) {
+        setSelectedShareId(sId);
+        window.history.pushState(null, "", `#/share/${sId}`);
+      }
+    } else if (view === "article-details") {
+      const aId = extra.articleId || selectedArticleId;
+      if (aId) {
+        setSelectedArticleId(aId);
+        window.history.pushState(null, "", `#/article/${aId}`);
+      }
+    } else if (view === "careers") {
+      window.history.pushState(null, "", "#/careers");
+    } else if (view === "legal") {
+      const tab = extra.tab || legalTab || "disclaimer";
+      setLegalTab(tab);
+      window.history.pushState(null, "", `#/legal?tab=${tab}`);
+    }
+  };
 
   // Persistent User Session
   const [currentUser, setCurrentUser] = useState(() => {
@@ -98,13 +191,24 @@ export default function App() {
     };
     window.addEventListener("unlisted-shares-updated", handleSharesUpdated);
 
-    // 4. Background real-time polling
+    // 4. Listen to browser Back / Forward buttons & URL hash changes
+    const handlePopState = () => {
+      const route = parseRouteFromUrl();
+      setCurrentView(route.view);
+      if (route.shareId) setSelectedShareId(route.shareId);
+      if (route.articleId) setSelectedArticleId(route.articleId);
+      if (route.legalTab) setLegalTab(route.legalTab);
+    };
+    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("hashchange", handlePopState);
+
+    // 5. Background real-time polling
     const enquiriesInterval = setInterval(refreshEnquiries, 2500);
     const sharesInterval = setInterval(() => {
       syncShares();
     }, 10000); // Check for sheet updates every 10 seconds
 
-    // 5. Sync when user switches back to browser tab
+    // 6. Sync when user switches back to browser tab
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         refreshEnquiries();
@@ -117,6 +221,8 @@ export default function App() {
       clearInterval(enquiriesInterval);
       clearInterval(sharesInterval);
       window.removeEventListener("unlisted-shares-updated", handleSharesUpdated);
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("hashchange", handlePopState);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
@@ -149,15 +255,14 @@ export default function App() {
   };
 
   const handleSelectShare = (share) => {
-    setPreviousView(currentView);
-    setSelectedShareId(share.id);
-    setCurrentView("share-details");
+    const id = typeof share === "object" ? share.id : share;
+    navigateToView("share-details", { shareId: id });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSelectArticle = (article) => {
-    setSelectedArticleId(article.id);
-    setCurrentView("article-details");
+    const id = typeof article === "object" ? article.id : article;
+    navigateToView("article-details", { articleId: id });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -190,7 +295,7 @@ export default function App() {
 
   const handleLoanClick = (loan) => {
     showToast(`Eligibility criteria for ${loan.title} opened.`);
-    if (currentView !== "home") setCurrentView("home");
+    if (currentView !== "home") navigateToView("home");
     setTimeout(() => {
       const contactElem = document.getElementById("contact");
       if (contactElem) contactElem.scrollIntoView({ behavior: "smooth" });
@@ -227,16 +332,16 @@ export default function App() {
         currentUser={currentUser}
         onLogout={handleLogout}
         currentSection={currentView}
-        setCurrentSection={setCurrentView}
+        setCurrentSection={(sec) => navigateToView(sec)}
         onSelectShare={handleSelectShare}
         onSelectArticle={handleSelectArticle}
         onNavigateCareers={() => {
-          setCurrentView("careers");
+          navigateToView("careers");
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
         onNavigateLegal={(tab) => {
           setLegalTab(tab || "disclaimer");
-          setCurrentView("legal");
+          navigateToView("legal", { tab: tab || "disclaimer" });
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
       />
@@ -250,7 +355,7 @@ export default function App() {
             onSelectShare={handleSelectShare}
             onEnquireShare={handleEnquireShare}
             onBack={() => {
-              setCurrentView("home");
+              navigateToView("home");
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           />
@@ -261,9 +366,9 @@ export default function App() {
             shares={unlistedShares}
             onBack={() => {
               if (previousView === "all-shares") {
-                setCurrentView("all-shares");
+                navigateToView("all-shares");
               } else {
-                setCurrentView("home");
+                navigateToView("home");
                 setTimeout(() => {
                   const el = document.getElementById("unlisted-shares");
                   if (el) el.scrollIntoView({ behavior: "smooth" });
@@ -280,14 +385,14 @@ export default function App() {
           <ArticleDetailsView
             selectedArticleId={selectedArticleId}
             onBack={() => {
-              setCurrentView("home");
+              navigateToView("home");
               setTimeout(() => {
                 const el = document.getElementById("market-insights");
                 if (el) el.scrollIntoView({ behavior: "smooth" });
               }, 60);
             }}
             onSelectArticle={(art) => {
-              setSelectedArticleId(art.id);
+              handleSelectArticle(art);
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             onConsultTopic={(topic) => {
@@ -302,7 +407,7 @@ export default function App() {
           /* Dedicated Careers & Job Application Page */
           <CareersPage
             onBack={() => {
-              setCurrentView("home");
+              navigateToView("home");
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             onApplicationSubmitted={(record) => {
@@ -315,10 +420,13 @@ export default function App() {
           <LegalPoliciesView
             initialTab={legalTab}
             onBack={() => {
-              setCurrentView("home");
+              navigateToView("home");
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            onNavigateTab={(tab) => setLegalTab(tab)}
+            onNavigateTab={(tab) => {
+              setLegalTab(tab);
+              navigateToView("legal", { tab });
+            }}
           />
         ) : (
           /* Home Layout Comprising all 9 Pages */
@@ -342,8 +450,7 @@ export default function App() {
               onSelectShare={handleSelectShare}
               onEnquireShare={handleEnquireShare}
               onViewAllShares={() => {
-                setPreviousView("home");
-                setCurrentView("all-shares");
+                navigateToView("all-shares");
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
             />
@@ -399,12 +506,12 @@ export default function App() {
         onSelectShare={handleSelectShare}
         onOpenAdmin={() => setEnquiriesDeskOpen(true)}
         onNavigateCareers={() => {
-          setCurrentView("careers");
+          navigateToView("careers");
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
         onNavigateLegal={(tab) => {
           setLegalTab(tab || "disclaimer");
-          setCurrentView("legal");
+          navigateToView("legal", { tab: tab || "disclaimer" });
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
       />
