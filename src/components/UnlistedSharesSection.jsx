@@ -41,18 +41,20 @@ export default function UnlistedSharesSection({ shares = UNLISTED_SHARES, onSele
     }
   };
 
-  // Filter logic based on Category and Search Query
-  const filteredShares = useMemo(() => {
+  // Filter & prioritize newly added and popular shares (max 8 on Home Page)
+  const { filteredShares, displayedShares } = useMemo(() => {
     const list = Array.isArray(shares) && shares.length > 0 ? shares : UNLISTED_SHARES;
-    return list.filter((share) => {
+    
+    // 1. Filter
+    const filtered = list.filter((share) => {
       // Category check
       let matchesCategory = true;
       if (selectedCategory === "financial") {
-        matchesCategory = (share.category && share.category.includes("Financial")) || (share.sector && share.sector.includes("Exchange"));
+        matchesCategory = (share.category && (share.category.includes("Financial") || share.category.includes("Fintech"))) || (share.sector && share.sector.includes("Exchange"));
       } else if (selectedCategory === "energy") {
         matchesCategory = (share.category && (share.category.includes("Energy") || share.category.includes("Power")));
       } else if (selectedCategory === "technology") {
-        matchesCategory = (share.category && share.category.includes("Technology")) || (share.sector && (share.sector.includes("Technology") || share.sector.includes("Tech")));
+        matchesCategory = (share.category && (share.category.includes("Technology") || share.category.includes("Tech") || share.category.includes("Consumer Tech"))) || (share.sector && (share.sector.includes("Technology") || share.sector.includes("Tech")));
       }
 
       // Search check
@@ -66,6 +68,24 @@ export default function UnlistedSharesSection({ shares = UNLISTED_SHARES, onSele
 
       return matchesCategory && matchesSearch;
     });
+
+    // 2. Sort: New / Sheet additions first, then Popular, then existing order
+    const sorted = [...filtered].sort((a, b) => {
+      const aIsNew = a.isNew || a.isFromSheet ? 1 : 0;
+      const bIsNew = b.isNew || b.isFromSheet ? 1 : 0;
+      if (aIsNew !== bIsNew) return bIsNew - aIsNew; // newly added on top
+
+      const aPop = a.popular ? 1 : 0;
+      const bPop = b.popular ? 1 : 0;
+      if (aPop !== bPop) return bPop - aPop;
+
+      return 0;
+    });
+
+    // 3. Homepage limit to exactly 8 shares
+    const displayed = sorted.slice(0, 8);
+
+    return { filteredShares: sorted, displayedShares: displayed };
   }, [shares, selectedCategory, searchQuery]);
 
   return (
@@ -84,7 +104,7 @@ export default function UnlistedSharesSection({ shares = UNLISTED_SHARES, onSele
             </span>
           </h2>
           <p className="mt-3 text-sm sm:text-base text-gray-600 font-normal">
-            The most-followed unlisted companies with investors this month. Discover real-time price discovery and place buy/sell enquiries.
+            Top unlisted companies with investors this month. Discover real-time price discovery and place buy/sell enquiries.
           </p>
         </div>
 
@@ -140,7 +160,7 @@ export default function UnlistedSharesSection({ shares = UNLISTED_SHARES, onSele
         {/* Results Counter */}
         <div className="flex items-center justify-between mb-6 px-1 text-xs text-gray-500 font-medium">
           <div>
-            Showing <strong className="text-gray-900">{filteredShares.length}</strong> {filteredShares.length === 1 ? "company" : "companies"}
+            Showing <strong className="text-gray-900">{displayedShares.length}</strong> of <strong className="text-gray-900">{filteredShares.length}</strong> {filteredShares.length === 1 ? "company" : "companies"}
             {selectedCategory !== "all" && <span> in <strong className="text-emerald-900 capitalize">{selectedCategory}</strong></span>}
             {searchQuery && <span> matching "<strong className="text-gray-900">{searchQuery}</strong>"</span>}
           </div>
@@ -149,15 +169,15 @@ export default function UnlistedSharesSection({ shares = UNLISTED_SHARES, onSele
             onClick={onViewAllShares}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0f4b32] hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl border border-emerald-200/80 transition-all cursor-pointer shadow-2xs"
           >
-            <span>View All Unlisted Shares</span>
+            <span>View All ({shares?.length || UNLISTED_SHARES.length}) Shares</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Cards Grid */}
-        {filteredShares.length > 0 ? (
+        {/* Cards Grid (Max 8 Shares on Home Page) */}
+        {displayedShares.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredShares.map((share) => {
+            {displayedShares.map((share) => {
               const isGreenButton = share.color === "emerald";
 
               return (
@@ -165,13 +185,18 @@ export default function UnlistedSharesSection({ shares = UNLISTED_SHARES, onSele
                   key={share.id}
                   className="relative bg-white rounded-3xl p-6 border border-gray-200/90 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1"
                 >
-                  {/* Popular Ribbon Tag */}
-                  {share.popular && (
+                  {/* New Addition or Popular Ribbon Tag */}
+                  {share.isNew || share.isFromSheet ? (
+                    <div className="absolute -top-3 right-4 bg-gradient-to-r from-amber-500 to-amber-600 text-gray-950 text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-md flex items-center gap-1 tracking-wider border border-amber-300/60">
+                      <Sparkles className="w-3 h-3 text-white fill-white" />
+                      <span>NEW</span>
+                    </div>
+                  ) : share.popular ? (
                     <div className="absolute -top-3 right-4 bg-gradient-to-r from-emerald-800 to-[#0f4b32] text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-full shadow-md flex items-center gap-1 tracking-wider">
                       <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                       <span>POPULAR</span>
                     </div>
-                  )}
+                  ) : null}
 
                   <div>
                     {/* Company Logo Header & Title */}

@@ -66,7 +66,10 @@ export function normalizeProductFromSheet(row, index = 0) {
     marketCap,
     popular,
     description,
-    color: "emerald"
+    color: "emerald",
+    isFromSheet: true,
+    isNew: true,
+    createdAt: Date.now()
   };
 }
 
