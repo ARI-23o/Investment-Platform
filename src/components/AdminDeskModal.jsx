@@ -62,8 +62,6 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   const handleAdminAuth = (e) => {
     e.preventDefault();
     if (adminPin === "admin123" || adminPin === "1234" || adminPin.toLowerCase() === "admin") {
@@ -266,6 +264,8 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 }`;
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
