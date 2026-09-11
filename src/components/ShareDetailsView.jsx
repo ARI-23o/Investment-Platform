@@ -25,9 +25,10 @@ import { UNLISTED_SHARES } from "../data/sharesData";
 import { syncLeadToGoogleSheet } from "../utils/exportUtils";
 import { saveEnquiryToBackend } from "../services/api";
 
-export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuccess }) {
-  const currentShare = UNLISTED_SHARES.find((s) => s.id === selectedShareId) || UNLISTED_SHARES[0];
+export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuccess, shares = UNLISTED_SHARES }) {
+  const currentShare = (shares && shares.length > 0 ? shares : UNLISTED_SHARES).find((s) => s.id === selectedShareId) || (shares && shares.length > 0 ? shares[0] : UNLISTED_SHARES[0]);
   const [selectedShare, setSelectedShare] = useState(currentShare);
+  const [imgError, setImgError] = useState(false);
   const [timeframe, setTimeframe] = useState("1M"); // '1D', '1W', '1M', '1Y', '5Y'
   const [enquiryType, setEnquiryType] = useState("buy"); // 'buy' or 'sell'
   const [quantity, setQuantity] = useState(currentShare.lotSize || 100);
@@ -39,12 +40,14 @@ export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuc
   const [submittedRef, setSubmittedRef] = useState(null);
 
   useEffect(() => {
-    const found = UNLISTED_SHARES.find((s) => s.id === selectedShareId);
+    const list = (shares && shares.length > 0) ? shares : UNLISTED_SHARES;
+    const found = list.find((s) => s.id === selectedShareId);
     if (found) {
       setSelectedShare(found);
       setQuantity(found.lotSize || 100);
+      setImgError(false);
     }
-  }, [selectedShareId]);
+  }, [selectedShareId, shares]);
 
   // Dynamic Chart Paths based on Timeframe
   const chartConfig = useMemo(() => {
@@ -176,16 +179,18 @@ export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuc
             <select 
               value={selectedShare.id} 
               onChange={(e) => {
-                const found = UNLISTED_SHARES.find((s) => s.id === e.target.value);
+                const list = (shares && shares.length > 0) ? shares : UNLISTED_SHARES;
+                const found = list.find((s) => s.id === e.target.value);
                 if (found) {
                   setSelectedShare(found);
                   setQuantity(found.lotSize || 100);
                   setSubmittedRef(null);
+                  setImgError(false);
                 }
               }}
               className="bg-white border border-gray-200 text-xs sm:text-sm font-bold rounded-xl px-3.5 py-2 outline-none focus:border-[#0f4b32] cursor-pointer shadow-2xs text-gray-900"
             >
-              {UNLISTED_SHARES.map((s) => (
+              {(shares && shares.length > 0 ? shares : UNLISTED_SHARES).map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.shortName || s.name} ({s.code})
                 </option>
@@ -208,9 +213,20 @@ export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuc
               {/* Company Logo, Ticker, Status */}
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-[#083b25] text-emerald-100 flex items-center justify-center font-black text-xl shadow-md shrink-0">
-                    {selectedShare.code}
-                  </div>
+                  {selectedShare.image && !imgError ? (
+                    <div className="w-16 h-16 rounded-2xl bg-white border border-gray-200 p-1.5 flex items-center justify-center shadow-md shrink-0 overflow-hidden">
+                      <img 
+                        src={selectedShare.image} 
+                        alt={selectedShare.name} 
+                        className="w-full h-full object-contain rounded-xl"
+                        onError={() => setImgError(true)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 rounded-2xl bg-[#083b25] text-emerald-100 flex items-center justify-center font-black text-xl shadow-md shrink-0">
+                      {selectedShare.code}
+                    </div>
+                  )}
                   <div>
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
                       {selectedShare.name}

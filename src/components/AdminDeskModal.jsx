@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   X, 
   Download, 
@@ -16,16 +16,21 @@ import {
   ShieldAlert,
   Copy,
   Check,
-  RotateCw
+  RotateCw,
+  Package,
+  Layers,
+  Sparkles,
+  ArrowUpDown
 } from "lucide-react";
 import { exportToCSV, syncLeadToGoogleSheet, getSavedWebhookUrl } from "../utils/exportUtils";
 import { fetchSettingsFromBackend, saveSettingsToBackend } from "../services/api";
+import { getLocalUnlistedShares, fetchUnlistedSharesFromSheet } from "../services/unlistedSharesService";
 
 export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll, onDeleteOne, onRefresh }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminPin, setAdminPin] = useState("");
   const [pinError, setPinError] = useState("");
-  const [activeTab, setActiveTab] = useState("leads"); // 'leads' or 'google-sheets'
+  const [activeTab, setActiveTab] = useState("leads"); // 'leads', 'products', or 'google-sheets'
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
 
@@ -36,10 +41,17 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   const [webhookSaved, setWebhookSaved] = useState(false);
   const [testStatus, setTestStatus] = useState("");
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedHeaders, setCopiedHeaders] = useState(false);
+
+  // Products sync state
+  const [syncedProducts, setSyncedProducts] = useState(getLocalUnlistedShares);
+  const [isSyncingProducts, setIsSyncingProducts] = useState(false);
+  const [productSyncMsg, setProductSyncMsg] = useState("");
 
   // Sync settings whenever modal opens
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
+      setSyncedProducts(getLocalUnlistedShares());
       fetchSettingsFromBackend().then((settings) => {
         if (settings && settings.googleSheetWebhook) {
           setWebhookUrl(settings.googleSheetWebhook);
@@ -89,6 +101,40 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
     setTimeout(() => setTestStatus(""), 4000);
   };
 
+  const handleSyncProductsNow = async () => {
+    setIsSyncingProducts(true);
+    setProductSyncMsg("Connecting to your Google Sheet...");
+    try {
+      const items = await fetchUnlistedSharesFromSheet(webhookUrl);
+      setSyncedProducts(items);
+      setProductSyncMsg(`✅ Successfully synced ${items.length} unlisted shares from Google Sheet!`);
+    } catch (err) {
+      setProductSyncMsg("⚠️ Could not load from sheet. Fallback default products are active.");
+    } finally {
+      setIsSyncingProducts(false);
+      setTimeout(() => setProductSyncMsg(""), 5000);
+    }
+  };
+
+  const sheetHeadersList = [
+    "Name",
+    "Short Name",
+    "Price",
+    "Lot Size",
+    "Available Quantity",
+    "Image URL",
+    "Category",
+    "ISIN",
+    "Status",
+    "52W High",
+    "52W Low",
+    "Market Cap",
+    "Description",
+    "Popular"
+  ];
+
+  const sheetHeadersString = sheetHeadersList.join("\t");
+
   // Filtered Leads
   const filteredEnquiries = enquiries.filter((item) => {
     const matchesSearch = 
@@ -101,26 +147,101 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
     return matchesSearch && matchesType;
   });
 
-  const sampleAppsScriptCode = `function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var params = e.parameter;
-  
-  // Appends row with your website fields
-  sheet.appendRow([
-    new Date(),
-    params.type || "Enquiry",
-    params.share || "",
-    params.quantity || "",
-    params.fullName || "",
-    params.mobile || "",
-    params.email || "",
-    params.service || "",
-    params.message || "",
-    params.pan || ""
-  ]);
-  
-  return ContentService.createTextOutput(JSON.stringify({ "result": "success" }))
-    .setMimeType(ContentService.MimeType.JSON);
+  const sampleAppsScriptCode = `// ─────────────────────────────────────────────────────────────
+// 2-WAY SYNC GOOGLE APPS SCRIPT FOR GSP INVESTMENT PLATFORM
+// 1. doGet: Reads Unlisted Products from tab "Unlisted product"
+// 2. doPost: Appends customer leads to tab "Enquiries"
+// ─────────────────────────────────────────────────────────────
+
+function doGet(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    // Locate the Unlisted product sheet tab
+    var sheet = ss.getSheetByName("Unlisted product") || 
+                ss.getSheetByName("Unlisted Product") || 
+                ss.getSheetByName("Products") || 
+                ss.getSheets()[1] || 
+                ss.getSheets()[0];
+                
+    var data = sheet.getDataRange().getValues();
+    if (!data || data.length < 2) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        count: 0,
+        data: []
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    var headers = data[0].map(function(h) {
+      return String(h || "").trim();
+    });
+    
+    var rows = [];
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      // Skip empty row if name is blank
+      if (!row[0] && !row[1]) continue;
+      
+      var obj = {};
+      for (var j = 0; j < headers.length; j++) {
+        var headerKey = headers[j];
+        if (headerKey) {
+          obj[headerKey] = row[j] !== undefined && row[j] !== null ? row[j] : "";
+        }
+      }
+      rows.push(obj);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "success",
+      count: rows.length,
+      data: rows
+    })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "error",
+      message: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    // Appends enquiry leads to "Enquiries" tab or first sheet
+    var sheet = ss.getSheetByName("Enquiries") || 
+                ss.getSheetByName("enquiries") || 
+                ss.getSheets()[0];
+    
+    var params = e.parameter || {};
+    if (e.postData && e.postData.contents) {
+      try {
+        var body = JSON.parse(e.postData.contents);
+        for (var k in body) {
+          params[k] = body[k];
+        }
+      } catch (e2) {}
+    }
+    
+    sheet.appendRow([
+      new Date(),
+      params.type || "Enquiry",
+      params.share || "",
+      params.quantity || "",
+      params.fullName || "",
+      params.mobile || "",
+      params.email || "",
+      params.service || "",
+      params.message || "",
+      params.pan || ""
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({ "result": "success" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }`;
 
   return (
@@ -220,6 +341,18 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
                 </button>
 
                 <button
+                  onClick={() => setActiveTab("products")}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    activeTab === "products"
+                      ? "bg-white text-emerald-950 shadow-xs border border-gray-200"
+                      : "text-gray-500 hover:text-gray-900"
+                  }`}
+                >
+                  <Package className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Unlisted Products ({syncedProducts.length})</span>
+                </button>
+
+                <button
                   onClick={() => setActiveTab("google-sheets")}
                   className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     activeTab === "google-sheets"
@@ -228,7 +361,7 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
                   }`}
                 >
                   <Settings className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Google Form / Sheet Sync</span>
+                  <span>Google Sheet 2-Way Sync</span>
                 </button>
               </div>
 
@@ -396,7 +529,155 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
               </div>
             )}
 
-            {/* TAB 2: GOOGLE SHEETS / GOOGLE FORM INTEGRATION */}
+            {/* TAB 2: UNLISTED PRODUCTS SYNC & CATALOG */}
+            {activeTab === "products" && (
+              <div className="p-6 flex-1 overflow-y-auto space-y-6">
+                
+                {/* Header Actions Card */}
+                <div className="bg-gradient-to-r from-[#031d13] to-[#0a482e] text-white p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Package className="w-5 h-5 text-amber-400" />
+                      <h4 className="text-sm sm:text-base font-bold text-white">
+                        Live Unlisted Products from Google Sheet
+                      </h4>
+                    </div>
+                    <p className="text-xs text-emerald-200/80 mt-1">
+                      {syncedProducts.length} unlisted shares currently loaded in your website catalog.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(sheetHeadersString);
+                        setCopiedHeaders(true);
+                        setTimeout(() => setCopiedHeaders(false), 2500);
+                      }}
+                      className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-emerald-100 border border-white/20 transition-all cursor-pointer flex items-center gap-1.5"
+                      title="Copy standard column headers to paste into row 1 of your 'Unlisted product' sheet tab"
+                    >
+                      {copiedHeaders ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedHeaders ? "Headers Copied!" : "Copy Sheet Headers (Row 1)"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isSyncingProducts}
+                      onClick={handleSyncProductsNow}
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-amber-400 hover:bg-amber-300 text-gray-950 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                    >
+                      <RotateCw className={`w-3.5 h-3.5 ${isSyncingProducts ? "animate-spin" : ""}`} />
+                      <span>{isSyncingProducts ? "Syncing..." : "Sync from Sheet Now"}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Status Message */}
+                {productSyncMsg && (
+                  <div className="p-3.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold animate-fade-in flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-700" />
+                    <span>{productSyncMsg}</span>
+                  </div>
+                )}
+
+                {/* Guide Box on How to Add/Edit */}
+                <div className="bg-amber-50/70 border border-amber-200 p-4 rounded-2xl text-xs text-amber-950 space-y-2">
+                  <strong className="block font-bold text-amber-900 text-[13px]">
+                    💡 How to Add / Edit Unlisted Shares in your Google Sheet:
+                  </strong>
+                  <ol className="list-decimal list-inside space-y-1 text-amber-900/90 leading-relaxed">
+                    <li>In your Google Spreadsheet, create/select the tab named <strong>"Unlisted product"</strong>.</li>
+                    <li>Click <strong>"Copy Sheet Headers"</strong> above and paste directly into row 1 (columns A to N).</li>
+                    <li>Add your stocks in each row: <strong>Name, Short Name, Price, Lot Size, Available Quantity, Image URL, Category, ISIN, Status, 52W High, 52W Low, Market Cap, Description, Popular</strong>.</li>
+                    <li>Whenever you edit prices, quantity, or add new shares in Google Sheets, your website automatically updates!</li>
+                  </ol>
+                </div>
+
+                {/* Live Products Table */}
+                <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-2xs">
+                  <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-700">
+                      Loaded Catalog ({syncedProducts.length} Stocks)
+                    </span>
+                    <span className="text-[11px] text-gray-500">
+                      Live sync active
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto max-h-[350px]">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-gray-100/70 text-gray-700 sticky top-0 uppercase font-bold text-[10px] tracking-wider border-b border-gray-200">
+                        <tr>
+                          <th className="py-2.5 px-3">Company</th>
+                          <th className="py-2.5 px-3">ISIN / Category</th>
+                          <th className="py-2.5 px-3">Price</th>
+                          <th className="py-2.5 px-3">Lot Size</th>
+                          <th className="py-2.5 px-3">Available Qty</th>
+                          <th className="py-2.5 px-3">52W Range</th>
+                          <th className="py-2.5 px-3">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {syncedProducts.map((p, idx) => (
+                          <tr key={p.id || idx} className="hover:bg-gray-50/80 transition-colors">
+                            <td className="py-3 px-3">
+                              <div className="flex items-center gap-2.5">
+                                {p.image ? (
+                                  <img 
+                                    src={p.image} 
+                                    alt={p.name} 
+                                    className="w-8 h-8 rounded-lg object-contain border border-gray-200 bg-white p-0.5 shrink-0"
+                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                  />
+                                ) : (
+                                  <div className="w-8 h-8 rounded-lg bg-[#083b25] text-emerald-100 font-bold text-[10px] flex items-center justify-center shrink-0">
+                                    {p.code || "STK"}
+                                  </div>
+                                )}
+                                <div>
+                                  <div className="font-bold text-gray-900">{p.name}</div>
+                                  <div className="text-[10px] text-gray-400">{p.shortName || p.code}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-3">
+                              <div className="font-mono text-gray-700">{p.isin || "—"}</div>
+                              <span className="inline-block mt-0.5 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-100">
+                                {p.category || "Unlisted"}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 font-extrabold text-emerald-950 text-sm">
+                              ₹{typeof p.price === "number" ? p.price.toLocaleString("en-IN") : p.price}
+                            </td>
+                            <td className="py-3 px-3 font-semibold text-gray-700">
+                              {p.lotSize || 100} shares
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 text-[11px]">
+                                {p.availableQty || "Available on Desk"}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 text-[11px] text-gray-600">
+                              <span>{p.low52 || "—"}</span> / <span>{p.high52 || "—"}</span>
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200">
+                                {p.status || "UNLISTED"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB 3: GOOGLE SHEETS 2-WAY SYNC INTEGRATION */}
             {activeTab === "google-sheets" && (
               <div className="p-6 flex-1 overflow-y-auto space-y-6">
                 
@@ -408,10 +689,14 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
                     </div>
                     <div>
                       <h4 className="text-sm font-bold text-gray-900">
-                        How to get all enquiries directly into your Google Sheet:
+                        2-Way Google Sheet Integration (Enquiries + Unlisted Products)
                       </h4>
                       <p className="text-xs text-gray-600 mt-1 leading-relaxed">
-                        Whenever someone submits a Share Enquiry, Demat Account, or Callback Request on this website, you can have it automatically added as a new row in your private Google Sheet in real time without any paid server!
+                        With a single Google Sheet Webhook URL, your website does 2 things automatically:
+                        <br />
+                        1. <strong>Enquiries Sync</strong>: All customer leads, demat requests, and orders are saved directly to your <em>"Enquiries"</em> tab.
+                        <br />
+                        2. <strong>Product Management</strong>: Add, edit prices, update images, and change available stock directly in your <em>"Unlisted product"</em> tab.
                       </p>
                     </div>
                   </div>
@@ -422,7 +707,7 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider">
-                        Google Sheet Webhook URL (Permanent Auto-Sync)
+                        Google Sheet Webhook URL (Permanent 2-Way Sync)
                       </label>
                       {webhookUrl ? (
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
@@ -436,7 +721,7 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
                       )}
                     </div>
                     <p className="text-[11px] text-gray-500 mb-2.5">
-                      Save once — all enquiries across the website will continuously sync to this Google Sheet automatically until you change or remove it.
+                      Save once — both enquiries recording and unlisted shares sync will work in real-time.
                     </p>
                     <form onSubmit={handleSaveWebhook} className="flex gap-2">
                       <input
@@ -478,7 +763,7 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
                 <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
                   <div className="flex items-center justify-between">
                     <h5 className="text-xs font-bold text-gray-900 uppercase tracking-wider">
-                      Step 2: Copy this free 10-line script into your Google Sheet (Takes 60 seconds)
+                      Step 2: 2-Way Google Apps Script (Handles Enquiries & Products)
                     </h5>
                     <button
                       type="button"
@@ -495,16 +780,16 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
                   </div>
 
                   <ol className="text-xs text-gray-600 space-y-1.5 list-decimal list-inside leading-relaxed">
-                    <li>Create a new spreadsheet at <a href="https://sheets.google.com" target="_blank" rel="noreferrer" className="text-emerald-700 underline">sheets.google.com</a>.</li>
+                    <li>In your Google Sheet with tabs <strong>"Enquiries"</strong> and <strong>"Unlisted product"</strong>.</li>
                     <li>Click <strong>Extensions</strong> → <strong>Apps Script</strong>.</li>
-                    <li>Delete any existing code, paste the code below, and click <strong>Save</strong> (💾).</li>
-                    <li>Click <strong>Deploy</strong> → <strong>New deployment</strong> → Select <strong>Web app</strong>.</li>
-                    <li>Set <em>Who has access</em> to <strong>"Anyone"</strong> and click <strong>Deploy</strong>.</li>
+                    <li>Replace the contents of <code className="text-emerald-800 font-mono">Code.gs</code> with the code below and click <strong>Save</strong> (💾).</li>
+                    <li>Click <strong>Deploy</strong> → <strong>New deployment</strong> (or Manage deployments → Edit → New version) → Select <strong>Web app</strong>.</li>
+                    <li>Set <em>Execute as:</em> <strong>"Me"</strong> and <em>Who has access:</em> <strong>"Anyone"</strong>, then click <strong>Deploy</strong>.</li>
                     <li>Copy the resulting Web App URL and paste it into Step 1 above!</li>
                   </ol>
 
                   <div className="relative">
-                    <pre className="bg-[#1e293b] text-emerald-300 p-4 rounded-xl text-[11px] font-mono overflow-x-auto">
+                    <pre className="bg-[#1e293b] text-emerald-300 p-4 rounded-xl text-[11px] font-mono overflow-x-auto max-h-[300px]">
                       {sampleAppsScriptCode}
                     </pre>
                   </div>

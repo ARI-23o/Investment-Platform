@@ -1,18 +1,8 @@
 import { UNLISTED_SHARES } from "../data/sharesData";
 import { RESEARCH_ARTICLES } from "../data/marketInsightsData";
+import { getLocalUnlistedShares } from "../services/unlistedSharesService";
 
-export const GLOBAL_SEARCH_ITEMS = [
-  // 1. UNLISTED SHARES & PRE-IPO COMPANIES
-  ...UNLISTED_SHARES.map((share) => ({
-    id: `share-${share.id}`,
-    type: "share",
-    title: `${share.name}`,
-    subtitle: `${share.category} • ISIN: ${share.isin}`,
-    category: "Unlisted Shares",
-    badge: `₹${share.price.toLocaleString("en-IN")}`,
-    keywords: `${share.name} ${share.shortName} ${share.code} ${share.isin} ${share.category} unlisted pre-ipo share stock private equity`,
-    data: share,
-  })),
+export const STATIC_SEARCH_ITEMS = [
 
   // 2. INVESTMENT PRODUCTS & SERVICES
   {
@@ -394,7 +384,21 @@ export function searchGlobalIndex(query) {
   const cleanQ = query.trim().toLowerCase();
   const words = cleanQ.split(/\s+/).filter(Boolean);
 
-  return GLOBAL_SEARCH_ITEMS.filter((item) => {
+  const currentShares = getLocalUnlistedShares() || UNLISTED_SHARES;
+  const dynamicShareItems = currentShares.map((share) => ({
+    id: `share-${share.id}`,
+    type: "share",
+    title: `${share.name}`,
+    subtitle: `${share.category || 'Unlisted'} • ISIN: ${share.isin || 'Available'}`,
+    category: "Unlisted Shares",
+    badge: `₹${(share.price || 0).toLocaleString("en-IN")}`,
+    keywords: `${share.name} ${share.shortName} ${share.code} ${share.isin} ${share.category} unlisted pre-ipo share stock private equity`,
+    data: share,
+  }));
+
+  const allItems = [...dynamicShareItems, ...STATIC_SEARCH_ITEMS];
+
+  return allItems.filter((item) => {
     const fullText = `${item.title} ${item.subtitle} ${item.category} ${item.keywords || ""}`.toLowerCase();
     return words.every((word) => fullText.includes(word));
   }).slice(0, 12);

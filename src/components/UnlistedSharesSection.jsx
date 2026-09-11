@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { UNLISTED_SHARES } from "../data/sharesData";
 
-export default function UnlistedSharesSection({ onSelectShare, onEnquireShare, onViewAllShares }) {
+export default function UnlistedSharesSection({ shares = UNLISTED_SHARES, onSelectShare, onEnquireShare, onViewAllShares }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
@@ -43,29 +43,30 @@ export default function UnlistedSharesSection({ onSelectShare, onEnquireShare, o
 
   // Filter logic based on Category and Search Query
   const filteredShares = useMemo(() => {
-    return UNLISTED_SHARES.filter((share) => {
+    const list = Array.isArray(shares) && shares.length > 0 ? shares : UNLISTED_SHARES;
+    return list.filter((share) => {
       // Category check
       let matchesCategory = true;
       if (selectedCategory === "financial") {
-        matchesCategory = share.category.includes("Financial") || (share.sector && share.sector.includes("Exchange"));
+        matchesCategory = (share.category && share.category.includes("Financial")) || (share.sector && share.sector.includes("Exchange"));
       } else if (selectedCategory === "energy") {
-        matchesCategory = share.category.includes("Energy") || share.category.includes("Power");
+        matchesCategory = (share.category && (share.category.includes("Energy") || share.category.includes("Power")));
       } else if (selectedCategory === "technology") {
-        matchesCategory = share.category.includes("Technology") || (share.sector && (share.sector.includes("Technology") || share.sector.includes("Tech")));
+        matchesCategory = (share.category && share.category.includes("Technology")) || (share.sector && (share.sector.includes("Technology") || share.sector.includes("Tech")));
       }
 
       // Search check
       const q = searchQuery.trim().toLowerCase();
       const matchesSearch = !q || 
-        share.name.toLowerCase().includes(q) || 
-        share.shortName.toLowerCase().includes(q) || 
-        share.code.toLowerCase().includes(q) || 
-        share.isin.toLowerCase().includes(q) ||
-        share.category.toLowerCase().includes(q);
+        (share.name && share.name.toLowerCase().includes(q)) || 
+        (share.shortName && share.shortName.toLowerCase().includes(q)) || 
+        (share.code && share.code.toLowerCase().includes(q)) || 
+        (share.isin && share.isin.toLowerCase().includes(q)) ||
+        (share.category && share.category.toLowerCase().includes(q));
 
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [shares, selectedCategory, searchQuery]);
 
   return (
     <section id="unlisted-shares" className="py-20 bg-[#fafcfb] border-t border-gray-100 relative overflow-hidden">
@@ -176,47 +177,51 @@ export default function UnlistedSharesSection({ onSelectShare, onEnquireShare, o
                     {/* Company Logo Header & Title */}
                     <div className="flex items-center gap-3.5 mb-4">
                       {/* Dynamic Logo Representation */}
-                      <div className="w-13 h-13 rounded-2xl bg-gray-50 border border-gray-200/80 flex items-center justify-center p-2 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
-                        {share.code === "XMSEI" && (
+                      <div className="w-13 h-13 rounded-2xl bg-gray-50 border border-gray-200/80 flex items-center justify-center p-2 shadow-2xs group-hover:scale-105 transition-transform shrink-0 overflow-hidden">
+                        {share.image ? (
+                          <img 
+                            src={share.image} 
+                            alt={share.shortName || share.name} 
+                            className="w-full h-full object-contain rounded-xl"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                        ) : share.code === "XMSEI" ? (
                           <div className="font-black text-xs tracking-tighter">
                             <span className="text-red-500 text-sm">X</span>
                             <span className="text-blue-900">MSEI</span>
                           </div>
-                        )}
-                        {share.code === "ONSE" && (
+                        ) : share.code === "ONSE" ? (
                           <div className="flex items-center gap-1 font-black text-xs text-orange-950">
                             <span className="w-2.5 h-2.5 rounded-full bg-red-600"></span>
                             <span>NSE</span>
                           </div>
-                        )}
-                        {share.code === "HPX" && (
+                        ) : share.code === "HPX" ? (
                           <div className="font-black text-xs text-emerald-800 tracking-wider">
                             HPX
                           </div>
-                        )}
-                        {share.code === "onix" && (
+                        ) : share.code === "onix" ? (
                           <div className="font-bold text-xs text-amber-700 lowercase tracking-tight">
                             onix
                           </div>
-                        )}
-                        {share.code === "SI" && (
+                        ) : share.code === "SI" ? (
                           <div className="font-black text-xs text-emerald-800">
                             SRIT
                           </div>
-                        )}
-                        {share.code === "HDB" && (
+                        ) : share.code === "HDB" ? (
                           <div className="font-black text-xs text-blue-900">
                             HDB
                           </div>
-                        )}
-                        {share.code === "BOAT" && (
+                        ) : share.code === "BOAT" ? (
                           <div className="font-black text-[11px] text-red-600 tracking-tighter uppercase">
                             boAt
                           </div>
-                        )}
-                        {share.code === "WAAREE" && (
+                        ) : share.code === "WAAREE" ? (
                           <div className="font-black text-[10px] text-emerald-900 uppercase tracking-tighter">
                             WAAREE
+                          </div>
+                        ) : (
+                          <div className="font-extrabold text-xs text-emerald-900 uppercase">
+                            {(share.shortName || share.code || share.name || "SH").slice(0, 4)}
                           </div>
                         )}
                       </div>
@@ -225,7 +230,7 @@ export default function UnlistedSharesSection({ onSelectShare, onEnquireShare, o
                         <h3 className="font-bold text-gray-900 text-sm sm:text-base leading-snug line-clamp-2 group-hover:text-emerald-900 transition-colors">
                           {share.name}
                         </h3>
-                        <span className="text-[11px] text-gray-400 font-medium">ISIN: {share.isin}</span>
+                        <span className="text-[11px] text-gray-400 font-medium">ISIN: {share.isin || "Available upon enquiry"}</span>
                       </div>
                     </div>
 
@@ -239,7 +244,7 @@ export default function UnlistedSharesSection({ onSelectShare, onEnquireShare, o
                     <div className="mb-6 p-3.5 rounded-2xl bg-gray-50/70 border border-gray-100">
                       <div className="flex items-baseline justify-between">
                         <span className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-                          ₹{share.price.toLocaleString("en-IN")}
+                          ₹{(share.price || 0).toLocaleString("en-IN")}
                         </span>
                         <span className="text-[10px] font-extrabold tracking-wider text-amber-700 uppercase bg-amber-100/80 px-2 py-0.5 rounded-md">
                           INDICATIVE
@@ -247,7 +252,13 @@ export default function UnlistedSharesSection({ onSelectShare, onEnquireShare, o
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-gray-500 font-medium mt-1.5 pt-1.5 border-t border-gray-200/60">
                         <span>Lot: {share.lotSize > 0 ? `${share.lotSize} shares` : "Flexible"}</span>
-                        <span>52W: {share.high52}</span>
+                        {share.availableQty ? (
+                          <span className="text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
+                            Avail: {share.availableQty}
+                          </span>
+                        ) : (
+                          <span>52W: {share.high52 || "Active"}</span>
+                        )}
                       </div>
                     </div>
                   </div>

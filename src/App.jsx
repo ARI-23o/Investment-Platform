@@ -24,9 +24,11 @@ import {
   clearAllEnquiriesFromBackend,
   fetchSettingsFromBackend
 } from "./services/api";
+import { getLocalUnlistedShares, fetchUnlistedSharesFromSheet } from "./services/unlistedSharesService";
 
 export default function App() {
   const [currentView, setCurrentView] = useState("home"); // 'home', 'share-details', 'article-details', 'careers', 'legal'
+  const [unlistedShares, setUnlistedShares] = useState(getLocalUnlistedShares);
   const [selectedShareId, setSelectedShareId] = useState("msei");
   const [selectedArticleId, setSelectedArticleId] = useState("renewable-energy-unlisted");
   const [legalTab, setLegalTab] = useState("disclaimer"); // 'disclaimer', 'terms', 'privacy'
@@ -64,8 +66,26 @@ export default function App() {
   useEffect(() => {
     refreshEnquiries();
     fetchSettingsFromBackend();
+    
+    // Fetch unlisted shares from Google Sheet
+    fetchUnlistedSharesFromSheet().then((shares) => {
+      if (shares && shares.length > 0) {
+        setUnlistedShares(shares);
+      }
+    });
+
+    const handleSharesUpdated = (e) => {
+      if (e.detail && Array.isArray(e.detail)) {
+        setUnlistedShares(e.detail);
+      }
+    };
+    window.addEventListener("unlisted-shares-updated", handleSharesUpdated);
+
     const interval = setInterval(refreshEnquiries, 2500);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("unlisted-shares-updated", handleSharesUpdated);
+    };
   }, []);
 
   const showToast = (message) => {
@@ -193,6 +213,7 @@ export default function App() {
           /* Page 8: Dedicated Details For Shares */
           <ShareDetailsView
             selectedShareId={selectedShareId}
+            shares={unlistedShares}
             onBack={() => {
               setCurrentView("home");
               window.scrollTo({ top: 0, behavior: "smooth" });
@@ -264,10 +285,11 @@ export default function App() {
 
             {/* Page 2: Popular Unlisted Shares */}
             <UnlistedSharesSection
+              shares={unlistedShares}
               onSelectShare={handleSelectShare}
               onEnquireShare={handleEnquireShare}
               onViewAllShares={() => {
-                setSelectedShareId("msei");
+                setSelectedShareId(unlistedShares[0]?.id || "msei");
                 setCurrentView("share-details");
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
