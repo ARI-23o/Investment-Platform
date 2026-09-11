@@ -147,9 +147,9 @@ export default function UnlistedSharesSection({ shares = UNLISTED_SHARES, onSele
 
           <button 
             onClick={onViewAllShares}
-            className="inline-flex items-center gap-1 text-xs font-bold text-[#0f4b32] hover:text-emerald-800 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0f4b32] hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl border border-emerald-200/80 transition-all cursor-pointer shadow-2xs"
           >
-            <span>View full table</span>
+            <span>View All Unlisted Shares</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -310,6 +310,27 @@ export default function UnlistedSharesSection({ shares = UNLISTED_SHARES, onSele
             </button>
           </div>
         )}
+
+        {/* Bottom Call to Action: View All Unlisted Shares */}
+        <div className="mt-12 pt-8 border-t border-gray-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-3xl p-6 sm:p-8 border shadow-xs">
+          <div className="space-y-1 text-center sm:text-left">
+            <h4 className="text-base sm:text-lg font-bold text-gray-900">
+              Looking for a specific unlisted or pre-IPO company?
+            </h4>
+            <p className="text-xs sm:text-sm text-gray-500 font-normal">
+              Explore our complete directory of unlisted equities, view historical charts, and request instant dealing desk quotes.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onViewAllShares}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl text-xs sm:text-sm font-extrabold text-white bg-[#0f4b32] hover:bg-[#093523] transition-all duration-200 shadow-md hover:shadow-xl hover:-translate-y-0.5 cursor-pointer shrink-0"
+          >
+            <span>View All Unlisted Shares</span>
+            <ArrowRight className="w-4 h-4 text-amber-400" />
+          </button>
+        </div>
 
       </div>
     </section>
