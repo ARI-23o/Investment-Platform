@@ -25,6 +25,7 @@ import {
 import { exportToCSV, syncLeadToGoogleSheet, getSavedWebhookUrl } from "../utils/exportUtils";
 import { fetchSettingsFromBackend, saveSettingsToBackend } from "../services/api";
 import { getLocalUnlistedShares, fetchUnlistedSharesFromSheet } from "../services/unlistedSharesService";
+import { UNLISTED_SHARES } from "../data/sharesData";
 
 export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll, onDeleteOne, onRefresh }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -42,6 +43,7 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   const [testStatus, setTestStatus] = useState("");
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedHeaders, setCopiedHeaders] = useState(false);
+  const [copiedAllShares, setCopiedAllShares] = useState(false);
 
   // Products sync state
   const [syncedProducts, setSyncedProducts] = useState(getLocalUnlistedShares);
@@ -134,6 +136,27 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   ];
 
   const sheetHeadersString = sheetHeadersList.join("\t");
+
+  const allCurrentSharesTSV = React.useMemo(() => {
+    const headerRow = sheetHeadersList.join("\t");
+    const dataRows = UNLISTED_SHARES.map((s) => [
+      s.name || "",
+      s.shortName || "",
+      s.price !== undefined ? s.price : 0,
+      s.lotSize || 100,
+      s.availableQty || "Available on Desk",
+      s.image || "",
+      s.category || "Unlisted Shares",
+      s.isin || "",
+      s.status || "UNLISTED",
+      s.high52 || "",
+      s.low52 || "",
+      s.marketCap || "",
+      (s.description || "").replace(/\r?\n|\r/g, " "),
+      s.popular ? "true" : "false"
+    ].join("\t"));
+    return [headerRow, ...dataRows].join("\n");
+  }, []);
 
   // Filtered Leads
   const filteredEnquiries = enquiries.filter((item) => {
@@ -551,6 +574,20 @@ function doPost(e) {
                     <button
                       type="button"
                       onClick={() => {
+                        navigator.clipboard.writeText(allCurrentSharesTSV);
+                        setCopiedAllShares(true);
+                        setTimeout(() => setCopiedAllShares(false), 2500);
+                      }}
+                      className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#107c41] hover:bg-[#0c6233] text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                      title="Copy all 17 website stocks with full columns ready to paste starting at cell A1 in your Google Sheet"
+                    >
+                      {copiedAllShares ? <Check className="w-3.5 h-3.5 text-emerald-200" /> : <FileSpreadsheet className="w-3.5 h-3.5" />}
+                      <span>{copiedAllShares ? "All 17 Stocks Copied! ✅" : "📋 Copy All Stocks for Google Sheet"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
                         navigator.clipboard.writeText(sheetHeadersString);
                         setCopiedHeaders(true);
                         setTimeout(() => setCopiedHeaders(false), 2500);
@@ -559,7 +596,7 @@ function doPost(e) {
                       title="Copy standard column headers to paste into row 1 of your 'Unlisted product' sheet tab"
                     >
                       {copiedHeaders ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copiedHeaders ? "Headers Copied!" : "Copy Sheet Headers (Row 1)"}</span>
+                      <span>{copiedHeaders ? "Headers Copied!" : "Copy Headers (Row 1)"}</span>
                     </button>
 
                     <button
