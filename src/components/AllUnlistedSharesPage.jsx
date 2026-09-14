@@ -273,6 +273,7 @@ export default function AllUnlistedSharesPage({
                           <img 
                             src={share.image} 
                             alt={share.shortName || share.name} 
+                            referrerPolicy="no-referrer"
                             className="w-full h-full object-contain rounded-xl"
                             onError={(e) => { e.target.style.display = 'none'; }}
                           />

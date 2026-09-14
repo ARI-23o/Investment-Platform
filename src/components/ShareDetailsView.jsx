@@ -218,6 +218,7 @@ export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuc
                       <img 
                         src={selectedShare.image} 
                         alt={selectedShare.name} 
+                        referrerPolicy="no-referrer"
                         className="w-full h-full object-contain rounded-xl"
                         onError={() => setImgError(true)}
                       />

@@ -21,6 +21,53 @@ function getField(obj, ...possibleKeys) {
   return "";
 }
 
+// Robust Google Drive / Google Photos / Direct URL converter for product images
+export function formatProductImageUrl(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== "string") return "";
+  let url = rawUrl.trim();
+
+  // 1. Google Sheets formula: =IMAGE("https://...") or =IMAGE('https://...')
+  const formulaMatch = url.match(/=IMAGE\s*\(\s*["']([^"']+)["']\s*\)/i);
+  if (formulaMatch) {
+    url = formulaMatch[1].trim();
+  }
+
+  // Strip leading/trailing quotation marks or whitespace
+  url = url.replace(/^["']|["']$/g, "").trim();
+  if (!url) return "";
+
+  // 2. Google Drive Sharing Link: https://drive.google.com/file/d/{FILE_ID}/view?usp=sharing
+  const driveFileMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/i);
+  if (driveFileMatch && driveFileMatch[1]) {
+    const fileId = driveFileMatch[1];
+    return `https://lh3.googleusercontent.com/d/${fileId}=w1000`;
+  }
+
+  // 3. Google Drive open?id={FILE_ID} or uc?id={FILE_ID} or id={FILE_ID}
+  const driveIdMatch = url.match(/drive\.google\.com\/(?:open|uc|thumbnail)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/i);
+  if (driveIdMatch && driveIdMatch[1]) {
+    const fileId = driveIdMatch[1];
+    return `https://lh3.googleusercontent.com/d/${fileId}=w1000`;
+  }
+
+  // 4. Pure File ID (if user pasted only the Google Drive ID)
+  if (/^[a-zA-Z0-9_-]{28,45}$/.test(url) && !url.includes("http") && !url.includes("/") && !url.includes(".")) {
+    return `https://lh3.googleusercontent.com/d/${url}=w1000`;
+  }
+
+  // 5. Google UserContent / Google Photos link
+  if (url.includes("googleusercontent.com") && !url.includes("=w") && !url.includes("=s")) {
+    return `${url}=w1000`;
+  }
+
+  // 6. Dropbox link (convert to direct stream)
+  if (url.includes("dropbox.com")) {
+    return url.replace(/[?&]dl=0/i, "").replace(/[?&]raw=1/i, "") + (url.includes("?") ? "&raw=1" : "?raw=1");
+  }
+
+  return url;
+}
+
 // Find existing logo placeholder from default static shares if available
 function findFallbackImage(name, shortName, code) {
   const match = UNLISTED_SHARES.find(
@@ -55,7 +102,13 @@ export function normalizeProductFromSheet(row, index = 0) {
 
   const availableQty = String(getField(row, "available quantity", "available_quantity", "available qty", "available_qty", "available", "qty", "quantity", "total shares") || "Available on Desk").trim();
 
-  let image = String(getField(row, "image url", "image_url", "image", "imageurl", "logo", "logo url", "photo", "icon")).trim();
+  const rawImage = getField(
+    row,
+    "image url", "image_url", "image", "imageurl", "logo", "logo url", 
+    "photo", "icon", "image link", "imagelink", "drive link", "googledrive", 
+    "google drive", "photo url", "picture", "img"
+  );
+  let image = formatProductImageUrl(rawImage);
   if (!image) {
     image = findFallbackImage(name, shortName, code);
   }

@@ -24,7 +24,8 @@ import {
   Package,
   Layers,
   Sparkles,
-  ArrowUpDown
+  ArrowUpDown,
+  ImageIcon
 } from "lucide-react";
 import { exportToCSV, syncLeadToGoogleSheet, getSavedWebhookUrl } from "../utils/exportUtils";
 import { 
@@ -35,7 +36,11 @@ import {
   changeAdminPasswordServer,
   logoutAdminServer
 } from "../services/api";
-import { getLocalUnlistedShares, fetchUnlistedSharesFromSheet } from "../services/unlistedSharesService";
+import { 
+  getLocalUnlistedShares, 
+  fetchUnlistedSharesFromSheet, 
+  formatProductImageUrl 
+} from "../services/unlistedSharesService";
 import { UNLISTED_SHARES } from "../data/sharesData";
 
 export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll, onDeleteOne, onRefresh }) {
@@ -47,6 +52,12 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   const [activeTab, setActiveTab] = useState("leads"); // 'leads', 'products', 'google-sheets', 'security'
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+
+  // Google Drive & Image tester state
+  const [testDriveInput, setTestDriveInput] = useState("");
+  const [previewConvertedUrl, setPreviewConvertedUrl] = useState("");
+  const [copiedConvertedUrl, setCopiedConvertedUrl] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
 
   // Google Sheet Webhook URL state with persistent multi-layer load
   const [webhookUrl, setWebhookUrl] = useState(() => {
@@ -757,6 +768,135 @@ function doPost(e) {
                     <li>Add your stocks in each row: <strong>Name, Short Name, Price, Lot Size, Available Quantity, Image URL, Category, ISIN, Status, 52W High, 52W Low, Market Cap, Description, Popular</strong>.</li>
                     <li>Whenever you edit prices, quantity, or add new shares in Google Sheets, your website automatically updates!</li>
                   </ol>
+                </div>
+
+                {/* 🖼️ Image & Google Drive Integration Guide & Live Tester */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                        <ImageIcon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold text-gray-900 uppercase tracking-wider">
+                          🖼️ Google Drive & Web Image Integration
+                        </h5>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          You can add product logos using Google Drive sharing links or direct web image links in your Google Sheet.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step by step for Google Drive */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-emerald-50/50 p-3.5 rounded-xl border border-emerald-100/80">
+                    <div className="space-y-1">
+                      <span className="font-bold text-emerald-950 flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-emerald-700 text-white text-[10px] flex items-center justify-center font-black">1</span>
+                        <span>Upload to Google Drive</span>
+                      </span>
+                      <p className="text-[11px] text-emerald-900/80">Upload your logo or stock picture into your Google Drive.</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="font-bold text-emerald-950 flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-emerald-700 text-white text-[10px] flex items-center justify-center font-black">2</span>
+                        <span>Set Share to "Anyone"</span>
+                      </span>
+                      <p className="text-[11px] text-emerald-900/80">Right-click file → <em>Share</em> → Set General access to <strong>"Anyone with the link"</strong>.</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="font-bold text-emerald-950 flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-emerald-700 text-white text-[10px] flex items-center justify-center font-black">3</span>
+                        <span>Paste into "Image URL"</span>
+                      </span>
+                      <p className="text-[11px] text-emerald-900/80">Paste the drive link directly into column F (Image URL). The website converts and renders it live!</p>
+                    </div>
+                  </div>
+
+                  {/* Live Google Drive Image Tester & Preview */}
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider">
+                        Live Image Link Tester & Preview
+                      </label>
+                      <span className="text-[11px] text-gray-400">
+                        Supports Google Drive, Google Photos, Imgur, AWS & direct image URLs
+                      </span>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={testDriveInput}
+                        onChange={(e) => {
+                          setTestDriveInput(e.target.value);
+                          const conv = formatProductImageUrl(e.target.value);
+                          setPreviewConvertedUrl(conv);
+                          setPreviewError(false);
+                        }}
+                        placeholder="Paste Google Drive link (e.g. https://drive.google.com/file/d/.../view?usp=sharing)"
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-xs focus:border-emerald-600 outline-none font-mono text-gray-900 bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const conv = formatProductImageUrl(testDriveInput);
+                          setPreviewConvertedUrl(conv);
+                          setPreviewError(false);
+                        }}
+                        className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shrink-0 shadow-sm"
+                      >
+                        Test & Preview
+                      </button>
+                    </div>
+
+                    {/* Preview Box */}
+                    {previewConvertedUrl && (
+                      <div className="p-3.5 bg-white rounded-xl border border-emerald-200 flex flex-wrap items-center justify-between gap-3 animate-fade-in">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-200 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                            <img
+                              src={previewConvertedUrl}
+                              alt="Preview"
+                              referrerPolicy="no-referrer"
+                              crossOrigin="anonymous"
+                              className="w-full h-full object-contain rounded-lg"
+                              onError={() => setPreviewError(true)}
+                              onLoad={() => setPreviewError(false)}
+                            />
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold flex items-center gap-1.5 text-gray-900">
+                              {previewError ? (
+                                <span className="text-rose-600 font-bold">⚠️ Could not load image. Make sure Google Drive sharing is set to "Anyone with the link".</span>
+                              ) : (
+                                <span className="text-emerald-800 font-bold flex items-center gap-1">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span>Image Valid & Active! Ready for your Google Sheet.</span>
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-gray-400 font-mono truncate max-w-sm mt-0.5">
+                              {previewConvertedUrl}
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(previewConvertedUrl);
+                            setCopiedConvertedUrl(true);
+                            setTimeout(() => setCopiedConvertedUrl(false), 2000);
+                          }}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 transition-all cursor-pointer flex items-center gap-1"
+                        >
+                          {copiedConvertedUrl ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                          <span>{copiedConvertedUrl ? "Copied!" : "Copy Direct Link"}</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Live Products Table */}
