@@ -238,7 +238,7 @@ export default function App() {
     const userProfile = typeof user === "object" ? user : { name: user, clientId: "GSP" + Math.floor(100000 + Math.random() * 900000) };
     setCurrentUser(userProfile);
     localStorage.setItem("gsp_current_user", JSON.stringify(userProfile));
-    showToast(`Welcome back, ${userProfile.name}! (Client ID: ${userProfile.clientId || 'GSP102839'})`);
+    showToast(`Welcome back, ${userProfile.name}!`);
   };
 
   const handleLogout = () => {

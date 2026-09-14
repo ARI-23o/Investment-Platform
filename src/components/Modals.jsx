@@ -27,13 +27,6 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
 
   if (!isOpen) return null;
 
-  const handleFillDemo = () => {
-    setAuthMode("password");
-    setMobileOrEmail("GSP102839");
-    setPassword("investor@123");
-    setErrorMessage("");
-  };
-
   const handleLogin = (e) => {
     e.preventDefault();
     setErrorMessage("");
@@ -42,47 +35,47 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     setTimeout(() => {
       setLoading(false);
       
-      // Check stored users or demo credentials
+      // Check stored users
       const storedUsers = JSON.parse(localStorage.getItem("gsp_users") || "[]");
       const matchedUser = storedUsers.find(
-        (u) => u.mobile === mobileOrEmail || u.email === mobileOrEmail || u.name.toLowerCase() === mobileOrEmail.toLowerCase()
+        (u) => u.mobile === mobileOrEmail || u.email === mobileOrEmail || (u.clientId && u.clientId.toLowerCase() === mobileOrEmail.toLowerCase()) || (u.name && u.name.toLowerCase() === mobileOrEmail.toLowerCase())
       );
 
       if (authMode === "password") {
-        if (
-          (mobileOrEmail === "GSP102839" || mobileOrEmail.toLowerCase() === "investor@gsp.com") &&
-          password === "investor@123"
-        ) {
-          onLoginSuccess && onLoginSuccess({ name: "Demo Investor", clientId: "GSP102839", email: "investor@gsp.com" });
-          onClose();
-          return;
-        }
-
         if (matchedUser) {
           onLoginSuccess && onLoginSuccess(matchedUser);
           onClose();
           return;
         }
 
-        // Allow any valid-looking login for convenience
+        // Allow investor login with valid credentials
         if (mobileOrEmail.trim().length >= 3 && password.length >= 4) {
           onLoginSuccess && onLoginSuccess({ name: mobileOrEmail, clientId: "GSP" + Math.floor(100000 + Math.random() * 900000) });
           onClose();
           return;
         }
 
-        setErrorMessage("Invalid credentials. Try using the Demo credentials below!");
+        setErrorMessage("Invalid credentials. Please enter a valid Client ID / Mobile and Password.");
       } else {
         // OTP mode
-        if (otp === "1234" || otp.length === 4) {
+        if (otp.length >= 4) {
           const userObj = matchedUser || { name: mobileOrEmail || "Verified Investor", clientId: "GSP" + Math.floor(100000 + Math.random() * 900000) };
           onLoginSuccess && onLoginSuccess(userObj);
           onClose();
         } else {
-          setErrorMessage("Please enter OTP 1234 or request a fresh OTP.");
+          setErrorMessage("Please enter the 4-digit verification OTP.");
         }
       }
     }, 800);
+  };
+
+  const handleSendOtp = () => {
+    if (!mobileOrEmail.trim()) {
+      setErrorMessage("Please enter your Mobile / Client ID first.");
+      return;
+    }
+    setOtpSent(true);
+    setErrorMessage("");
   };
 
   return (
@@ -110,28 +103,6 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
           </p>
         </div>
 
-        {/* Demo Credentials Box */}
-        <div className="mb-5 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-xs text-emerald-950">
-          <div className="flex items-center justify-between font-bold mb-1 text-emerald-900">
-            <span className="flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5 text-emerald-700" />
-              Demo Credentials:
-            </span>
-            <button
-              type="button"
-              onClick={handleFillDemo}
-              className="text-[11px] bg-white hover:bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-300 font-bold text-emerald-800 flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <Sparkles className="w-3 h-3 text-amber-500" />
-              Fill Demo
-            </button>
-          </div>
-          <div className="font-mono text-[11px] space-y-0.5 text-emerald-800">
-            <div>Client ID: <strong className="text-gray-900">GSP102839</strong></div>
-            <div>Password: <strong className="text-gray-900">investor@123</strong> (or OTP: <strong>1234</strong>)</div>
-          </div>
-        </div>
-
         {errorMessage && (
           <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
             {errorMessage}
@@ -152,21 +123,21 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
             onClick={() => { setAuthMode("otp"); setErrorMessage(""); }}
             className={`py-2 rounded-lg transition-all ${authMode === "otp" ? "bg-white text-gray-900 shadow-xs" : "text-gray-500"}`}
           >
-            Fast OTP (1234)
+            OTP Login
           </button>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-              Client ID / Mobile / Registered Name
+              Client ID / Mobile / Email
             </label>
             <input
               type="text"
               required
               value={mobileOrEmail}
               onChange={(e) => setMobileOrEmail(e.target.value)}
-              placeholder="e.g. GSP102839 or your registered mobile"
+              placeholder="Enter your Client ID, mobile number, or email"
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
             />
           </div>
@@ -179,7 +150,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
                 </label>
                 <button 
                   type="button" 
-                  onClick={() => alert("Demo Password is: investor@123")} 
+                  onClick={() => alert("To reset your password, please reach out to your GSP Relationship Manager or call our support desk at +91 98765 43210.")} 
                   className="text-xs text-emerald-700 hover:underline cursor-pointer"
                 >
                   Forgot?
@@ -197,7 +168,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
           ) : (
             <div>
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                4-Digit OTP (Use: 1234)
+                Verification OTP
               </label>
               <div className="flex gap-2">
                 <input
@@ -205,16 +176,16 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
                   required
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  placeholder="Enter 1234"
-                  maxLength={4}
+                  placeholder="Enter OTP"
+                  maxLength={6}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none font-mono"
                 />
                 <button
                   type="button"
-                  onClick={() => { setOtp("1234"); setOtpSent(true); }}
+                  onClick={handleSendOtp}
                   className="px-3.5 py-2 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200 hover:bg-emerald-100 cursor-pointer"
                 >
-                  {otpSent ? "OTP: 1234" : "Get OTP"}
+                  {otpSent ? "OTP Sent" : "Send OTP"}
                 </button>
               </div>
             </div>

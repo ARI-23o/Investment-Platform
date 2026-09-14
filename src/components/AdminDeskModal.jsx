@@ -86,18 +86,13 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
 
   const handleAdminAuth = (e) => {
     e.preventDefault();
-    const savedPin = localStorage.getItem("gsp_admin_pin") || currentActivePin;
+    const activePin = localStorage.getItem("gsp_admin_pin") || currentActivePin || "admin123";
     const entered = adminPin.trim();
-    if (
-      (savedPin && entered === savedPin) ||
-      entered === "admin123" ||
-      entered === "1234" ||
-      entered.toLowerCase() === "admin"
-    ) {
+    if (entered && entered === activePin) {
       setIsAuthenticated(true);
       setPinError("");
     } else {
-      setPinError("Invalid Admin PIN. Please check and try again.");
+      setPinError("Invalid Admin PIN / Password. Please check and try again.");
     }
   };
 
