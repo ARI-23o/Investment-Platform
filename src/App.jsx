@@ -235,10 +235,11 @@ export default function App() {
   };
 
   const handleLoginSuccess = (user) => {
-    const userProfile = typeof user === "object" ? user : { name: user, clientId: "GSP" + Math.floor(100000 + Math.random() * 900000) };
+    const userProfile = typeof user === "object" ? user : { name: "Administrator", role: "admin", clientId: "ADMIN" };
     setCurrentUser(userProfile);
     localStorage.setItem("gsp_current_user", JSON.stringify(userProfile));
-    showToast(`Welcome back, ${userProfile.name}!`);
+    showToast(`Authenticated successfully as ${userProfile.name}!`);
+    setEnquiriesDeskOpen(true);
   };
 
   const handleLogout = () => {

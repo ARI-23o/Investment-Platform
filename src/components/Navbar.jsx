@@ -353,17 +353,17 @@ export default function Navbar({
                     <div className="text-gray-400 text-[11px] font-mono">{currentUser.clientId || "Client Active"}</div>
                   </div>
                   <button
-                    onClick={() => { setUserDropdown(false); onOpenEnquiries(); }}
-                    className="w-full text-left py-1.5 px-2 rounded-lg hover:bg-gray-100 text-gray-700 font-medium flex items-center gap-2 cursor-pointer"
+                    onClick={() => { setUserDropdown(false); onOpenAdmin ? onOpenAdmin() : onOpenEnquiries(); }}
+                    className="w-full text-left py-2 px-2.5 rounded-xl hover:bg-emerald-50 text-emerald-950 font-bold flex items-center gap-2 cursor-pointer transition-colors"
                   >
-                    <ClipboardList className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>My Enquiries & Forms</span>
+                    <ClipboardList className="w-4 h-4 text-emerald-700" />
+                    <span>Admin Control Desk</span>
                   </button>
                   <button
                     onClick={() => { setUserDropdown(false); onLogout(); }}
-                    className="w-full text-left py-1.5 px-2 rounded-lg hover:bg-rose-50 text-rose-600 font-medium flex items-center gap-2 cursor-pointer mt-1"
+                    className="w-full text-left py-2 px-2.5 rounded-xl hover:bg-rose-50 text-rose-600 font-medium flex items-center gap-2 cursor-pointer mt-1 transition-colors"
                   >
-                    <LogOut className="w-3.5 h-3.5" />
+                    <LogOut className="w-4 h-4" />
                     <span>Log Out</span>
                   </button>
                 </div>
@@ -498,13 +498,21 @@ export default function Navbar({
           <div className="pt-3 flex flex-col gap-2.5 border-t border-gray-100">
             {currentUser ? (
               <div className="space-y-2">
-                <div className="p-3 bg-emerald-50 rounded-xl text-xs">
-                  <div className="font-bold text-gray-900">{currentUser.name}</div>
-                  <div className="text-gray-500">{currentUser.clientId}</div>
+                <div className="p-3 bg-emerald-50 rounded-xl text-xs flex justify-between items-center">
+                  <div>
+                    <div className="font-bold text-gray-900">{currentUser.name}</div>
+                    <div className="text-gray-500 font-mono text-[10px]">{currentUser.clientId || "Client Active"}</div>
+                  </div>
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); onOpenAdmin ? onOpenAdmin() : onOpenEnquiries(); }}
+                    className="px-3 py-1.5 bg-emerald-700 text-white rounded-lg font-bold text-xs cursor-pointer shadow-xs"
+                  >
+                    Open Desk
+                  </button>
                 </div>
                 <button
                   onClick={() => { setMobileMenuOpen(false); onLogout(); }}
-                  className="w-full py-2.5 text-xs font-bold text-rose-600 bg-rose-50 rounded-xl"
+                  className="w-full py-2.5 text-xs font-bold text-rose-600 bg-rose-50 rounded-xl cursor-pointer"
                 >
                   Log Out
                 </button>

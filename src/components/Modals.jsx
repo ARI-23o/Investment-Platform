@@ -24,204 +24,109 @@ import {
   ShieldAlert,
   BadgeCheck,
   Cpu,
-  ChevronRight
+  ChevronRight,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { syncLeadToGoogleSheet } from "../utils/exportUtils";
-import { saveEnquiryToBackend, registerUserInBackend } from "../services/api";
+import { saveEnquiryToBackend, registerUserInBackend, loginAdminServer } from "../services/api";
 
 export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
-  const [authMode, setAuthMode] = useState("password"); // 'password' or 'otp'
-  const [mobileOrEmail, setMobileOrEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   if (!isOpen) return null;
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    const entered = password.trim();
+    if (!entered) return;
+
     setLoading(true);
+    const result = await loginAdminServer(entered);
+    setLoading(false);
 
-    setTimeout(() => {
-      setLoading(false);
-      
-      // Check stored users
-      const storedUsers = JSON.parse(localStorage.getItem("gsp_users") || "[]");
-      const matchedUser = storedUsers.find(
-        (u) => u.mobile === mobileOrEmail || u.email === mobileOrEmail || (u.clientId && u.clientId.toLowerCase() === mobileOrEmail.toLowerCase()) || (u.name && u.name.toLowerCase() === mobileOrEmail.toLowerCase())
-      );
-
-      if (authMode === "password") {
-        if (matchedUser) {
-          onLoginSuccess && onLoginSuccess(matchedUser);
-          onClose();
-          return;
-        }
-
-        // Allow investor login with valid credentials
-        if (mobileOrEmail.trim().length >= 3 && password.length >= 4) {
-          onLoginSuccess && onLoginSuccess({ name: mobileOrEmail, clientId: "GSP" + Math.floor(100000 + Math.random() * 900000) });
-          onClose();
-          return;
-        }
-
-        setErrorMessage("Invalid credentials. Please enter a valid Client ID / Mobile and Password.");
-      } else {
-        // OTP mode
-        if (otp.length >= 4) {
-          const userObj = matchedUser || { name: mobileOrEmail || "Verified Investor", clientId: "GSP" + Math.floor(100000 + Math.random() * 900000) };
-          onLoginSuccess && onLoginSuccess(userObj);
-          onClose();
-        } else {
-          setErrorMessage("Please enter the 4-digit verification OTP.");
-        }
-      }
-    }, 800);
-  };
-
-  const handleSendOtp = () => {
-    if (!mobileOrEmail.trim()) {
-      setErrorMessage("Please enter your Mobile / Client ID first.");
-      return;
+    if (result.success) {
+      setPassword("");
+      setErrorMessage("");
+      onLoginSuccess && onLoginSuccess({ name: "Administrator", role: "admin", clientId: "ADMIN" });
+      onClose();
+    } else {
+      setErrorMessage(result.error || "Authentication failed. Invalid password.");
     }
-    setOtpSent(true);
-    setErrorMessage("");
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-gray-100 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+      <div className="bg-[#0b131b] text-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-emerald-500/20 relative overflow-hidden">
         
+        {/* Ambient Lighting */}
+        <div className="absolute -top-20 -left-20 w-56 h-56 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -right-20 w-56 h-56 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+          className="absolute top-5 right-5 p-2 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors z-10 cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {/* Brand Header */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 mb-3 font-black text-lg">
-            GSP
+        {/* Brand & Security Header */}
+        <div className="text-center mb-6 relative z-10">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-700/20 border border-emerald-500/30 text-emerald-400 mb-3 shadow-inner">
+            <Lock className="w-6 h-6 text-emerald-400" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">
-            Investor Portal Login
+          <h3 className="text-2xl font-bold text-white tracking-tight">
+            Secure Portal Login
           </h3>
-          <p className="text-xs text-gray-500 mt-1">
-            Access equity, portfolio value, and unlisted holdings
+          <p className="text-xs text-gray-400 mt-1">
+            Enter your authorized access password
           </p>
         </div>
 
         {errorMessage && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
+          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 font-medium">
             {errorMessage}
           </div>
         )}
 
-        {/* Tab Selector */}
-        <div className="grid grid-cols-2 p-1 bg-gray-100 rounded-xl mb-5 text-xs font-bold">
-          <button
-            type="button"
-            onClick={() => { setAuthMode("password"); setErrorMessage(""); }}
-            className={`py-2 rounded-lg transition-all ${authMode === "password" ? "bg-white text-gray-900 shadow-xs" : "text-gray-500"}`}
-          >
-            Password Login
-          </button>
-          <button
-            type="button"
-            onClick={() => { setAuthMode("otp"); setErrorMessage(""); }}
-            className={`py-2 rounded-lg transition-all ${authMode === "otp" ? "bg-white text-gray-900 shadow-xs" : "text-gray-500"}`}
-          >
-            OTP Login
-          </button>
-        </div>
-
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4 relative z-10">
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-              Client ID / Mobile / Email
+            <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+              Password
             </label>
-            <input
-              type="text"
-              required
-              value={mobileOrEmail}
-              onChange={(e) => setMobileOrEmail(e.target.value)}
-              placeholder="Enter your Client ID, mobile number, or email"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
-            />
-          </div>
-
-          {authMode === "password" ? (
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Password
-                </label>
-                <button 
-                  type="button" 
-                  onClick={() => alert("To reset your password, please reach out to your GSP Relationship Manager or call our support desk at +91 98765 43210.")} 
-                  className="text-xs text-emerald-700 hover:underline cursor-pointer"
-                >
-                  Forgot?
-                </button>
-              </div>
+            <div className="relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
+                autoFocus
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setErrorMessage(""); }}
                 placeholder="••••••••"
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
+                className="w-full px-4 py-3 pr-11 rounded-xl bg-white/5 border border-white/15 text-white text-sm placeholder-gray-500 focus:border-emerald-400 focus:bg-white/10 outline-none transition-all"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1 cursor-pointer transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
-          ) : (
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                Verification OTP
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  required
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  placeholder="Enter OTP"
-                  maxLength={6}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none font-mono"
-                />
-                <button
-                  type="button"
-                  onClick={handleSendOtp}
-                  className="px-3.5 py-2 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200 hover:bg-emerald-100 cursor-pointer"
-                >
-                  {otpSent ? "OTP Sent" : "Send OTP"}
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 rounded-xl text-sm font-bold bg-[#0f4b32] hover:bg-[#093523] text-white shadow-md transition-all cursor-pointer mt-4 disabled:opacity-50"
+            className="w-full py-3.5 px-4 rounded-xl text-sm font-bold bg-[#e8a317] hover:bg-[#d9940d] text-gray-950 shadow-lg shadow-amber-500/20 transition-all cursor-pointer mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? "Verifying Credentials..." : "Secure Login →"}
+            {loading ? "Authenticating..." : "Authenticate & Sign In →"}
           </button>
         </form>
-
-        <div className="mt-6 pt-4 border-t border-gray-100 text-center text-xs text-gray-500">
-          New to GSP Investment?{" "}
-          <button 
-            onClick={() => { onClose(); }} 
-            className="text-emerald-800 font-bold hover:underline"
-          >
-            Open Account with Zero Brokerage
-          </button>
-        </div>
       </div>
     </div>
   );
