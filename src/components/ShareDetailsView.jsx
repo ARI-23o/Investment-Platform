@@ -220,7 +220,14 @@ export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuc
                         alt={selectedShare.name} 
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-contain rounded-xl"
-                        onError={() => setImgError(true)}
+                        onError={(e) => {
+                          if (!e.currentTarget.dataset.proxied && selectedShare.image && selectedShare.image.startsWith("http")) {
+                            e.currentTarget.dataset.proxied = "true";
+                            e.currentTarget.src = `https://images.weserv.nl/?url=${encodeURIComponent(selectedShare.image)}`;
+                          } else {
+                            setImgError(true);
+                          }
+                        }}
                       />
                     </div>
                   ) : (

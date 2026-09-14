@@ -21,14 +21,14 @@ function getField(obj, ...possibleKeys) {
   return "";
 }
 
-// Robust Google Drive / Google Photos / Direct URL converter for product images
+// Robust Google Drive / Google Search / Google Photos / Direct URL converter for product images
 export function formatProductImageUrl(rawUrl) {
   if (!rawUrl || typeof rawUrl !== "string") return "";
   let url = rawUrl.trim();
 
-  // 1. Google Sheets formula: =IMAGE("https://...") or =IMAGE('https://...')
-  const formulaMatch = url.match(/=IMAGE\s*\(\s*["']([^"']+)["']\s*\)/i);
-  if (formulaMatch) {
+  // 1. Google Sheets formulas: =IMAGE("https://...") or =HYPERLINK("https://...")
+  const formulaMatch = url.match(/=(?:IMAGE|HYPERLINK)\s*\(\s*["']([^"']+)["']/i);
+  if (formulaMatch && formulaMatch[1]) {
     url = formulaMatch[1].trim();
   }
 
@@ -36,33 +36,62 @@ export function formatProductImageUrl(rawUrl) {
   url = url.replace(/^["']|["']$/g, "").trim();
   if (!url) return "";
 
-  // 2. Google Drive Sharing Link: https://drive.google.com/file/d/{FILE_ID}/view?usp=sharing
+  // 2. Google Search / Image redirect link (e.g. google.com/imgres?imgurl=https%3A%2F%2F... or google.com/url?q=...)
+  if (url.includes("google.") && (url.includes("imgurl=") || url.includes("url?q=") || url.includes("imgrefurl="))) {
+    try {
+      const parsedUrl = new URL(url.startsWith("http") ? url : `https://${url}`);
+      const target = parsedUrl.searchParams.get("imgurl") || parsedUrl.searchParams.get("q") || parsedUrl.searchParams.get("url");
+      if (target && target.startsWith("http")) {
+        url = decodeURIComponent(target);
+      }
+    } catch (e) {
+      const match = url.match(/(?:imgurl|q|url)=([^&]+)/i);
+      if (match && match[1]) {
+        try {
+          const decoded = decodeURIComponent(match[1]);
+          if (decoded.startsWith("http")) url = decoded;
+        } catch {}
+      }
+    }
+  }
+
+  // 3. Google Drive Sharing Link: drive.google.com/file/d/{FILE_ID}/...
   const driveFileMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/i);
   if (driveFileMatch && driveFileMatch[1]) {
-    const fileId = driveFileMatch[1];
-    return `https://lh3.googleusercontent.com/d/${fileId}=w1000`;
+    return `https://lh3.googleusercontent.com/d/${driveFileMatch[1]}=w1000`;
   }
 
-  // 3. Google Drive open?id={FILE_ID} or uc?id={FILE_ID} or id={FILE_ID}
-  const driveIdMatch = url.match(/drive\.google\.com\/(?:open|uc|thumbnail)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/i);
+  // 4. Google Drive open?id={FILE_ID}, uc?id={FILE_ID}, thumbnail?id={FILE_ID}, uc?export=view&id={FILE_ID}
+  const driveIdMatch = url.match(/drive\.google\.com\/(?:open|uc|thumbnail|file)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/i);
   if (driveIdMatch && driveIdMatch[1]) {
-    const fileId = driveIdMatch[1];
-    return `https://lh3.googleusercontent.com/d/${fileId}=w1000`;
+    return `https://lh3.googleusercontent.com/d/${driveIdMatch[1]}=w1000`;
   }
 
-  // 4. Pure File ID (if user pasted only the Google Drive ID)
+  // 5. Google Drive view/sharing short links or /d/{FILE_ID}
+  const driveShortMatch = url.match(/drive\.google\.com\/.*\/d\/([a-zA-Z0-9_-]+)/i);
+  if (driveShortMatch && driveShortMatch[1]) {
+    return `https://lh3.googleusercontent.com/d/${driveShortMatch[1]}=w1000`;
+  }
+
+  // 6. Pure Google Drive File ID (28 to 45 alphanumeric characters without slashes/dots)
   if (/^[a-zA-Z0-9_-]{28,45}$/.test(url) && !url.includes("http") && !url.includes("/") && !url.includes(".")) {
     return `https://lh3.googleusercontent.com/d/${url}=w1000`;
   }
 
-  // 5. Google UserContent / Google Photos link
+  // 7. Google UserContent / Google Photos link
   if (url.includes("googleusercontent.com") && !url.includes("=w") && !url.includes("=s")) {
     return `${url}=w1000`;
   }
 
-  // 6. Dropbox link (convert to direct stream)
+  // 8. Dropbox link (convert to direct stream)
   if (url.includes("dropbox.com")) {
     return url.replace(/[?&]dl=0/i, "").replace(/[?&]raw=1/i, "") + (url.includes("?") ? "&raw=1" : "?raw=1");
+  }
+
+  // 9. Imgur direct link
+  if (url.includes("imgur.com") && !url.includes("i.imgur.com") && !url.includes(".png") && !url.includes(".jpg")) {
+    const imgurId = url.split("/").pop().replace(/[^a-zA-Z0-9]/g, "");
+    if (imgurId) return `https://i.imgur.com/${imgurId}.png`;
   }
 
   return url;
@@ -77,6 +106,27 @@ function findFallbackImage(name, shortName, code) {
       (s.code && s.code.toLowerCase() === (code || "").toLowerCase())
   );
   if (match && match.image) return match.image;
+  return "";
+}
+
+// Helper: Scan row for any image URL if not found in standard columns
+function scanRowForImageUrl(row) {
+  if (!row || typeof row !== "object") return "";
+  for (const key of Object.keys(row)) {
+    const val = String(row[key] || "").trim();
+    if (!val) continue;
+    if (
+      val.includes("drive.google.com") ||
+      val.includes("googleusercontent.com") ||
+      val.startsWith("http://") ||
+      val.startsWith("https://") ||
+      val.startsWith("=IMAGE") ||
+      val.startsWith("=HYPERLINK") ||
+      /\.(png|jpg|jpeg|webp|svg|gif|bmp)(\?.*)?$/i.test(val)
+    ) {
+      return val;
+    }
+  }
   return "";
 }
 
@@ -102,12 +152,15 @@ export function normalizeProductFromSheet(row, index = 0) {
 
   const availableQty = String(getField(row, "available quantity", "available_quantity", "available qty", "available_qty", "available", "qty", "quantity", "total shares") || "Available on Desk").trim();
 
-  const rawImage = getField(
+  let rawImage = getField(
     row,
     "image url", "image_url", "image", "imageurl", "logo", "logo url", 
     "photo", "icon", "image link", "imagelink", "drive link", "googledrive", 
-    "google drive", "photo url", "picture", "img"
+    "google drive", "photo url", "picture", "img", "link", "media", "avatar"
   );
+  if (!rawImage) {
+    rawImage = scanRowForImageUrl(row);
+  }
   let image = formatProductImageUrl(rawImage);
   if (!image) {
     image = findFallbackImage(name, shortName, code);

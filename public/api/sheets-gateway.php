@@ -62,13 +62,13 @@ function saveSettings($file, $data) {
     return @file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT));
 }
 
-// Helper: Convert Google Drive / Photos / Dropbox URLs to Direct High-Speed CDN URLs
+// Helper: Convert Google Drive / Google Search / Google Photos / Dropbox / Web URLs to Direct High-Speed CDN URLs
 function formatProductImageUrl($rawUrl) {
     if (empty($rawUrl) || !is_string($rawUrl)) return "";
     $url = trim($rawUrl);
 
-    // 1. Google Sheets formula: =IMAGE("https://...") or =IMAGE('https://...')
-    if (preg_match('/=IMAGE\s*\(\s*["']([^"']+)["']\s*\)/i', $url, $m)) {
+    // 1. Google Sheets formulas: =IMAGE("https://...") or =HYPERLINK("https://...")
+    if (preg_match('/=(?:IMAGE|HYPERLINK)\s*\(\s*["\']([^"\']+)["\']/i', $url, $m)) {
         $url = trim($m[1]);
     }
 
@@ -76,34 +76,79 @@ function formatProductImageUrl($rawUrl) {
     $url = trim($url, "\"'\t\n\r ");
     if (empty($url)) return "";
 
-    // 2. Google Drive Sharing Link: drive.google.com/file/d/{FILE_ID}
+    // 2. Google Search / Image redirect link (e.g. google.com/imgres?imgurl=https%3A%2F%2F... or google.com/url?q=...)
+    if (str_contains($url, 'google.') && (str_contains($url, 'imgurl=') || str_contains($url, 'url?q=') || str_contains($url, 'imgrefurl='))) {
+        $parsed = parse_url($url);
+        if (!empty($parsed['query'])) {
+            parse_str($parsed['query'], $qParams);
+            $target = $qParams['imgurl'] ?? $qParams['q'] ?? $qParams['url'] ?? '';
+            if (!empty($target) && str_starts_with($target, 'http')) {
+                $url = urldecode($target);
+            }
+        }
+    }
+
+    // 3. Google Drive Sharing Link: drive.google.com/file/d/{FILE_ID}
     if (preg_match('/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/i', $url, $m)) {
         return 'https://lh3.googleusercontent.com/d/' . $m[1] . '=w1000';
     }
 
-    // 3. Google Drive open?id={FILE_ID} or uc?id={FILE_ID}
-    if (preg_match('/drive\.google\.com\/(?:open|uc|thumbnail)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/i', $url, $m)) {
+    // 4. Google Drive open?id={FILE_ID}, uc?id={FILE_ID}, thumbnail?id={FILE_ID}, uc?export=view&id={FILE_ID}
+    if (preg_match('/drive\.google\.com\/(?:open|uc|thumbnail|file)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/i', $url, $m)) {
         return 'https://lh3.googleusercontent.com/d/' . $m[1] . '=w1000';
     }
 
-    // 4. Raw Google Drive File ID (28 to 45 chars)
+    // 5. Google Drive view/sharing short links or /d/{FILE_ID}
+    if (preg_match('/drive\.google\.com\/.*\/d\/([a-zA-Z0-9_-]+)/i', $url, $m)) {
+        return 'https://lh3.googleusercontent.com/d/' . $m[1] . '=w1000';
+    }
+
+    // 6. Raw Google Drive File ID (28 to 45 chars)
     if (preg_match('/^[a-zA-Z0-9_-]{28,45}$/', $url) && !str_contains($url, 'http') && !str_contains($url, '/') && !str_contains($url, '.')) {
         return 'https://lh3.googleusercontent.com/d/' . $url . '=w1000';
     }
 
-    // 5. Google UserContent link
+    // 7. Google UserContent link
     if (str_contains($url, 'googleusercontent.com') && !str_contains($url, '=w') && !str_contains($url, '=s')) {
         return $url . '=w1000';
     }
 
-    // 6. Dropbox link
+    // 8. Dropbox link
     if (str_contains($url, 'dropbox.com')) {
         $url = preg_replace('/[?&]dl=0/i', '', $url);
         $url = preg_replace('/[?&]raw=1/i', '', $url);
         return $url . (str_contains($url, '?') ? '&raw=1' : '?raw=1');
     }
 
+    // 9. Imgur direct link
+    if (str_contains($url, 'imgur.com') && !str_contains($url, 'i.imgur.com') && !str_contains($url, '.png') && !str_contains($url, '.jpg')) {
+        $parts = explode('/', rtrim($url, '/'));
+        $imgurId = preg_replace('/[^a-zA-Z0-9]/', '', end($parts));
+        if (!empty($imgurId)) return 'https://i.imgur.com/' . $imgurId . '.png';
+    }
+
     return $url;
+}
+
+// Helper: Scan row for any image URL if not found in standard columns
+function scanRowForImageUrlPHP($row) {
+    if (!is_array($row)) return "";
+    foreach ($row as $k => $v) {
+        $val = trim((string)$v);
+        if (empty($val)) continue;
+        if (
+            str_contains($val, 'drive.google.com') ||
+            str_contains($val, 'googleusercontent.com') ||
+            str_starts_with($val, 'http://') ||
+            str_starts_with($val, 'https://') ||
+            str_starts_with($val, '=IMAGE') ||
+            str_starts_with($val, '=HYPERLINK') ||
+            preg_match('/\.(png|jpg|jpeg|webp|svg|gif|bmp)(\?.*)?$/i', $val)
+        ) {
+            return $val;
+        }
+    }
+    return "";
 }
 
 // Helper: Case-Insensitive & Flexible Column Extractor
@@ -147,7 +192,10 @@ function normalizeProductRow($row, $index = 0) {
 
     $availableQty = trim((string)(getCleanField($row, "available quantity", "available_quantity", "available qty", "available_qty", "available", "qty", "quantity", "total shares") ?: "Available on Desk"));
 
-    $rawImage = getCleanField($row, "image url", "image_url", "image", "imageurl", "logo", "logo url", "photo", "icon", "image link", "imagelink", "drive link", "googledrive", "google drive", "photo url", "picture", "img");
+    $rawImage = getCleanField($row, "image url", "image_url", "image", "imageurl", "logo", "logo url", "photo", "icon", "image link", "imagelink", "drive link", "googledrive", "google drive", "photo url", "picture", "img", "link", "media", "avatar");
+    if (empty($rawImage)) {
+        $rawImage = scanRowForImageUrlPHP($row);
+    }
     $image = formatProductImageUrl($rawImage);
 
     $category = trim((string)(getCleanField($row, "category", "sector", "industry", "type") ?: "Unlisted Shares"));

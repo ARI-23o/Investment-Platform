@@ -817,10 +817,10 @@ function doPost(e) {
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
                     <div className="flex items-center justify-between">
                       <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider">
-                        Live Image Link Tester & Preview
+                        Universal Image Link Tester & Instant Preview
                       </label>
-                      <span className="text-[11px] text-gray-400">
-                        Supports Google Drive, Google Photos, Imgur, AWS & direct image URLs
+                      <span className="text-[11px] text-gray-500 font-medium">
+                        Paste ANY Google Drive, Google Image, Pinterest, Wikimedia, Imgur, or direct web link
                       </span>
                     </div>
 
@@ -834,7 +834,7 @@ function doPost(e) {
                           setPreviewConvertedUrl(conv);
                           setPreviewError(false);
                         }}
-                        placeholder="Paste Google Drive link (e.g. https://drive.google.com/file/d/.../view?usp=sharing)"
+                        placeholder="Paste image link from Google Drive, Google Image, Pinterest, Imgur, or website..."
                         className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-xs focus:border-emerald-600 outline-none font-mono text-gray-900 bg-white"
                       />
                       <button
@@ -859,20 +859,26 @@ function doPost(e) {
                               src={previewConvertedUrl}
                               alt="Preview"
                               referrerPolicy="no-referrer"
-                              crossOrigin="anonymous"
                               className="w-full h-full object-contain rounded-lg"
-                              onError={() => setPreviewError(true)}
+                              onError={(e) => {
+                                if (!e.currentTarget.dataset.proxied && previewConvertedUrl.startsWith("http")) {
+                                  e.currentTarget.dataset.proxied = "true";
+                                  e.currentTarget.src = `https://images.weserv.nl/?url=${encodeURIComponent(previewConvertedUrl)}`;
+                                } else {
+                                  setPreviewError(true);
+                                }
+                              }}
                               onLoad={() => setPreviewError(false)}
                             />
                           </div>
                           <div>
                             <div className="text-xs font-bold flex items-center gap-1.5 text-gray-900">
                               {previewError ? (
-                                <span className="text-rose-600 font-bold">⚠️ Could not load image. Make sure Google Drive sharing is set to "Anyone with the link".</span>
+                                <span className="text-rose-600 font-bold">⚠️ Could not load image. If using Google Drive, make sure link sharing is "Anyone with the link".</span>
                               ) : (
                                 <span className="text-emerald-800 font-bold flex items-center gap-1">
                                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                  <span>Image Valid & Active! Ready for your Google Sheet.</span>
+                                  <span>Image Active & Ready! It will automatically display on the website.</span>
                                 </span>
                               )}
                             </div>
@@ -932,8 +938,16 @@ function doPost(e) {
                                   <img 
                                     src={p.image} 
                                     alt={p.name} 
+                                    referrerPolicy="no-referrer"
                                     className="w-8 h-8 rounded-lg object-contain border border-gray-200 bg-white p-0.5 shrink-0"
-                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                    onError={(e) => {
+                                      if (!e.currentTarget.dataset.proxied && p.image && p.image.startsWith("http")) {
+                                        e.currentTarget.dataset.proxied = "true";
+                                        e.currentTarget.src = `https://images.weserv.nl/?url=${encodeURIComponent(p.image)}`;
+                                      } else {
+                                        e.currentTarget.style.display = 'none';
+                                      }
+                                    }}
                                   />
                                 ) : (
                                   <div className="w-8 h-8 rounded-lg bg-[#083b25] text-emerald-100 font-bold text-[10px] flex items-center justify-center shrink-0">

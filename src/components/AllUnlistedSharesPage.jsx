@@ -275,7 +275,14 @@ export default function AllUnlistedSharesPage({
                             alt={share.shortName || share.name} 
                             referrerPolicy="no-referrer"
                             className="w-full h-full object-contain rounded-xl"
-                            onError={(e) => { e.target.style.display = 'none'; }}
+                            onError={(e) => {
+                              if (!e.currentTarget.dataset.proxied && share.image && share.image.startsWith("http")) {
+                                e.currentTarget.dataset.proxied = "true";
+                                e.currentTarget.src = `https://images.weserv.nl/?url=${encodeURIComponent(share.image)}`;
+                              } else {
+                                e.currentTarget.style.display = 'none';
+                              }
+                            }}
                           />
                         ) : (
                           <div className="w-full h-full rounded-xl bg-[#083b25] text-emerald-100 flex items-center justify-center font-black text-xs uppercase shadow-xs">
