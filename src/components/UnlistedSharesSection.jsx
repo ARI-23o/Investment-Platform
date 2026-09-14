@@ -6,7 +6,6 @@ import {
   Zap, 
   SunMedium, 
   ChevronRight, 
-  Sparkles, 
   Info, 
   ShieldCheck, 
   TrendingUp, 
@@ -188,7 +187,7 @@ export default function UnlistedSharesSection({ shares = UNLISTED_SHARES, onSele
                   {/* New Addition or Popular Ribbon Tag */}
                   {share.isNew || share.isFromSheet ? (
                     <div className="absolute -top-3 right-4 bg-gradient-to-r from-amber-500 to-amber-600 text-gray-950 text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-md flex items-center gap-1 tracking-wider border border-amber-300/60">
-                      <Sparkles className="w-3 h-3 text-white fill-white" />
+                      <TrendingUp className="w-3 h-3 text-gray-950" />
                       <span>NEW</span>
                     </div>
                   ) : share.popular ? (

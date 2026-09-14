@@ -11,7 +11,6 @@ import {
   ShieldCheck, 
   FileText, 
   UserCheck, 
-  Sparkles,
   BookOpen,
   Bookmark,
   Check,
@@ -205,7 +204,7 @@ export default function ArticleDetailsView({
         {/* Executive Summary & Key Takeaways Card */}
         <div className="bg-gradient-to-br from-emerald-50/90 to-amber-50/40 rounded-3xl p-6 sm:p-8 border border-emerald-200/80 shadow-xs mb-10">
           <div className="flex items-center gap-2 text-xs font-black tracking-wider uppercase text-emerald-900 mb-3">
-            <Sparkles className="w-4 h-4 text-amber-600" />
+            <BookOpen className="w-4 h-4 text-emerald-700" />
             <span>Executive Summary & Key Takeaways</span>
           </div>
 

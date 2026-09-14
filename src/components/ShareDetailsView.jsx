@@ -17,7 +17,6 @@ import {
   Lock,
   Clock,
   Send,
-  Sparkles,
   Zap,
   BarChart2
 } from "lucide-react";

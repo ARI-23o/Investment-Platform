@@ -18,7 +18,7 @@ import {
   ClipboardList,
   Search,
   ExternalLink,
-  Sparkles,
+  Users,
   ArrowRight,
   Command,
   FileText,
@@ -585,7 +585,7 @@ export default function Navbar({
             {/* Sub-header info */}
             <div className="px-4 py-2 bg-emerald-50/70 border-b border-gray-100 flex items-center justify-between text-xs">
               <span className="font-bold text-emerald-950 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <Search className="w-3.5 h-3.5 text-emerald-700" />
                 <span>Global Platform Search</span>
               </span>
               <span className="text-[11px] text-gray-500 font-medium">
@@ -610,7 +610,7 @@ export default function Navbar({
                           {item.category === "Insurance" && <ShieldCheck className="w-4 h-4 text-emerald-700" />}
                           {item.category === "Loans" && <Briefcase className="w-4 h-4 text-emerald-700" />}
                           {item.category === "Calculators" && <Calculator className="w-4 h-4 text-emerald-700" />}
-                          {item.category === "Careers" && <Sparkles className="w-4 h-4 text-amber-500" />}
+                          {item.category === "Careers" && <Users className="w-4 h-4 text-emerald-700" />}
                           {item.category === "Services" && <TrendingUp className="w-4 h-4 text-emerald-700" />}
                           {item.category === "Market Insights" && <FileText className="w-4 h-4 text-emerald-700" />}
                           {!["Unlisted Shares", "Insurance", "Loans", "Calculators", "Careers", "Services", "Market Insights"].includes(item.category) && (

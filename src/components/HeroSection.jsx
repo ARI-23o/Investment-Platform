@@ -10,7 +10,7 @@ import {
   ArrowUp, 
   ArrowDown, 
   ChevronRight,
-  Sparkles,
+  Building2,
   PieChart,
   Layers,
   Award
@@ -350,7 +350,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
           {/* IPOs */}
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-100">
-              <Sparkles className="w-5 h-5" />
+              <Building2 className="w-5 h-5" />
             </div>
             <div>
               <div className="text-sm font-bold text-gray-900">IPOs</div>

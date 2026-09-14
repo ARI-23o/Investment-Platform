@@ -13,7 +13,6 @@ import {
   Users, 
   Target, 
   Award, 
-  Sparkles,
   PhoneCall,
   ExternalLink,
   ShieldCheck,
@@ -418,7 +417,7 @@ Email: ${email.trim()}`;
               
               <div>
                 <div className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200/60 mb-1.5">
-                  <Sparkles className="w-3 h-3 text-amber-500" />
+                  <Briefcase className="w-3 h-3 text-emerald-700" />
                   <span>DIRECT APPLICATION DESK</span>
                 </div>
                 <h3 className="text-2xl font-extrabold text-gray-900 tracking-tight">

@@ -10,7 +10,6 @@ import {
   FileText, 
   User, 
   KeyRound,
-  Sparkles,
   Info,
   Clock,
   Rocket,
@@ -285,7 +284,7 @@ export function OpenAccountModal({ isOpen, onClose, onRegisterSuccess }) {
                 </div>
               </div>
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[10px] font-bold text-emerald-300 tracking-wide flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-400" />
+                <Clock className="w-3 h-3 text-amber-400" />
                 SOON LIVE
               </span>
             </div>
@@ -344,7 +343,7 @@ export function OpenAccountModal({ isOpen, onClose, onRegisterSuccess }) {
                 <span>₹0 Demat AMC 1st Year</span>
               </div>
               <div className="flex items-center gap-1.5 text-gray-300">
-                <Sparkles className="w-3 h-3 text-emerald-400 shrink-0" />
+                <TrendingUp className="w-3 h-3 text-emerald-400 shrink-0" />
                 <span>Unlisted Shares Access</span>
               </div>
             </div>

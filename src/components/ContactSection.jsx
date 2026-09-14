@@ -15,8 +15,7 @@ import {
   Send,
   Lock,
   X,
-  RotateCw,
-  Sparkles
+  RotateCw
 } from "lucide-react";
 import { syncLeadToGoogleSheet } from "../utils/exportUtils";
 import { saveEnquiryToBackend } from "../services/api";
@@ -585,7 +584,7 @@ export default function ContactSection({ onCallbackSubmitted }) {
             <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 space-y-2">
               <div className="flex items-center justify-between font-bold">
                 <div className="flex items-center gap-2 text-emerald-900">
-                  <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <PhoneCall className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>Our advisor will call you shortly. Auto-closing in:</span>
                 </div>
                 <div className="w-8 h-8 rounded-xl bg-emerald-200/90 text-emerald-950 font-black font-mono text-sm flex items-center justify-center shadow-xs">

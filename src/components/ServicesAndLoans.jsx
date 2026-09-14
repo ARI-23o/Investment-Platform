@@ -15,7 +15,6 @@ import {
   Landmark,
   Layers,
   Banknote,
-  Sparkles,
   CheckCircle2,
   ChevronRight,
   ChevronLeft,

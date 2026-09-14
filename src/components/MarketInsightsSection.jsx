@@ -5,7 +5,6 @@ import {
   ArrowUpRight, 
   ArrowDownRight, 
   Newspaper, 
-  Sparkles, 
   BarChart2, 
   Clock, 
   Eye, 

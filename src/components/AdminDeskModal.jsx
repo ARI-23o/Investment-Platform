@@ -23,8 +23,7 @@ import {
   RotateCw,
   Package,
   Layers,
-  Sparkles,
-  ArrowUpDown,
+ArrowUpDown,
   ImageIcon
 } from "lucide-react";
 import { exportToCSV, syncLeadToGoogleSheet, getSavedWebhookUrl } from "../utils/exportUtils";
@@ -189,7 +188,7 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
       service: "Unlisted Shares",
       message: "Testing real-time Google Sheet sync from GSP Investment Portal",
     });
-    setTestStatus("✅ Row dispatched to Google Sheet! Check your sheet.");
+    setTestStatus("Row dispatched to Google Sheet! Check your sheet.");
     setTimeout(() => setTestStatus(""), 4000);
   };
 
@@ -200,12 +199,12 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
       const res = await fetchUnlistedSharesFromSheet(webhookUrl, true);
       if (res && res.products && Array.isArray(res.products) && res.products.length > 0) {
         setSyncedProducts(res.products);
-        setProductSyncMsg(`✅ Successfully synced ${res.products.length} unlisted shares in real-time from Google Sheet!`);
+        setProductSyncMsg(`Successfully synced ${res.products.length} unlisted shares in real-time from Google Sheet!`);
       } else {
-        setProductSyncMsg(`⚠️ ${res?.reason || res?.message || res?.error || "No dynamic rows found. Default catalog active."}`);
+        setProductSyncMsg(`${res?.reason || res?.message || res?.error || "No dynamic rows found. Default catalog active."}`);
       }
     } catch (err) {
-      setProductSyncMsg("⚠️ Could not load from sheet. Fallback default products are active.");
+      setProductSyncMsg("Could not load from sheet. Fallback default products are active.");
     } finally {
       setIsSyncingProducts(false);
       setTimeout(() => setProductSyncMsg(""), 6000);
@@ -478,7 +477,7 @@ function doPost(e) {
                       : "text-gray-500 hover:text-gray-900"
                   }`}
                 >
-                  📋 All Enquiries ({enquiries.length})
+                  All Enquiries ({enquiries.length})
                 </button>
 
                 <button
@@ -723,7 +722,7 @@ function doPost(e) {
                       title="Copy all 40 website stocks with full columns ready to paste starting at cell A1 in your Google Sheet"
                     >
                       {copiedAllShares ? <Check className="w-3.5 h-3.5 text-emerald-200" /> : <FileSpreadsheet className="w-3.5 h-3.5" />}
-                      <span>{copiedAllShares ? "All 40 Stocks Copied! ✅" : "📋 Copy All 40 Stocks for Google Sheet"}</span>
+                      <span>{copiedAllShares ? "All 40 Stocks Copied!" : "Copy All 40 Stocks for Google Sheet"}</span>
                     </button>
 
                     <button
@@ -755,7 +754,7 @@ function doPost(e) {
                 {/* Status Message */}
                 {productSyncMsg && (
                   <div className="p-3.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold animate-fade-in flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-emerald-700" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-700" />
                     <span>{productSyncMsg}</span>
                   </div>
                 )}
@@ -763,7 +762,7 @@ function doPost(e) {
                 {/* Guide Box on How to Add/Edit */}
                 <div className="bg-amber-50/70 border border-amber-200 p-4 rounded-2xl text-xs text-amber-950 space-y-2">
                   <strong className="block font-bold text-amber-900 text-[13px]">
-                    💡 How to Add / Edit Unlisted Shares in your Google Sheet:
+                    How to Add / Edit Unlisted Shares in your Google Sheet:
                   </strong>
                   <ol className="list-decimal list-inside space-y-1 text-amber-900/90 leading-relaxed">
                     <li>In your Google Spreadsheet, create/select the tab named <strong>"Unlisted product"</strong>.</li>
@@ -877,7 +876,7 @@ function doPost(e) {
                           <div>
                             <div className="text-xs font-bold flex items-center gap-1.5 text-gray-900">
                               {previewError ? (
-                                <span className="text-rose-600 font-bold">⚠️ Could not load image. If using Google Drive, make sure link sharing is "Anyone with the link".</span>
+                                <span className="text-rose-600 font-bold">Could not load image. If using Google Drive, make sure link sharing is "Anyone with the link".</span>
                               ) : (
                                 <span className="text-emerald-800 font-bold flex items-center gap-1">
                                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -1057,7 +1056,7 @@ function doPost(e) {
                         type="submit"
                         className="px-6 py-2.5 rounded-xl text-xs font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shrink-0 shadow-sm"
                       >
-                        {webhookSaved ? "Saved Permanently! ✅" : "Save Webhook Link"}
+                        {webhookSaved ? "Saved Permanently!" : "Save Webhook Link"}
                       </button>
                     </form>
                   </div>

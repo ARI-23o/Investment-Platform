@@ -12,7 +12,6 @@ import {
   SlidersHorizontal, 
   TrendingUp, 
   ShieldCheck, 
-  Sparkles,
   ChevronLeft,
   ChevronRight,
   Filter,
@@ -145,7 +144,7 @@ export default function AllUnlistedSharesPage({
         {/* Hero Banner / Directory Header */}
         <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-black uppercase tracking-widest text-emerald-900">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
             <span>DIRECT UNLISTED & PRE-IPO CATALOG</span>
           </div>
           
@@ -198,10 +197,10 @@ export default function AllUnlistedSharesPage({
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full bg-gray-50/70 border border-gray-200 rounded-2xl px-3.5 py-3 text-xs sm:text-sm font-bold text-gray-900 outline-none focus:border-[#0f4b32] focus:bg-white cursor-pointer transition-all shadow-2xs"
               >
-                <option value="popular">⭐ Most Popular</option>
-                <option value="name-asc">🔤 Name (A to Z)</option>
-                <option value="price-desc">📈 Price (High to Low)</option>
-                <option value="price-asc">📉 Price (Low to High)</option>
+                <option value="popular">Most Popular</option>
+                <option value="name-asc">Name (A to Z)</option>
+                <option value="price-desc">Price (High to Low)</option>
+                <option value="price-asc">Price (Low to High)</option>
               </select>
             </div>
 
