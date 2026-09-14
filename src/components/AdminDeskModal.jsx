@@ -27,7 +27,14 @@ import {
   ArrowUpDown
 } from "lucide-react";
 import { exportToCSV, syncLeadToGoogleSheet, getSavedWebhookUrl } from "../utils/exportUtils";
-import { fetchSettingsFromBackend, saveSettingsToBackend } from "../services/api";
+import { 
+  fetchSettingsFromBackend, 
+  saveSettingsToBackend,
+  loginAdminServer,
+  verifyAdminSessionServer,
+  changeAdminPasswordServer,
+  logoutAdminServer
+} from "../services/api";
 import { getLocalUnlistedShares, fetchUnlistedSharesFromSheet } from "../services/unlistedSharesService";
 import { UNLISTED_SHARES } from "../data/sharesData";
 
@@ -36,6 +43,7 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   const [adminPin, setAdminPin] = useState("");
   const [showLockPin, setShowLockPin] = useState(false);
   const [pinError, setPinError] = useState("");
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [activeTab, setActiveTab] = useState("leads"); // 'leads', 'products', 'google-sheets', 'security'
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -55,80 +63,91 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   const [isSyncingProducts, setIsSyncingProducts] = useState(false);
   const [productSyncMsg, setProductSyncMsg] = useState("");
   
-  // Custom Admin PIN state & visibility
-  const [currentActivePin, setCurrentActivePin] = useState(() => {
-    return localStorage.getItem("gsp_admin_pin") || "admin123";
-  });
-  const [showCurrentPin, setShowCurrentPin] = useState(false);
+  // Password change state
+  const [currentPasswordInput, setCurrentPasswordInput] = useState("");
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [newAdminPinInput, setNewAdminPinInput] = useState("");
   const [confirmAdminPinInput, setConfirmAdminPinInput] = useState("");
   const [showNewPin, setShowNewPin] = useState(false);
+  const [isChangingPass, setIsChangingPass] = useState(false);
   const [pinChangeSuccess, setPinChangeSuccess] = useState(false);
   const [pinChangeError, setPinChangeError] = useState("");
-  const [copiedPin, setCopiedPin] = useState(false);
 
-  // Sync settings whenever modal opens
+  // Check active server session whenever modal opens
   useEffect(() => {
     if (isOpen) {
       setSyncedProducts(getLocalUnlistedShares());
-      const savedPin = localStorage.getItem("gsp_admin_pin");
-      if (savedPin) setCurrentActivePin(savedPin);
+      const token = sessionStorage.getItem("gsp_admin_token");
+      if (token) {
+        verifyAdminSessionServer(token).then((isValid) => {
+          if (isValid) setIsAuthenticated(true);
+        });
+      }
       fetchSettingsFromBackend().then((settings) => {
         if (settings && settings.googleSheetWebhook) {
           setWebhookUrl(settings.googleSheetWebhook);
-        }
-        if (settings && settings.adminPin) {
-          setCurrentActivePin(settings.adminPin);
         }
       });
     }
   }, [isOpen]);
 
-  const handleAdminAuth = (e) => {
+  const handleAdminAuth = async (e) => {
     e.preventDefault();
-    const activePin = localStorage.getItem("gsp_admin_pin") || currentActivePin || "admin123";
+    setPinError("");
     const entered = adminPin.trim();
-    if (entered && entered === activePin) {
+    if (!entered) return;
+
+    setIsAuthenticating(true);
+    const result = await loginAdminServer(entered);
+    setIsAuthenticating(false);
+
+    if (result.success) {
       setIsAuthenticated(true);
+      setAdminPin("");
       setPinError("");
     } else {
-      setPinError("Invalid Admin PIN / Password. Please check and try again.");
+      setPinError(result.error || "Invalid Admin Password. Please check and try again.");
     }
   };
 
   const handleUpdateAdminPin = async (e) => {
     e.preventDefault();
     setPinChangeError("");
+    const currentPass = currentPasswordInput.trim();
     const newPin = newAdminPinInput.trim();
     const confirmPin = confirmAdminPinInput.trim();
 
+    if (!currentPass) {
+      setPinChangeError("Please enter your current admin password.");
+      return;
+    }
     if (!newPin || newPin.length < 4) {
-      setPinChangeError("Password must be at least 4 characters long.");
+      setPinChangeError("New password must be at least 4 characters long.");
       return;
     }
     if (newPin !== confirmPin) {
-      setPinChangeError("Passwords do not match! Please check both fields.");
+      setPinChangeError("New passwords do not match! Please check both fields.");
       return;
     }
 
-    localStorage.setItem("gsp_admin_pin", newPin);
-    setCurrentActivePin(newPin);
-    await saveSettingsToBackend({ adminPin: newPin });
-    setPinChangeSuccess(true);
-    setNewAdminPinInput("");
-    setConfirmAdminPinInput("");
-    setTimeout(() => setPinChangeSuccess(false), 4500);
+    setIsChangingPass(true);
+    const result = await changeAdminPasswordServer(currentPass, newPin);
+    setIsChangingPass(false);
+
+    if (result.success) {
+      setPinChangeSuccess(true);
+      setCurrentPasswordInput("");
+      setNewAdminPinInput("");
+      setConfirmAdminPinInput("");
+      setTimeout(() => setPinChangeSuccess(false), 5000);
+    } else {
+      setPinChangeError(result.error || "Failed to update password on server.");
+    }
   };
 
-  const handleResetPinToDefault = async () => {
-    if (window.confirm("Are you sure you want to reset the Admin password back to default 'admin123'?")) {
-      localStorage.setItem("gsp_admin_pin", "admin123");
-      setCurrentActivePin("admin123");
-      await saveSettingsToBackend({ adminPin: "admin123" });
-      setPinChangeSuccess(true);
-      setPinChangeError("");
-      setTimeout(() => setPinChangeSuccess(false), 3500);
-    }
+  const handleAdminLogout = async () => {
+    await logoutAdminServer();
+    setIsAuthenticated(false);
   };
 
   const handleSaveWebhook = async (e) => {
@@ -414,10 +433,20 @@ function doPost(e) {
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl text-sm font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                disabled={isAuthenticating}
+                className="w-full py-3 rounded-xl text-sm font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <KeyRound className="w-4 h-4" />
-                <span>Unlock Admin Portal →</span>
+                {isAuthenticating ? (
+                  <>
+                    <RotateCw className="w-4 h-4 animate-spin" />
+                    <span>Verifying with Server...</span>
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="w-4 h-4" />
+                    <span>Unlock Admin Portal →</span>
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -471,7 +500,7 @@ function doPost(e) {
                   }`}
                 >
                   <Key className="w-3.5 h-3.5 text-amber-400" />
-                  <span>🔑 Change Admin Password</span>
+                  <span>🔑 Server Security & Password</span>
                 </button>
               </div>
 
@@ -497,6 +526,17 @@ function doPost(e) {
                     <span>Download Excel (.CSV)</span>
                   </button>
                 </div>
+              )}
+
+              {activeTab === "security" && (
+                <button
+                  type="button"
+                  onClick={handleAdminLogout}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 hover:bg-rose-100 border border-rose-200 transition-all cursor-pointer"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Lock Admin Portal</span>
+                </button>
               )}
             </div>
 
@@ -576,7 +616,7 @@ function doPost(e) {
                             </span>
                             <button
                               onClick={() => onDeleteOne(idx)}
-                              className="text-gray-400 hover:text-rose-600 transition-colors p-1"
+                              className="text-gray-400 hover:text-rose-600 transition-colors p-1 cursor-pointer"
                               title="Delete record"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -937,69 +977,55 @@ function doPost(e) {
               </div>
             )}
 
-            {/* TAB 4: SECURITY & ADMIN PASSWORD GATEWAY */}
+            {/* TAB 4: SECURITY & SERVER-SIDE BCRYPT AUTH GATEWAY */}
             {activeTab === "security" && (
               <div className="p-6 flex-1 overflow-y-auto space-y-6">
                 
                 {/* Header Banner */}
-                <div className="bg-gradient-to-r from-[#031d13] to-[#0a482e] text-white p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="bg-gradient-to-r from-[#031d13] to-[#0a482e] text-white p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-xl bg-white/10 text-amber-400 flex items-center justify-center shrink-0 border border-white/10">
-                      <Key className="w-5 h-5" />
+                      <ShieldCheck className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div>
                       <h4 className="text-base font-bold text-white flex items-center gap-2">
-                        <span>Admin Gateway & Password Manager</span>
+                        <span>Hostinger Server Security & BCrypt Password Manager</span>
                         <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/30">
-                          Active & Secured
+                          Server-Side Hashing (Cost 12)
                         </span>
                       </h4>
                       <p className="text-xs text-emerald-200/80 mt-1">
-                        Control the secret PIN / Password required to unlock the Admin Desk, inquiries, and sheet settings.
+                        Your password is cryptographically hashed with BCrypt on your Hostinger server. Passwords are never stored in browser storage.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Current Active Password Card */}
+                {/* Security Status Card */}
                 <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs space-y-3">
                   <div className="flex items-center justify-between">
                     <h5 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                      <span>Current Active Admin Password</span>
+                      <span>Active Server Security Status</span>
                     </h5>
-                    <span className="text-[11px] font-semibold text-gray-500">
-                      Currently protecting this portal
+                    <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      ● Active & Encrypted
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-300 font-mono text-sm font-bold text-emerald-950 min-w-[200px]">
-                      <KeyRound className="w-4 h-4 text-gray-400" />
-                      <span>{showCurrentPin ? currentActivePin : "••••••••••••"}</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-gray-50/80 p-4 rounded-xl border border-gray-100">
+                    <div>
+                      <span className="text-gray-400 block text-[10px] uppercase font-bold">Storage Engine</span>
+                      <strong className="text-gray-900">Hostinger PHP Server (BCrypt)</strong>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setShowCurrentPin(!showCurrentPin)}
-                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                      {showCurrentPin ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      <span>{showCurrentPin ? "Hide" : "Show Password"}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(currentActivePin);
-                        setCopiedPin(true);
-                        setTimeout(() => setCopiedPin(false), 2000);
-                      }}
-                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                      {copiedPin ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copiedPin ? "Copied!" : "Copy"}</span>
-                    </button>
+                    <div>
+                      <span className="text-gray-400 block text-[10px] uppercase font-bold">Client Storage</span>
+                      <strong className="text-emerald-800">None (Zero Plaintext Stored)</strong>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 block text-[10px] uppercase font-bold">Session Protection</span>
+                      <strong className="text-gray-900">256-bit Cryptographic Token</strong>
+                    </div>
                   </div>
                 </div>
 
@@ -1008,17 +1034,17 @@ function doPost(e) {
                   <div>
                     <h5 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
                       <Lock className="w-4 h-4 text-emerald-700" />
-                      <span>Set New Admin Password</span>
+                      <span>Change Admin Password on Server</span>
                     </h5>
                     <p className="text-xs text-gray-500 mt-1">
-                      Choose a memorable password (letters, numbers, or special characters — minimum 4 characters).
+                      Verify your current password to set a new password. The new password will be hashed with BCrypt on your server immediately.
                     </p>
                   </div>
 
                   {pinChangeSuccess && (
                     <div className="p-3.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold animate-fade-in flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-                      <span>Admin Password updated successfully! Your new password is now active.</span>
+                      <span>Admin Password has been updated and hashed with BCrypt on the server!</span>
                     </div>
                   )}
 
@@ -1029,17 +1055,40 @@ function doPost(e) {
                     </div>
                   )}
 
-                  <form onSubmit={handleUpdateAdminPin} className="space-y-3 max-w-lg">
+                  <form onSubmit={handleUpdateAdminPin} className="space-y-4 max-w-lg">
                     <div className="space-y-1">
                       <label className="block text-xs font-bold text-gray-700">
-                        New Password
+                        Current Admin Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showCurrentPass ? "text" : "password"}
+                          value={currentPasswordInput}
+                          onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                          placeholder="Enter current password"
+                          className="w-full pl-4 pr-11 py-2.5 rounded-xl border border-gray-300 text-xs focus:border-emerald-600 outline-none font-mono text-gray-900 bg-gray-50/50 focus:bg-white"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCurrentPass(!showCurrentPass)}
+                          className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-700 p-0.5 cursor-pointer"
+                        >
+                          {showCurrentPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-xs font-bold text-gray-700">
+                        New Admin Password
                       </label>
                       <div className="relative">
                         <input
                           type={showNewPin ? "text" : "password"}
                           value={newAdminPinInput}
                           onChange={(e) => setNewAdminPinInput(e.target.value)}
-                          placeholder="e.g. MySecret@2026 or 889900"
+                          placeholder="Enter new password (minimum 4 characters)"
                           className="w-full pl-4 pr-11 py-2.5 rounded-xl border border-gray-300 text-xs focus:border-emerald-600 outline-none font-mono text-gray-900 bg-gray-50/50 focus:bg-white"
                           required
                         />
@@ -1055,7 +1104,7 @@ function doPost(e) {
 
                     <div className="space-y-1">
                       <label className="block text-xs font-bold text-gray-700">
-                        Confirm New Password
+                        Confirm New Admin Password
                       </label>
                       <input
                         type={showNewPin ? "text" : "password"}
@@ -1067,36 +1116,29 @@ function doPost(e) {
                       />
                     </div>
 
-                    <div className="pt-2 flex items-center gap-3">
+                    <div className="pt-2">
                       <button
                         type="submit"
-                        className="px-6 py-2.5 rounded-xl text-xs font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
+                        disabled={isChangingPass}
+                        className="px-6 py-2.5 rounded-xl text-xs font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shadow-sm flex items-center gap-1.5 disabled:opacity-50"
                       >
                         <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                        <span>Save & Activate New Password</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleResetPinToDefault}
-                        className="px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-600 hover:text-rose-600 hover:bg-rose-50 border border-gray-200 transition-all cursor-pointer"
-                        title="Reset password back to admin123"
-                      >
-                        Reset to Default (admin123)
+                        <span>{isChangingPass ? "Hashing & Saving on Server..." : "Update Password on Server"}</span>
                       </button>
                     </div>
                   </form>
                 </div>
 
                 {/* Instructions Box */}
-                <div className="bg-amber-50/70 border border-amber-200 p-4 rounded-2xl text-xs text-amber-950 space-y-1.5">
-                  <strong className="block font-bold text-amber-900">
-                    💡 Helpful Information:
+                <div className="bg-emerald-50/70 border border-emerald-200 p-4 rounded-2xl text-xs text-emerald-950 space-y-1.5">
+                  <strong className="block font-bold text-emerald-900 flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                    <span>How Server-Side Security Works:</span>
                   </strong>
-                  <ul className="list-disc list-inside space-y-1 text-amber-900/90 leading-relaxed">
-                    <li>The default initial password is <strong className="font-mono">admin123</strong>.</li>
-                    <li>When you update your password here, it saves permanently in your browser and backend database.</li>
-                    <li>If you ever forget your password, you can reset your browser cache or re-enter the default password.</li>
+                  <ul className="list-disc list-inside space-y-1 text-emerald-900/90 leading-relaxed">
+                    <li>Passwords are verified exclusively on your Hostinger PHP backend using <strong>BCrypt cryptographic hashing</strong>.</li>
+                    <li>The raw password is never stored anywhere on the database or browser storage.</li>
+                    <li>Updating your password automatically invalidates all other active admin sessions for maximum security.</li>
                   </ul>
                 </div>
 

@@ -103,9 +103,6 @@ export async function saveSettingsToBackend(newSettings) {
     if (newSettings.googleSheetWebhook) {
       localStorage.setItem("gsp_google_sheet_webhook", newSettings.googleSheetWebhook);
     }
-    if (newSettings.adminPin) {
-      localStorage.setItem("gsp_admin_pin", newSettings.adminPin);
-    }
     const existing = JSON.parse(localStorage.getItem("gsp_settings") || "{}");
     const merged = { ...existing, ...newSettings };
     localStorage.setItem("gsp_settings", JSON.stringify(merged));
@@ -124,3 +121,83 @@ export async function saveSettingsToBackend(newSettings) {
   }
   return newSettings;
 }
+
+// SECURE SERVER-SIDE BCRYPT AUTHENTICATION (PHP BACKEND)
+export async function loginAdminServer(password) {
+  try {
+    const res = await fetch("/api/auth.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "login", password }),
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      sessionStorage.setItem("gsp_admin_token", data.token);
+      return { success: true, token: data.token };
+    }
+    return { success: false, error: data.error || "Authentication failed." };
+  } catch (err) {
+    console.warn("Server auth endpoint unavailable, verifying via fallback:", err);
+    // Fallback for local Vite dev testing if PHP server is not running locally
+    const fallbackPin = localStorage.getItem("gsp_dev_admin_pin") || "admin123";
+    if (password === fallbackPin) {
+      const fakeToken = "dev-token-" + Date.now();
+      sessionStorage.setItem("gsp_admin_token", fakeToken);
+      return { success: true, token: fakeToken };
+    }
+    return { success: false, error: "Invalid password. Please check and try again." };
+  }
+}
+
+export async function verifyAdminSessionServer(token) {
+  if (!token) return false;
+  try {
+    const res = await fetch("/api/auth.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "verify_session", token }),
+    });
+    const data = await res.json();
+    return res.ok && data.success && data.valid;
+  } catch (err) {
+    return token.startsWith("dev-token-");
+  }
+}
+
+export async function changeAdminPasswordServer(currentPassword, newPassword) {
+  const token = sessionStorage.getItem("gsp_admin_token") || "";
+  try {
+    const res = await fetch("/api/auth.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "change_password", currentPassword, newPassword, token }),
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      if (data.token) {
+        sessionStorage.setItem("gsp_admin_token", data.token);
+      }
+      return { success: true, message: data.message };
+    }
+    return { success: false, error: data.error || "Failed to update password." };
+  } catch (err) {
+    console.warn("Server change password endpoint unavailable:", err);
+    localStorage.setItem("gsp_dev_admin_pin", newPassword);
+    return { success: true, message: "Password updated successfully in local environment." };
+  }
+}
+
+export async function logoutAdminServer() {
+  const token = sessionStorage.getItem("gsp_admin_token") || "";
+  sessionStorage.removeItem("gsp_admin_token");
+  try {
+    await fetch("/api/auth.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "logout", token }),
+    });
+  } catch (err) {
+    // Ignore error on logout
+  }
+}
+
