@@ -82,6 +82,9 @@ export async function fetchSettingsFromBackend() {
       if (settings.googleSheetWebhook) {
         localStorage.setItem("gsp_google_sheet_webhook", settings.googleSheetWebhook);
       }
+      if (settings.adminPin) {
+        localStorage.setItem("gsp_admin_pin", settings.adminPin);
+      }
       localStorage.setItem("gsp_settings", JSON.stringify(settings));
       return settings;
     }
@@ -99,6 +102,9 @@ export async function saveSettingsToBackend(newSettings) {
   try {
     if (newSettings.googleSheetWebhook) {
       localStorage.setItem("gsp_google_sheet_webhook", newSettings.googleSheetWebhook);
+    }
+    if (newSettings.adminPin) {
+      localStorage.setItem("gsp_admin_pin", newSettings.adminPin);
     }
     const existing = JSON.parse(localStorage.getItem("gsp_settings") || "{}");
     const merged = { ...existing, ...newSettings };

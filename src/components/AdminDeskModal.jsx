@@ -10,6 +10,10 @@ import {
   Clock, 
   Lock, 
   KeyRound, 
+  Key,
+  ShieldCheck,
+  Eye,
+  EyeOff,
   Settings, 
   Send, 
   ExternalLink,
@@ -30,8 +34,9 @@ import { UNLISTED_SHARES } from "../data/sharesData";
 export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll, onDeleteOne, onRefresh }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminPin, setAdminPin] = useState("");
+  const [showLockPin, setShowLockPin] = useState(false);
   const [pinError, setPinError] = useState("");
-  const [activeTab, setActiveTab] = useState("leads"); // 'leads', 'products', or 'google-sheets'
+  const [activeTab, setActiveTab] = useState("leads"); // 'leads', 'products', 'google-sheets', 'security'
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
 
@@ -50,17 +55,30 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   const [isSyncingProducts, setIsSyncingProducts] = useState(false);
   const [productSyncMsg, setProductSyncMsg] = useState("");
   
-  // Custom Admin PIN state
+  // Custom Admin PIN state & visibility
+  const [currentActivePin, setCurrentActivePin] = useState(() => {
+    return localStorage.getItem("gsp_admin_pin") || "admin123";
+  });
+  const [showCurrentPin, setShowCurrentPin] = useState(false);
   const [newAdminPinInput, setNewAdminPinInput] = useState("");
+  const [confirmAdminPinInput, setConfirmAdminPinInput] = useState("");
+  const [showNewPin, setShowNewPin] = useState(false);
   const [pinChangeSuccess, setPinChangeSuccess] = useState(false);
+  const [pinChangeError, setPinChangeError] = useState("");
+  const [copiedPin, setCopiedPin] = useState(false);
 
   // Sync settings whenever modal opens
   useEffect(() => {
     if (isOpen) {
       setSyncedProducts(getLocalUnlistedShares());
+      const savedPin = localStorage.getItem("gsp_admin_pin");
+      if (savedPin) setCurrentActivePin(savedPin);
       fetchSettingsFromBackend().then((settings) => {
         if (settings && settings.googleSheetWebhook) {
           setWebhookUrl(settings.googleSheetWebhook);
+        }
+        if (settings && settings.adminPin) {
+          setCurrentActivePin(settings.adminPin);
         }
       });
     }
@@ -68,7 +86,7 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
 
   const handleAdminAuth = (e) => {
     e.preventDefault();
-    const savedPin = localStorage.getItem("gsp_admin_pin");
+    const savedPin = localStorage.getItem("gsp_admin_pin") || currentActivePin;
     const entered = adminPin.trim();
     if (
       (savedPin && entered === savedPin) ||
@@ -83,15 +101,39 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
     }
   };
 
-  const handleUpdateAdminPin = (e) => {
+  const handleUpdateAdminPin = async (e) => {
     e.preventDefault();
-    if (!newAdminPinInput.trim() || newAdminPinInput.trim().length < 4) {
-      alert("Please enter a new PIN with at least 4 characters.");
+    setPinChangeError("");
+    const newPin = newAdminPinInput.trim();
+    const confirmPin = confirmAdminPinInput.trim();
+
+    if (!newPin || newPin.length < 4) {
+      setPinChangeError("Password must be at least 4 characters long.");
       return;
     }
-    localStorage.setItem("gsp_admin_pin", newAdminPinInput.trim());
+    if (newPin !== confirmPin) {
+      setPinChangeError("Passwords do not match! Please check both fields.");
+      return;
+    }
+
+    localStorage.setItem("gsp_admin_pin", newPin);
+    setCurrentActivePin(newPin);
+    await saveSettingsToBackend({ adminPin: newPin });
     setPinChangeSuccess(true);
-    setTimeout(() => setPinChangeSuccess(false), 3500);
+    setNewAdminPinInput("");
+    setConfirmAdminPinInput("");
+    setTimeout(() => setPinChangeSuccess(false), 4500);
+  };
+
+  const handleResetPinToDefault = async () => {
+    if (window.confirm("Are you sure you want to reset the Admin password back to default 'admin123'?")) {
+      localStorage.setItem("gsp_admin_pin", "admin123");
+      setCurrentActivePin("admin123");
+      await saveSettingsToBackend({ adminPin: "admin123" });
+      setPinChangeSuccess(true);
+      setPinChangeError("");
+      setTimeout(() => setPinChangeSuccess(false), 3500);
+    }
   };
 
   const handleSaveWebhook = async (e) => {
@@ -330,7 +372,7 @@ function doPost(e) {
         {/* Security Screen if not authenticated */}
         {!isAuthenticated ? (
           <div className="p-8 sm:p-12 text-center max-w-md mx-auto my-auto space-y-5">
-            <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-800 flex items-center justify-center mx-auto border border-emerald-200">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-800 flex items-center justify-center mx-auto border border-emerald-200 shadow-sm">
               <Lock className="w-8 h-8" />
             </div>
             <div>
@@ -338,37 +380,54 @@ function doPost(e) {
                 Staff / Admin Authentication
               </h4>
               <p className="text-xs text-gray-500 mt-1">
-                To protect customer privacy, inquiries are hidden from regular website users. Enter admin PIN to access the Excel export & Google Sheet tools.
+                Enter your secure Admin PIN or password to unlock leads, Google Sheet sync, and website catalog controls.
               </p>
             </div>
 
-            <form onSubmit={handleAdminAuth} className="space-y-3">
+            <form onSubmit={handleAdminAuth} className="space-y-4">
               <div className="text-left">
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                  Enter Admin PIN
-                </label>
-                <input
-                  type="password"
-                  value={adminPin}
-                  onChange={(e) => setAdminPin(e.target.value)}
-                  placeholder=""
-                  autoFocus
-                  required
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none font-mono"
-                />
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-gray-700 uppercase">
+                    Admin Password / PIN
+                  </label>
+                  <span className="text-[11px] text-gray-400">
+                    Default: <code className="text-emerald-800 font-mono font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">admin123</code>
+                  </span>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showLockPin ? "text" : "password"}
+                    value={adminPin}
+                    onChange={(e) => setAdminPin(e.target.value)}
+                    placeholder="Enter password (e.g. admin123)"
+                    autoFocus
+                    required
+                    className="w-full pl-4 pr-11 py-2.5 rounded-xl border border-gray-300 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none font-mono text-gray-900 bg-gray-50/50 focus:bg-white transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLockPin(!showLockPin)}
+                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-700 p-0.5 cursor-pointer"
+                    title={showLockPin ? "Hide Password" : "Show Password"}
+                  >
+                    {showLockPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               {pinError && (
-                <div className="text-xs text-rose-600 font-semibold text-left">
-                  {pinError}
+                <div className="text-xs text-rose-600 font-semibold text-left bg-rose-50 p-2.5 rounded-xl border border-rose-200 flex items-center gap-1.5">
+                  <ShieldAlert className="w-4 h-4 shrink-0" />
+                  <span>{pinError}</span>
                 </div>
               )}
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl text-sm font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shadow-md"
+                className="w-full py-3 rounded-xl text-sm font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
               >
-                Unlock Admin Desk →
+                <KeyRound className="w-4 h-4" />
+                <span>Unlock Admin Portal →</span>
               </button>
             </form>
           </div>
@@ -377,10 +436,10 @@ function doPost(e) {
           <>
             {/* Top Toolbar Tabs */}
             <div className="px-6 pt-4 pb-3 border-b border-gray-100 bg-gray-50/80 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => setActiveTab("leads")}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     activeTab === "leads"
                       ? "bg-white text-emerald-950 shadow-xs border border-gray-200"
                       : "text-gray-500 hover:text-gray-900"
@@ -391,7 +450,7 @@ function doPost(e) {
 
                 <button
                   onClick={() => setActiveTab("products")}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     activeTab === "products"
                       ? "bg-white text-emerald-950 shadow-xs border border-gray-200"
                       : "text-gray-500 hover:text-gray-900"
@@ -403,7 +462,7 @@ function doPost(e) {
 
                 <button
                   onClick={() => setActiveTab("google-sheets")}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     activeTab === "google-sheets"
                       ? "bg-white text-emerald-950 shadow-xs border border-gray-200"
                       : "text-gray-500 hover:text-gray-900"
@@ -411,6 +470,18 @@ function doPost(e) {
                 >
                   <Settings className="w-3.5 h-3.5 text-emerald-700" />
                   <span>Google Sheet 2-Way Sync</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab("security")}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    activeTab === "security"
+                      ? "bg-emerald-900 text-white shadow-xs border border-emerald-900"
+                      : "text-emerald-800 bg-emerald-50 hover:bg-emerald-100/70 border border-emerald-200"
+                  }`}
+                >
+                  <Key className="w-3.5 h-3.5 text-amber-400" />
+                  <span>🔑 Change Admin Password</span>
                 </button>
               </div>
 
@@ -858,36 +929,185 @@ function doPost(e) {
                   </div>
                 </div>
 
-                {/* Step 3: Change Admin Login Password / PIN */}
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 space-y-3">
-                  <div className="flex items-center justify-between">
+                {/* Quick note on admin password */}
+                <div className="bg-emerald-50/60 p-4 rounded-2xl border border-emerald-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-emerald-950 font-medium">
+                    <Key className="w-4 h-4 text-emerald-700 shrink-0" />
+                    <span>Want to change your Admin portal login password?</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("security")}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-900 hover:bg-emerald-950 text-white transition-all cursor-pointer"
+                  >
+                    Go to Security Tab →
+                  </button>
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB 4: SECURITY & ADMIN PASSWORD GATEWAY */}
+            {activeTab === "security" && (
+              <div className="p-6 flex-1 overflow-y-auto space-y-6">
+                
+                {/* Header Banner */}
+                <div className="bg-gradient-to-r from-[#031d13] to-[#0a482e] text-white p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/10 text-amber-400 flex items-center justify-center shrink-0 border border-white/10">
+                      <Key className="w-5 h-5" />
+                    </div>
                     <div>
-                      <h5 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
-                        <Lock className="w-3.5 h-3.5 text-emerald-700" />
-                        <span>Change Admin Desk Password / PIN</span>
-                      </h5>
-                      <p className="text-[11px] text-gray-500 mt-0.5">
-                        Set a new secret password to access this Admin Portal anytime.
+                      <h4 className="text-base font-bold text-white flex items-center gap-2">
+                        <span>Admin Gateway & Password Manager</span>
+                        <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/30">
+                          Active & Secured
+                        </span>
+                      </h4>
+                      <p className="text-xs text-emerald-200/80 mt-1">
+                        Control the secret PIN / Password required to unlock the Admin Desk, inquiries, and sheet settings.
                       </p>
                     </div>
                   </div>
+                </div>
 
-                  <form onSubmit={handleUpdateAdminPin} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newAdminPinInput}
-                      onChange={(e) => setNewAdminPinInput(e.target.value)}
-                      placeholder="Enter new PIN (e.g. MySecret@2026)"
-                      className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-xs focus:border-emerald-600 outline-none font-mono text-gray-900 bg-gray-50/50 focus:bg-white"
-                      required
-                    />
+                {/* Current Active Password Card */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                      <span>Current Active Admin Password</span>
+                    </h5>
+                    <span className="text-[11px] font-semibold text-gray-500">
+                      Currently protecting this portal
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-300 font-mono text-sm font-bold text-emerald-950 min-w-[200px]">
+                      <KeyRound className="w-4 h-4 text-gray-400" />
+                      <span>{showCurrentPin ? currentActivePin : "••••••••••••"}</span>
+                    </div>
+
                     <button
-                      type="submit"
-                      className="px-6 py-2.5 rounded-xl text-xs font-bold bg-[#0f4b32] hover:bg-[#093523] text-white transition-all cursor-pointer shrink-0 shadow-sm"
+                      type="button"
+                      onClick={() => setShowCurrentPin(!showCurrentPin)}
+                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 transition-all cursor-pointer flex items-center gap-1.5"
                     >
-                      {pinChangeSuccess ? "PIN Updated! ✅" : "Update Admin PIN"}
+                      {showCurrentPin ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      <span>{showCurrentPin ? "Hide" : "Show Password"}</span>
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(currentActivePin);
+                        setCopiedPin(true);
+                        setTimeout(() => setCopiedPin(false), 2000);
+                      }}
+                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      {copiedPin ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedPin ? "Copied!" : "Copy"}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Change Password Card */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs space-y-4">
+                  <div>
+                    <h5 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-emerald-700" />
+                      <span>Set New Admin Password</span>
+                    </h5>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Choose a memorable password (letters, numbers, or special characters — minimum 4 characters).
+                    </p>
+                  </div>
+
+                  {pinChangeSuccess && (
+                    <div className="p-3.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold animate-fade-in flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                      <span>Admin Password updated successfully! Your new password is now active.</span>
+                    </div>
+                  )}
+
+                  {pinChangeError && (
+                    <div className="p-3.5 rounded-xl bg-rose-50 text-rose-900 border border-rose-200 text-xs font-bold animate-fade-in flex items-center gap-2">
+                      <ShieldAlert className="w-4 h-4 text-rose-700 shrink-0" />
+                      <span>{pinChangeError}</span>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleUpdateAdminPin} className="space-y-3 max-w-lg">
+                    <div className="space-y-1">
+                      <label className="block text-xs font-bold text-gray-700">
+                        New Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showNewPin ? "text" : "password"}
+                          value={newAdminPinInput}
+                          onChange={(e) => setNewAdminPinInput(e.target.value)}
+                          placeholder="e.g. MySecret@2026 or 889900"
+                          className="w-full pl-4 pr-11 py-2.5 rounded-xl border border-gray-300 text-xs focus:border-emerald-600 outline-none font-mono text-gray-900 bg-gray-50/50 focus:bg-white"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPin(!showNewPin)}
+                          className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-700 p-0.5 cursor-pointer"
+                        >
+                          {showNewPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-xs font-bold text-gray-700">
+                        Confirm New Password
+                      </label>
+                      <input
+                        type={showNewPin ? "text" : "password"}
+                        value={confirmAdminPinInput}
+                        onChange={(e) => setConfirmAdminPinInput(e.target.value)}
+                        placeholder="Re-enter new password to confirm"
+                        className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-xs focus:border-emerald-600 outline-none font-mono text-gray-900 bg-gray-50/50 focus:bg-white"
+                        required
+                      />
+                    </div>
+
+                    <div className="pt-2 flex items-center gap-3">
+                      <button
+                        type="submit"
+                        className="px-6 py-2.5 rounded-xl text-xs font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
+                      >
+                        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                        <span>Save & Activate New Password</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleResetPinToDefault}
+                        className="px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-600 hover:text-rose-600 hover:bg-rose-50 border border-gray-200 transition-all cursor-pointer"
+                        title="Reset password back to admin123"
+                      >
+                        Reset to Default (admin123)
+                      </button>
+                    </div>
                   </form>
+                </div>
+
+                {/* Instructions Box */}
+                <div className="bg-amber-50/70 border border-amber-200 p-4 rounded-2xl text-xs text-amber-950 space-y-1.5">
+                  <strong className="block font-bold text-amber-900">
+                    💡 Helpful Information:
+                  </strong>
+                  <ul className="list-disc list-inside space-y-1 text-amber-900/90 leading-relaxed">
+                    <li>The default initial password is <strong className="font-mono">admin123</strong>.</li>
+                    <li>When you update your password here, it saves permanently in your browser and backend database.</li>
+                    <li>If you ever forget your password, you can reset your browser cache or re-enter the default password.</li>
+                  </ul>
                 </div>
 
               </div>
