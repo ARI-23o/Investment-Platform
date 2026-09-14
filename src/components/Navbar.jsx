@@ -32,6 +32,7 @@ export default function Navbar({
   onOpenLogin, 
   onOpenRegister, 
   onOpenEnquiries, 
+  onOpenAdmin,
   enquiriesCount = 0,
   currentUser,
   onLogout,

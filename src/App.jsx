@@ -329,6 +329,7 @@ export default function App() {
         onOpenLogin={() => setLoginModalOpen(true)}
         onOpenRegister={() => setRegisterModalOpen(true)}
         onOpenEnquiries={() => setEnquiriesDeskOpen(true)}
+        onOpenAdmin={() => setEnquiriesDeskOpen(true)}
         enquiriesCount={enquiries.length}
         currentUser={currentUser}
         onLogout={handleLogout}

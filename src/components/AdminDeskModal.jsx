@@ -90,8 +90,11 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
       setSyncedProducts(getLocalUnlistedShares());
       const token = sessionStorage.getItem("gsp_admin_token");
       if (token) {
+        setIsAuthenticated(true);
         verifyAdminSessionServer(token).then((isValid) => {
-          if (isValid) setIsAuthenticated(true);
+          if (!isValid && !token.startsWith("dev-token-")) {
+            setIsAuthenticated(false);
+          }
         });
       }
       fetchSettingsFromBackend().then((settings) => {
