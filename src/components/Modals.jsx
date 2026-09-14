@@ -11,7 +11,20 @@ import {
   User, 
   KeyRound,
   Sparkles,
-  Info
+  Info,
+  Clock,
+  Rocket,
+  Zap,
+  Award,
+  Layers,
+  PhoneCall,
+  MessageCircle,
+  Check,
+  ExternalLink,
+  ShieldAlert,
+  BadgeCheck,
+  Cpu,
+  ChevronRight
 } from "lucide-react";
 import { syncLeadToGoogleSheet } from "../utils/exportUtils";
 import { saveEnquiryToBackend, registerUserInBackend } from "../services/api";
@@ -215,194 +228,437 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
 }
 
 export function OpenAccountModal({ isOpen, onClose, onRegisterSuccess }) {
-  const [step, setStep] = useState(1);
+  const [activeTab, setActiveTab] = useState("waitlist"); // 'waitlist' or 'assisted'
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
-  const [pan, setPan] = useState("");
   const [email, setEmail] = useState("");
+  const [segment, setSegment] = useState("Unlisted Shares");
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [vipId, setVipId] = useState("");
+  
+  // Interactive 3D Card Tilt State
+  const [cardRotate, setCardRotate] = useState({ x: 0, y: 0 });
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const [isHovered, setIsHovered] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleCardMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    // Calculate tilt angles (-12 to +12 deg)
+    const rotateX = ((y - centerY) / centerY) * -12;
+    const rotateY = ((x - centerX) / centerX) * 12;
+    
+    setCardRotate({ x: rotateX, y: rotateY });
+    setMousePos({ x: (x / rect.width) * 100, y: (y / rect.height) * 100 });
+  };
+
+  const handleCardMouseLeave = () => {
+    setIsHovered(false);
+    setCardRotate({ x: 0, y: 0 });
+    setMousePos({ x: 50, y: 50 });
+  };
+
+  const handleWaitlistSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !mobile || !pan) {
-      alert("Please fill all required fields.");
+    if (!name || !mobile) {
+      alert("Please fill in your name and mobile number.");
       return;
     }
 
     setLoading(true);
-    setTimeout(async () => {
-      const newUser = {
-        id: "USER-" + Date.now(),
-        name: name.trim(),
-        mobile: mobile.trim(),
-        pan: pan.toUpperCase().trim(),
-        email: email.trim() || `${mobile.trim()}@gspinvestor.com`,
-        clientId: "GSP" + Math.floor(100000 + Math.random() * 900000),
-        registeredAt: new Date().toLocaleString(),
-      };
+    const generatedVipId = "GSP-VIP-" + Math.floor(1000 + Math.random() * 9000);
+    setVipId(generatedVipId);
 
-      // 1. Save user locally and to backend
-      try {
-        const existingUsers = JSON.parse(localStorage.getItem("gsp_users") || "[]");
-        existingUsers.push(newUser);
-        localStorage.setItem("gsp_users", JSON.stringify(existingUsers));
-        await registerUserInBackend(newUser);
-      } catch (err) {
-        console.warn("User register storage error:", err);
-      }
+    const waitlistLead = {
+      id: "WAITLIST-" + Date.now(),
+      type: "WAITLIST",
+      title: `VIP Early Access: ${segment}`,
+      fullName: name.trim(),
+      mobile: mobile.trim(),
+      email: email.trim() || `${mobile.trim()}@gspwaitlist.com`,
+      service: segment,
+      message: `Requested VIP Early Access for Digital Account Opening (Token: ${generatedVipId})`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      status: "VIP Reserved",
+    };
 
-      // 2. Also record in enquiries desk
-      const accountLead = {
-        id: "ACC-" + Date.now(),
-        type: "account",
-        title: "Demat & Trading Account Opening",
-        fullName: name.trim(),
-        mobile: mobile.trim(),
-        pan: pan.toUpperCase().trim(),
-        email: email.trim(),
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        status: "Approved",
-      };
+    try {
+      // Save locally & to backend
+      const existingEnquiries = JSON.parse(localStorage.getItem("gsp_enquiries") || "[]");
+      existingEnquiries.unshift(waitlistLead);
+      localStorage.setItem("gsp_enquiries", JSON.stringify(existingEnquiries));
+      await saveEnquiryToBackend(waitlistLead);
+      syncLeadToGoogleSheet(waitlistLead);
+    } catch (err) {
+      console.warn("Waitlist sync warning:", err);
+    }
 
-      try {
-        const existingEnquiries = JSON.parse(localStorage.getItem("gsp_enquiries") || "[]");
-        existingEnquiries.unshift(accountLead);
-        localStorage.setItem("gsp_enquiries", JSON.stringify(existingEnquiries));
-        await saveEnquiryToBackend(accountLead);
-        syncLeadToGoogleSheet(accountLead);
-      } catch (err) {
-        console.warn("Account lead sync error:", err);
-      }
+    setLoading(false);
+    setSubmitted(true);
+  };
 
-      setLoading(false);
-      setStep(2);
-
-      setTimeout(() => {
-        onRegisterSuccess && onRegisterSuccess(newUser);
-        setStep(1);
-        onClose();
-      }, 2000);
-    }, 800);
+  const resetForm = () => {
+    setSubmitted(false);
+    setName("");
+    setMobile("");
+    setEmail("");
+    setVipId("");
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-100 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
+      <div className="bg-[#0b131b] text-white rounded-3xl max-w-xl w-full p-5 sm:p-8 shadow-2xl border border-emerald-500/20 relative my-6 overflow-hidden">
+        
+        {/* Glowing Background Orbs */}
+        <div className="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors z-20 cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {step === 1 ? (
-          <div>
-            <div className="mb-6">
-              <span className="text-[11px] font-bold text-amber-700 uppercase tracking-widest bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                ⚡ Paperless & 100% Free
+        {/* TOP STATUS BADGE */}
+        <div className="text-center mb-5">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider shadow-inner">
+            <Rocket className="w-3.5 h-3.5 animate-pulse text-amber-400" />
+            <span>Upcoming Feature • Beta Phase 2.0</span>
+          </div>
+          <h3 className="text-2xl sm:text-3xl font-black text-white mt-2 tracking-tight">
+            Digital Account Opening
+          </h3>
+          <p className="text-xs sm:text-sm text-gray-400 max-w-md mx-auto mt-1">
+            100% Paperless e-KYC & Instant Trading Desk is under active regulatory development.
+          </p>
+        </div>
+
+        {/* ============================================================ */}
+        {/* INTERACTIVE 3D HOLOGRAPHIC ACCESS CARD */}
+        {/* ============================================================ */}
+        <div className="relative py-2 flex justify-center [perspective:1200px]">
+          <div 
+            onMouseMove={handleCardMouseMove}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={handleCardMouseLeave}
+            style={{
+              transform: `rotateX(${cardRotate.x}deg) rotateY(${cardRotate.y}deg) ${isHovered ? "scale3d(1.02, 1.02, 1.02)" : "scale3d(1, 1, 1)"}`,
+              transition: isHovered ? "transform 0.1s ease-out" : "transform 0.5s ease-out",
+              transformStyle: "preserve-3d"
+            }}
+            className="w-full max-w-md rounded-2xl p-5 sm:p-6 shadow-2xl border border-white/15 cursor-pointer relative overflow-hidden bg-gradient-to-br from-[#063323] via-[#0b241c] to-[#041310] select-none"
+          >
+            {/* Dynamic 3D Radial Light Sheen */}
+            <div 
+              className="absolute inset-0 pointer-events-none opacity-60 mix-blend-overlay transition-opacity duration-300"
+              style={{
+                background: `radial-gradient(circle 280px at ${mousePos.x}% ${mousePos.y}%, rgba(232, 163, 23, 0.45), transparent 70%)`
+              }}
+            />
+
+            {/* Subtle Metallic Grid Texture */}
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#e8a317_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+
+            {/* Card Header Layer */}
+            <div className="flex items-center justify-between relative z-10 [transform:translateZ(30px)]">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-gray-950 font-black shadow-md">
+                  G
+                </div>
+                <div>
+                  <div className="text-xs font-black tracking-wider text-amber-300 uppercase">GSP INVESTMENT</div>
+                  <div className="text-[9px] text-gray-400 tracking-widest uppercase">Investor Access Pass</div>
+                </div>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[10px] font-bold text-emerald-300 tracking-wide flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                SOON LIVE
               </span>
-              <h3 className="text-2xl font-bold text-gray-900 mt-2">
-                Open Demat & Trading Account
-              </h3>
-              <p className="text-xs text-gray-500 mt-1">
-                Zero AMC for 1st Year • Instant Activation with Aadhaar eKYC
+            </div>
+
+            {/* 3D Smart EMV Chip & Hologram */}
+            <div className="my-5 flex items-center justify-between relative z-10 [transform:translateZ(40px)]">
+              <div className="w-11 h-8 rounded-md bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-0.5 shadow-inner flex items-center justify-center border border-amber-300/40 relative">
+                <div className="w-full h-full border border-amber-900/30 rounded flex flex-col justify-between p-1 opacity-70">
+                  <div className="w-full h-[1px] bg-amber-950/40" />
+                  <div className="flex justify-between">
+                    <div className="w-2 h-2 rounded-full border border-amber-950/40" />
+                    <div className="w-2 h-2 rounded-full border border-amber-950/40" />
+                  </div>
+                  <div className="w-full h-[1px] bg-amber-950/40" />
+                </div>
+                <Cpu className="w-4 h-4 text-amber-950 absolute opacity-50" />
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] uppercase tracking-widest text-gray-400 font-mono">Secured By</div>
+                <div className="text-xs font-bold text-gray-200 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  256-Bit e-KYC Vault
+                </div>
+              </div>
+            </div>
+
+            {/* Card Card Number & Holder */}
+            <div className="relative z-10 [transform:translateZ(35px)]">
+              <div className="font-mono text-sm sm:text-base font-bold tracking-[0.22em] text-amber-100/90 drop-shadow">
+                •••• •••• •••• 2026
+              </div>
+              <div className="flex justify-between items-end mt-2 pt-2 border-t border-white/10 text-[10px]">
+                <div>
+                  <div className="text-gray-400 uppercase tracking-widest">Cardholder Status</div>
+                  <div className="font-bold text-amber-300 uppercase">VIP Early Adopter</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-gray-400 uppercase tracking-widest">Zero Brokerage</div>
+                  <div className="font-bold text-emerald-400">Lifetime Delivery</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating 3D Feature Badges */}
+            <div className="mt-4 pt-3 border-t border-white/10 grid grid-cols-2 gap-2 text-[10px] relative z-10 [transform:translateZ(25px)]">
+              <div className="flex items-center gap-1.5 text-gray-300">
+                <Zap className="w-3 h-3 text-amber-400 shrink-0" />
+                <span>Instant Aadhaar OTP</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-gray-300">
+                <Layers className="w-3 h-3 text-emerald-400 shrink-0" />
+                <span>CDSL / NSDL Linking</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-gray-300">
+                <Award className="w-3 h-3 text-amber-400 shrink-0" />
+                <span>₹0 Demat AMC 1st Year</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-gray-300">
+                <Sparkles className="w-3 h-3 text-emerald-400 shrink-0" />
+                <span>Unlisted Shares Access</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ============================================================ */}
+        {/* NOTICE / STATUS INFORMATION */}
+        {/* ============================================================ */}
+        <div className="my-4 p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-1.5">
+          <div className="flex items-center gap-2 text-amber-400 font-bold">
+            <Info className="w-4 h-4 shrink-0" />
+            <span>Self-Service Digital Account Opening is Coming Soon!</span>
+          </div>
+          <p className="text-gray-300 text-[11px] leading-relaxed">
+            Direct online registration is currently paused while we complete automated biometric Aadhaar & CDSL depository gateway integration. In the meantime, you can join the <strong>VIP Priority Waitlist</strong> or get <strong>Assisted Offline Onboarding</strong> via our dedicated team today.
+          </p>
+        </div>
+
+        {/* ============================================================ */}
+        {/* INTERACTIVE TABS & ACTION CONTENT */}
+        {/* ============================================================ */}
+        {!submitted ? (
+          <div>
+            {/* Tab Selector */}
+            <div className="flex rounded-xl bg-white/5 p-1 mb-4 border border-white/10">
+              <button
+                type="button"
+                onClick={() => setActiveTab("waitlist")}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  activeTab === "waitlist"
+                    ? "bg-[#e8a317] text-gray-950 shadow-md"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <Rocket className="w-3.5 h-3.5" />
+                Join VIP Waitlist
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("assisted")}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  activeTab === "assisted"
+                    ? "bg-emerald-600 text-white shadow-md"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <PhoneCall className="w-3.5 h-3.5" />
+                Assisted Desk (Open Today)
+              </button>
+            </div>
+
+            {/* TAB 1: VIP WAITLIST FORM */}
+            {activeTab === "waitlist" ? (
+              <form onSubmit={handleWaitlistSubmit} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Ajay Shah"
+                      className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/15 text-white text-xs placeholder-gray-500 focus:border-amber-400 focus:bg-white/10 outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1">
+                      Mobile Number *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      inputMode="numeric"
+                      maxLength={10}
+                      value={mobile}
+                      onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      placeholder="9096993499"
+                      className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/15 text-white text-xs placeholder-gray-500 focus:border-amber-400 focus:bg-white/10 outline-none font-mono transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1">
+                      Email Address (Optional)
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="e.g. ajay@example.com"
+                      className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/15 text-white text-xs placeholder-gray-500 focus:border-amber-400 focus:bg-white/10 outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1">
+                      Primary Interest
+                    </label>
+                    <select
+                      value={segment}
+                      onChange={(e) => setSegment(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl bg-[#0e1b24] border border-white/15 text-white text-xs focus:border-amber-400 outline-none transition-all cursor-pointer"
+                    >
+                      <option value="Unlisted Shares">Unlisted & Pre-IPO Shares</option>
+                      <option value="Demat & Trading">Zero Brokerage Demat</option>
+                      <option value="Mutual Funds & SIP">Mutual Funds & SIP</option>
+                      <option value="Corporate Fixed Deposits">Corporate FDs & Bonds</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-950 shadow-lg shadow-amber-500/20 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <span>Reserving Your VIP Access...</span>
+                  ) : (
+                    <>
+                      <span>Reserve My VIP Early Access Pass</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              /* TAB 2: ASSISTED ONBOARDING DESK */
+              <div className="space-y-3">
+                <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-xs space-y-2">
+                  <div className="font-bold text-emerald-300 flex items-center gap-1.5 text-sm">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    Instant Assisted Account Opening Available
+                  </div>
+                  <p className="text-gray-300 text-[11px] leading-relaxed">
+                    Our dedicated Relationship Managers will help you complete Demat opening, unlisted share allocation, and KYC documentation offline or over phone/WhatsApp within 24 hours.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <a
+                    href="https://wa.me/919096993499?text=Hello%20GSP%20Investment%2C%20I%20want%20to%20open%20a%20Demat%20%26%20Trading%20Account%20via%20Assisted%20Onboarding."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-3 px-4 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Chat on WhatsApp (Instant)
+                  </a>
+
+                  <a
+                    href="tel:+919096993499"
+                    className="py-3 px-4 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  >
+                    <PhoneCall className="w-4 h-4 text-amber-400" />
+                    Call Desk: +91 9096993499
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ============================================================ */
+          /* 3D VIP CONFIRMATION SUCCESS VIEW */
+          /* ============================================================ */
+          <div className="py-6 text-center space-y-4 animate-fade-in">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-gray-950 flex items-center justify-center mx-auto shadow-xl shadow-amber-500/20">
+              <BadgeCheck className="w-9 h-9" />
+            </div>
+
+            <div>
+              <div className="inline-block px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-mono text-xs font-bold mb-2">
+                PRIORITY TOKEN: {vipId}
+              </div>
+              <h4 className="text-xl sm:text-2xl font-black text-white">
+                VIP Early Access Confirmed!
+              </h4>
+              <p className="text-xs sm:text-sm text-gray-300 max-w-sm mx-auto mt-1">
+                Thank you <strong>{name}</strong>! You are #{Math.floor(100 + Math.random() * 400)} on the priority rollout list for <strong>{segment}</strong>.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                  Full Name (as per PAN) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Ajay Shah"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
-                />
+            <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-left text-xs max-w-sm mx-auto space-y-1.5 text-gray-300">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                <Check className="w-4 h-4 shrink-0" />
+                <span>What Happens Next?</span>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                    Mobile Number (Aadhaar linked) *
-                  </label>
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={10}
-                    required
-                    value={mobile}
-                    onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                    placeholder="9096993499"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                    PAN Card Number *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={pan}
-                    onChange={(e) => setPan(e.target.value.toUpperCase())}
-                    placeholder="ABCDE1234F"
-                    maxLength={10}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm uppercase focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none font-mono"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. ajayshah@gmail.com"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
-                />
-              </div>
-
-              <div className="p-3 bg-emerald-50 rounded-xl text-xs text-emerald-900 flex items-start gap-2 border border-emerald-200">
-                <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-                <span>
-                  By registering, your account is immediately created and saved. You will be automatically logged in!
-                </span>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3.5 px-4 rounded-xl text-sm font-bold bg-[#e8a317] hover:bg-[#d49310] text-gray-950 shadow-md transition-all cursor-pointer disabled:opacity-50"
-              >
-                {loading ? "Registering & Opening Account..." : "Create Free Demat Account →"}
-              </button>
-            </form>
-          </div>
-        ) : (
-          <div className="text-center py-8 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto animate-bounce">
-              <CheckCircle2 className="w-8 h-8" />
+              <p className="text-[11px] text-gray-400">
+                1. You will receive an SMS & WhatsApp invite as soon as digital onboarding goes live.
+              </p>
+              <p className="text-[11px] text-gray-400">
+                2. Our senior relationship desk will contact you at <strong>{mobile}</strong> if you need immediate assisted portfolio setup.
+              </p>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">
-              Account Created & Registered!
-            </h3>
-            <p className="text-sm text-gray-600 max-w-sm mx-auto">
-              Welcome, <strong>{name}</strong>! Your Demat account has been registered and you are now logged in.
-            </p>
+
+            <div className="flex gap-2 justify-center pt-2">
+              <button
+                type="button"
+                onClick={resetForm}
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300 cursor-pointer"
+              >
+                Submit Another
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-xs font-bold text-gray-950 cursor-pointer shadow-md"
+              >
+                Done
+              </button>
+            </div>
           </div>
         )}
+
       </div>
     </div>
   );
