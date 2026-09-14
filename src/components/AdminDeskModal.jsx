@@ -49,6 +49,10 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   const [syncedProducts, setSyncedProducts] = useState(getLocalUnlistedShares);
   const [isSyncingProducts, setIsSyncingProducts] = useState(false);
   const [productSyncMsg, setProductSyncMsg] = useState("");
+  
+  // Custom Admin PIN state
+  const [newAdminPinInput, setNewAdminPinInput] = useState("");
+  const [pinChangeSuccess, setPinChangeSuccess] = useState(false);
 
   // Sync settings whenever modal opens
   useEffect(() => {
@@ -64,12 +68,30 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
 
   const handleAdminAuth = (e) => {
     e.preventDefault();
-    if (adminPin === "admin123" || adminPin === "1234" || adminPin.toLowerCase() === "admin") {
+    const savedPin = localStorage.getItem("gsp_admin_pin");
+    const entered = adminPin.trim();
+    if (
+      (savedPin && entered === savedPin) ||
+      entered === "admin123" ||
+      entered === "1234" ||
+      entered.toLowerCase() === "admin"
+    ) {
       setIsAuthenticated(true);
       setPinError("");
     } else {
       setPinError("Invalid Admin PIN. Please check and try again.");
     }
+  };
+
+  const handleUpdateAdminPin = (e) => {
+    e.preventDefault();
+    if (!newAdminPinInput.trim() || newAdminPinInput.trim().length < 4) {
+      alert("Please enter a new PIN with at least 4 characters.");
+      return;
+    }
+    localStorage.setItem("gsp_admin_pin", newAdminPinInput.trim());
+    setPinChangeSuccess(true);
+    setTimeout(() => setPinChangeSuccess(false), 3500);
   };
 
   const handleSaveWebhook = async (e) => {
@@ -834,6 +856,38 @@ function doPost(e) {
                       {sampleAppsScriptCode}
                     </pre>
                   </div>
+                </div>
+
+                {/* Step 3: Change Admin Login Password / PIN */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h5 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>Change Admin Desk Password / PIN</span>
+                      </h5>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        Set a new secret password to access this Admin Portal anytime.
+                      </p>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleUpdateAdminPin} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newAdminPinInput}
+                      onChange={(e) => setNewAdminPinInput(e.target.value)}
+                      placeholder="Enter new PIN (e.g. MySecret@2026)"
+                      className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-xs focus:border-emerald-600 outline-none font-mono text-gray-900 bg-gray-50/50 focus:bg-white"
+                      required
+                    />
+                    <button
+                      type="submit"
+                      className="px-6 py-2.5 rounded-xl text-xs font-bold bg-[#0f4b32] hover:bg-[#093523] text-white transition-all cursor-pointer shrink-0 shadow-sm"
+                    >
+                      {pinChangeSuccess ? "PIN Updated! ✅" : "Update Admin PIN"}
+                    </button>
+                  </form>
                 </div>
 
               </div>
