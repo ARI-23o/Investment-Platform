@@ -127,6 +127,19 @@ function formatProductImageUrl($rawUrl) {
         if (!empty($imgurId)) return 'https://i.imgur.com/' . $imgurId . '.png';
     }
 
+    // 10. Pinterest / Instagram / Protected image hosts (auto-route through high-speed CDN proxy)
+    if (
+        str_contains($url, 'pinimg.com') ||
+        str_contains($url, 'pinterest.') ||
+        str_contains($url, 'instagram.com') ||
+        str_contains($url, 'fbcdn.net') ||
+        str_contains($url, 'twimg.com') ||
+        str_contains($url, 'postimg.cc') ||
+        str_contains($url, 'flickr.com')
+    ) {
+        return 'https://wsrv.nl/?url=' . urlencode($url);
+    }
+
     return $url;
 }
 

@@ -94,6 +94,19 @@ export function formatProductImageUrl(rawUrl) {
     if (imgurId) return `https://i.imgur.com/${imgurId}.png`;
   }
 
+  // 10. Pinterest / Instagram / Protected image hosts (auto-route through high-speed CDN proxy)
+  if (
+    url.includes("pinimg.com") ||
+    url.includes("pinterest.") ||
+    url.includes("instagram.com") ||
+    url.includes("fbcdn.net") ||
+    url.includes("twimg.com") ||
+    url.includes("postimg.cc") ||
+    url.includes("flickr.com")
+  ) {
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}`;
+  }
+
   return url;
 }
 
