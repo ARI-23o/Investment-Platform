@@ -386,20 +386,15 @@ function doPost(e) {
 
             <form onSubmit={handleAdminAuth} className="space-y-4">
               <div className="text-left">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold text-gray-700 uppercase">
-                    Admin Password / PIN
-                  </label>
-                  <span className="text-[11px] text-gray-400">
-                    Default: <code className="text-emerald-800 font-mono font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">admin123</code>
-                  </span>
-                </div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                  Admin Password / PIN
+                </label>
                 <div className="relative">
                   <input
                     type={showLockPin ? "text" : "password"}
                     value={adminPin}
                     onChange={(e) => setAdminPin(e.target.value)}
-                    placeholder="Enter password (e.g. admin123)"
+                    placeholder="Enter password / PIN"
                     autoFocus
                     required
                     className="w-full pl-4 pr-11 py-2.5 rounded-xl border border-gray-300 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none font-mono text-gray-900 bg-gray-50/50 focus:bg-white transition-all"
