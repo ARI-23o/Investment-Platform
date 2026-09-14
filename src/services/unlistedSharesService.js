@@ -252,7 +252,32 @@ export function getLocalUnlistedShares() {
   return UNLISTED_SHARES;
 }
 
-export async function fetchUnlistedSharesFromSheet(customUrl = null) {
+export async function fetchUnlistedSharesFromSheet(customUrl = null, forceRefresh = false) {
+  // 1. PRIMARY SECURE GATEWAY FETCH (Hostinger PHP Server-Side Proxy)
+  try {
+    const gatewayUrl = `/api/sheets-gateway.php?action=get_products${forceRefresh ? "&force=1" : ""}&t=${Date.now()}`;
+    const gatewayRes = await fetch(gatewayUrl, { cache: "no-store" });
+    if (gatewayRes.ok) {
+      const data = await gatewayRes.json();
+      if (data && data.success && Array.isArray(data.products) && data.products.length > 0) {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data.products));
+        localStorage.setItem(LAST_FETCH_KEY, data.lastSync || new Date().toISOString());
+        window.dispatchEvent(new CustomEvent("unlisted-shares-updated", { detail: data.products }));
+        return {
+          success: true,
+          count: data.products.length,
+          products: data.products,
+          lastSync: data.lastSync || new Date().toISOString(),
+          cached: !!data.cached,
+          isDefault: false
+        };
+      }
+    }
+  } catch (gatewayErr) {
+    // Gateway not responding (e.g., local Vite dev mode), proceed to direct client fallback
+  }
+
+  // 2. FALLBACK / DIRECT CLIENT-SIDE FETCH (FOR LOCAL DEV & HYBRID COMPATIBILITY)
   const webhookUrl = (customUrl || getSavedWebhookUrl() || "").trim();
 
   if (!webhookUrl) {

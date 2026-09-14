@@ -67,8 +67,26 @@ export function getSavedWebhookUrl() {
   return "";
 }
 
-// Send Lead to Google Form or Google Sheet Webhook in Background (Permanent Sync)
+// Send Lead to Google Form or Google Sheet Webhook via Secure Gateway (Server-Side Proxy)
 export async function syncLeadToGoogleSheet(leadData) {
+  // 1. PRIMARY: Route via Secure Server-Side PHP Gateway (hides Google URL from browser)
+  try {
+    const gatewayRes = await fetch("/api/sheets-gateway.php?action=sync_lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lead: leadData }),
+    });
+    if (gatewayRes.ok) {
+      const result = await gatewayRes.json();
+      if (result && result.success) {
+        return { synced: true, message: result.message };
+      }
+    }
+  } catch (gatewayErr) {
+    // Gateway endpoint unreachable (e.g., local dev), proceed to client-side fallback
+  }
+
+  // 2. FALLBACK: Direct Client-Side Sync
   let webhookUrl = getSavedWebhookUrl();
 
   // If not found in cache, attempt a fast background fetch from central settings

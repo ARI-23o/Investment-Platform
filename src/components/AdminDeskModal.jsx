@@ -194,7 +194,7 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
     setIsSyncingProducts(true);
     setProductSyncMsg("Connecting to your Google Sheet...");
     try {
-      const res = await fetchUnlistedSharesFromSheet(webhookUrl);
+      const res = await fetchUnlistedSharesFromSheet(webhookUrl, true);
       if (res && res.products && Array.isArray(res.products) && res.products.length > 0) {
         setSyncedProducts(res.products);
         setProductSyncMsg(`✅ Successfully synced ${res.products.length} unlisted shares in real-time from Google Sheet!`);

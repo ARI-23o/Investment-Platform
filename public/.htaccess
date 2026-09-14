@@ -1,10 +1,19 @@
-﻿<IfModule mod_rewrite.c>
+<IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # Route /api/something to /api/something.php if it exists
+  RewriteCond %{REQUEST_FILENAME}.php -f
+  RewriteRule ^api/(.*)$ api/$1.php [L,QSA]
+
+  # Allow direct access to existing files & dirs
   RewriteRule ^index\.html$ - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteCond %{REQUEST_FILENAME} !-l
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d [OR]
+  RewriteCond %{REQUEST_FILENAME} -l
+  RewriteRule ^ - [L]
+
+  # Single Page Application SPA fallback
   RewriteRule . /index.html [L]
 </IfModule>
 

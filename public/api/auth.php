@@ -129,8 +129,8 @@ switch ($action) {
         }
 
 
-        $newHash = password_hash($newPassword, PASSWORD_BCRYOT, ['cost' => 12]);
-        $authData["password_hash"] = $newHash;
+        $newHash = password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 12]);
+        $authData['password_hash'] = $newHash;
         $authData['updated_at'] = date('c');
 
 

@@ -99,6 +99,7 @@ export async function fetchSettingsFromBackend() {
 }
 
 export async function saveSettingsToBackend(newSettings) {
+  const token = sessionStorage.getItem("gsp_admin_token") || "";
   try {
     if (newSettings.googleSheetWebhook) {
       localStorage.setItem("gsp_google_sheet_webhook", newSettings.googleSheetWebhook);
@@ -107,6 +108,22 @@ export async function saveSettingsToBackend(newSettings) {
     const merged = { ...existing, ...newSettings };
     localStorage.setItem("gsp_settings", JSON.stringify(merged));
 
+    // 1. Sync to sheets-gateway.php
+    if (newSettings.googleSheetWebhook !== undefined && token) {
+      try {
+        await fetch("/api/sheets-gateway.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "save_settings",
+            googleSheetWebhook: newSettings.googleSheetWebhook,
+            token: token
+          }),
+        });
+      } catch (gwErr) {}
+    }
+
+    // 2. Sync to general settings endpoint
     const res = await fetch("/api/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
