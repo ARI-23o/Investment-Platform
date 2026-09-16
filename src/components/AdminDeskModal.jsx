@@ -26,7 +26,13 @@ import {
 ArrowUpDown,
   ImageIcon
 } from "lucide-react";
-import { exportToCSV, syncLeadToGoogleSheet, getSavedWebhookUrl } from "../utils/exportUtils";
+import { 
+  exportToCSV, 
+  exportSharesToCSV, 
+  copyToClipboardSafe, 
+  syncLeadToGoogleSheet, 
+  getSavedWebhookUrl 
+} from "../utils/exportUtils";
 import { 
   fetchSettingsFromBackend, 
   saveSettingsToBackend,
@@ -213,6 +219,10 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
     await saveSettingsToBackend({ googleSheetWebhook: cleanUrl });
     setWebhookSaved(true);
     setTimeout(() => setWebhookSaved(false), 3500);
+    // Automatically trigger real-time sync when link is saved
+    if (cleanUrl) {
+      handleSyncProductsNow();
+    }
   };
 
   const handleSendTestLead = async () => {
@@ -309,18 +319,51 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   const sampleAppsScriptCode = `// ─────────────────────────────────────────────────────────────
 // 2-WAY SYNC GOOGLE APPS SCRIPT FOR GSP INVESTMENT PLATFORM
 // 1. doGet: Reads Unlisted Products from tab "Unlisted product"
-// 2. doPost: Appends customer leads to tab "Enquiries"
+// 2. doPost: Appends customer leads & auto-creates "Enquiries" headers
 // ─────────────────────────────────────────────────────────────
 
 function doGet(e) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    // Locate the Unlisted product sheet tab
-    var sheet = ss.getSheetByName("Unlisted product") || 
-                ss.getSheetByName("Unlisted Product") || 
-                ss.getSheetByName("Products") || 
-                ss.getSheets()[1] || 
-                ss.getSheets()[0];
+    
+    // Auto-discover the Unlisted Products sheet tab
+    var sheet = null;
+    var candidateNames = [
+      "Unlisted product", "Unlisted Product", "Unlisted products", "Unlisted Products",
+      "unlisted product", "unlisted products", "Unlisted shares", "unlisted shares", 
+      "Unlisted Shares", "Products", "products", "Shares", "shares", "Stocks", "stocks", "Sheet1"
+    ];
+    for (var c = 0; c < candidateNames.length; c++) {
+      var s = ss.getSheetByName(candidateNames[c]);
+      if (s && s.getLastRow() > 0) {
+        sheet = s;
+        break;
+      }
+    }
+    
+    // Fallback: Check all sheets except Enquiries
+    if (!sheet) {
+      var allSheets = ss.getSheets();
+      for (var sIdx = 0; sIdx < allSheets.length; sIdx++) {
+        var cur = allSheets[sIdx];
+        var n = cur.getName().toLowerCase();
+        if (n !== "enquiries" && n !== "leads" && cur.getLastRow() > 0) {
+          sheet = cur;
+          break;
+        }
+      }
+      if (!sheet && allSheets.length > 0) {
+        sheet = allSheets[0];
+      }
+    }
+    
+    if (!sheet || sheet.getLastRow() === 0) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        count: 0,
+        data: []
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
                 
     var data = sheet.getDataRange().getValues();
     if (!data || data.length < 2) {
@@ -338,15 +381,12 @@ function doGet(e) {
     var rows = [];
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
-      // Skip empty row if name is blank
-      if (!row[0] && !row[1]) continue;
+      if (!row || !row.some(function(cell) { return String(cell || "").trim() !== ""; })) continue;
       
       var obj = {};
       for (var j = 0; j < headers.length; j++) {
-        var headerKey = headers[j];
-        if (headerKey) {
-          obj[headerKey] = row[j] !== undefined && row[j] !== null ? row[j] : "";
-        }
+        var headerKey = headers[j] || ("Col_" + j);
+        obj[headerKey] = row[j] !== undefined && row[j] !== null ? row[j] : "";
       }
       rows.push(obj);
     }
@@ -367,10 +407,34 @@ function doGet(e) {
 function doPost(e) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    // Appends enquiry leads to "Enquiries" tab or first sheet
+    
+    // 1. Locate or create "Enquiries" tab
     var sheet = ss.getSheetByName("Enquiries") || 
                 ss.getSheetByName("enquiries") || 
+                ss.getSheetByName("Leads") ||
                 ss.getSheets()[0];
+    
+    // 2. Auto-create formatted headers if sheet is blank
+    if (sheet.getLastRow() === 0) {
+      var headers = [
+        "Timestamp",
+        "Enquiry Type",
+        "Stock / Service",
+        "Quantity",
+        "Investor Name",
+        "Mobile Number",
+        "Email Address",
+        "Service Category",
+        "Client Message",
+        "PAN Number"
+      ];
+      sheet.appendRow(headers);
+      var headerRange = sheet.getRange(1, 1, 1, headers.length);
+      headerRange.setFontWeight("bold");
+      headerRange.setBackground("#e6f4ea");
+      headerRange.setFontColor("#0d652d");
+      sheet.setFrozenRows(1);
+    }
     
     var params = e.parameter || {};
     if (e.postData && e.postData.contents) {
@@ -382,20 +446,22 @@ function doPost(e) {
       } catch (e2) {}
     }
     
+    var dateFormatted = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || "GMT+5:30", "yyyy-MM-dd HH:mm:ss");
+    
     sheet.appendRow([
-      new Date(),
+      dateFormatted,
       params.type || "Enquiry",
-      params.share || "",
+      params.share || params.title || "",
       params.quantity || "",
-      params.fullName || "",
-      params.mobile || "",
+      params.fullName || params.name || "",
+      params.mobile || params.phone || "",
       params.email || "",
       params.service || "",
       params.message || "",
       params.pan || ""
     ]);
     
-    return ContentService.createTextOutput(JSON.stringify({ "result": "success" }))
+    return ContentService.createTextOutput(JSON.stringify({ "result": "success", "status": "logged" }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": err.toString() }))
@@ -756,10 +822,15 @@ function doPost(e) {
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
                     <button
                       type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(allCurrentSharesTSV);
-                        setCopiedAllShares(true);
-                        setTimeout(() => setCopiedAllShares(false), 2500);
+                      onClick={async () => {
+                        const ok = await copyToClipboardSafe(allCurrentSharesTSV);
+                        if (ok) {
+                          setCopiedAllShares(true);
+                          setTimeout(() => setCopiedAllShares(false), 2500);
+                        } else {
+                          // Fallback to direct CSV download if clipboard blocked
+                          exportSharesToCSV(syncedProducts.length ? syncedProducts : UNLISTED_SHARES, "gsp_unlisted_shares_40.csv");
+                        }
                       }}
                       className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#107c41] hover:bg-[#0c6233] text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
                       title="Copy all 40 website stocks with full columns ready to paste starting at cell A1 in your Google Sheet"
@@ -771,9 +842,23 @@ function doPost(e) {
                     <button
                       type="button"
                       onClick={() => {
-                        navigator.clipboard.writeText(sheetHeadersString);
-                        setCopiedHeaders(true);
-                        setTimeout(() => setCopiedHeaders(false), 2500);
+                        exportSharesToCSV(syncedProducts.length ? syncedProducts : UNLISTED_SHARES, "gsp_unlisted_shares_40.csv");
+                      }}
+                      className="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-gray-950 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                      title="Download clean CSV file with all 40 stocks to upload straight into Google Sheets"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Download 40 Stocks CSV</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const ok = await copyToClipboardSafe(sheetHeadersString);
+                        if (ok) {
+                          setCopiedHeaders(true);
+                          setTimeout(() => setCopiedHeaders(false), 2500);
+                        }
                       }}
                       className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-emerald-100 border border-white/20 transition-all cursor-pointer flex items-center gap-1.5"
                       title="Copy standard column headers to paste into row 1 of your 'Unlisted product' sheet tab"
@@ -1130,10 +1215,12 @@ function doPost(e) {
                     </h5>
                     <button
                       type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(sampleAppsScriptCode);
-                        setCopiedCode(true);
-                        setTimeout(() => setCopiedCode(false), 2000);
+                      onClick={async () => {
+                        const ok = await copyToClipboardSafe(sampleAppsScriptCode);
+                        if (ok) {
+                          setCopiedCode(true);
+                          setTimeout(() => setCopiedCode(false), 2000);
+                        }
                       }}
                       className="text-xs font-bold text-emerald-800 flex items-center gap-1 hover:underline cursor-pointer"
                     >

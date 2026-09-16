@@ -51,6 +51,85 @@ export function exportToCSV(data, filename = `gsp_leads_${new Date().toISOString
   URL.revokeObjectURL(url);
 }
 
+// Export Unlisted Shares Catalog to CSV (ready to upload to Google Sheets)
+export function exportSharesToCSV(shares, filename = `gsp_unlisted_shares_catalog.csv`) {
+  if (!shares || !shares.length) return;
+  const headers = [
+    "Name",
+    "Short Name",
+    "Price",
+    "Lot Size",
+    "Available Quantity",
+    "Image URL",
+    "Category",
+    "ISIN",
+    "Status",
+    "52W High",
+    "52W Low",
+    "Market Cap",
+    "Description",
+    "Popular"
+  ];
+
+  const rows = shares.map((s) => [
+    `"${(s.name || "").replace(/"/g, '""')}"`,
+    `"${(s.shortName || "").replace(/"/g, '""')}"`,
+    `"${s.price !== undefined ? s.price : 0}"`,
+    `"${s.lotSize || 100}"`,
+    `"${(s.availableQty || "Available on Desk").replace(/"/g, '""')}"`,
+    `"${(s.image || "").replace(/"/g, '""')}"`,
+    `"${(s.category || "Unlisted Shares").replace(/"/g, '""')}"`,
+    `"${(s.isin || "").replace(/"/g, '""')}"`,
+    `"${(s.status || "UNLISTED").replace(/"/g, '""')}"`,
+    `"${(s.high52 || "").replace(/"/g, '""')}"`,
+    `"${(s.low52 || "").replace(/"/g, '""')}"`,
+    `"${(s.marketCap || "").replace(/"/g, '""')}"`,
+    `"${(s.description || "").replace(/"/g, '""').replace(/\r?\n|\r/g, " ")}"`,
+    `"${s.popular ? "true" : "false"}"`
+  ]);
+
+  const csvString = [headers.join(","), ...rows.map(r => r.join(","))].join("\r\n");
+  const blob = new Blob(["\uFEFF" + csvString], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// Rock-solid clipboard copy helper with fallback for all browsers and HTTP contexts
+export async function copyToClipboardSafe(text) {
+  if (!text) return false;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (e) {
+    // Fall back to document.execCommand
+  }
+
+  try {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const successful = document.execCommand("copy");
+    document.body.removeChild(textArea);
+    return !!successful;
+  } catch (err) {
+    console.warn("Fallback clipboard copy failed:", err);
+    return false;
+  }
+}
+
 // Retrieve Saved Google Sheet Webhook with multiple persistent layers
 export function getSavedWebhookUrl() {
   const local = localStorage.getItem("gsp_google_sheet_webhook");

@@ -319,9 +319,12 @@ export function getLocalUnlistedShares() {
 }
 
 export async function fetchUnlistedSharesFromSheet(customUrl = null, forceRefresh = false) {
+  const webhookUrl = (customUrl || getSavedWebhookUrl() || "").trim();
+
   // 1. PRIMARY SECURE GATEWAY FETCH (Hostinger PHP Server-Side Proxy)
   try {
-    const gatewayUrl = `/api/sheets-gateway.php?action=get_products${forceRefresh ? "&force=1" : ""}&t=${Date.now()}`;
+    const webhookParam = webhookUrl ? `&webhook=${encodeURIComponent(webhookUrl)}` : "";
+    const gatewayUrl = `/api/sheets-gateway.php?action=get_products${webhookParam}${forceRefresh ? "&force=1" : ""}&t=${Date.now()}`;
     const gatewayRes = await fetch(gatewayUrl, { cache: "no-store" });
     if (gatewayRes.ok) {
       const data = await gatewayRes.json();
@@ -344,8 +347,6 @@ export async function fetchUnlistedSharesFromSheet(customUrl = null, forceRefres
   }
 
   // 2. FALLBACK / DIRECT CLIENT-SIDE FETCH (FOR LOCAL DEV & HYBRID COMPATIBILITY)
-  const webhookUrl = (customUrl || getSavedWebhookUrl() || "").trim();
-
   if (!webhookUrl) {
     return {
       success: false,
@@ -362,7 +363,12 @@ export async function fetchUnlistedSharesFromSheet(customUrl = null, forceRefres
     const sheetIdMatch = webhookUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
     if (sheetIdMatch && sheetIdMatch[1]) {
       const sheetId = sheetIdMatch[1];
-      const sheetNames = ["Unlisted product", "Unlisted Product", "Products", "Shares", "Sheet1"];
+      const sheetNames = [
+        "Unlisted product", "Unlisted Product", "Unlisted products", "Unlisted Products",
+        "unlisted product", "unlisted products", "Unlisted shares", "unlisted shares", 
+        "Unlisted Shares", "Products", "products", "Shares", "shares", "Stocks", "stocks", 
+        "Catalog", "Sheet1", "Sheet2", "Sheet3"
+      ];
       
       let fetchSuccess = false;
       // Try GViz for common sheet tab names
@@ -382,6 +388,22 @@ export async function fetchUnlistedSharesFromSheet(customUrl = null, forceRefres
         } catch (e) {
           // continue to next candidate
         }
+      }
+
+      // Fallback: Try querying default active sheet without tab parameter
+      if (!fetchSuccess) {
+        try {
+          const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&t=${Date.now()}`;
+          const res = await fetch(gvizUrl, { cache: "no-store" });
+          if (res.ok) {
+            const text = await res.text();
+            const parsed = parseGVizResponse(text);
+            if (parsed && parsed.length > 0) {
+              rawList = parsed;
+              fetchSuccess = true;
+            }
+          }
+        } catch (e) {}
       }
 
       // Fallback: Try general CSV export

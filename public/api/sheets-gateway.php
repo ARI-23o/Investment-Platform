@@ -389,7 +389,7 @@ switch ($action) {
             }
         }
 
-        $webhookUrl = trim($settings['googleSheetWebhook'] ?? '');
+        $webhookUrl = trim($_GET['webhook'] ?? $input['webhook'] ?? $settings['googleSheetWebhook'] ?? '');
         if (empty($webhookUrl)) {
             echo json_encode([
                 'success' => true,
@@ -401,12 +401,24 @@ switch ($action) {
             exit;
         }
 
+        // If client sent a valid webhook URL and server setting was empty, auto-persist it
+        if (!empty($_GET['webhook']) && empty($settings['googleSheetWebhook'])) {
+            $settings['googleSheetWebhook'] = $webhookUrl;
+            $settings['updated_at'] = date('c');
+            saveSettings($settingsFile, $settings);
+        }
+
         $rawList = [];
 
         // CASE A: Direct Google Spreadsheet URL (docs.google.com/spreadsheets/d/{id})
         if (preg_match('/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/', $webhookUrl, $sm)) {
             $sheetId = $sm[1];
-            $tabs = ["Unlisted product", "Unlisted Product", "Products", "Shares", "Sheet1"];
+            $tabs = [
+                "Unlisted product", "Unlisted Product", "Unlisted products", "Unlisted Products",
+                "unlisted product", "unlisted products", "Unlisted shares", "unlisted shares", 
+                "Unlisted Shares", "Products", "products", "Shares", "shares", "Stocks", "stocks", 
+                "Catalog", "Sheet1", "Sheet2", "Sheet3"
+            ];
             $fetchSuccess = false;
 
             foreach ($tabs as $tab) {
@@ -422,6 +434,20 @@ switch ($action) {
                 }
             }
 
+            // Fallback: Query default active sheet without tab parameter
+            if (!$fetchSuccess) {
+                $gvizUrlDefault = "https://docs.google.com/spreadsheets/d/{$sheetId}/gviz/tq?tqx=out:json&t=" . time();
+                $respText = fetchExternalData($gvizUrlDefault);
+                if ($respText) {
+                    $parsed = parseGVizResponse($respText);
+                    if (!empty($parsed)) {
+                        $rawList = $parsed;
+                        $fetchSuccess = true;
+                    }
+                }
+            }
+
+            // Fallback: CSV export
             if (!$fetchSuccess) {
                 $csvUrl = "https://docs.google.com/spreadsheets/d/{$sheetId}/export?format=csv&t=" . time();
                 $respText = fetchExternalData($csvUrl);
