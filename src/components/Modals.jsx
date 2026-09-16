@@ -25,7 +25,8 @@ import {
   Cpu,
   ChevronRight,
   Eye,
-  EyeOff
+  EyeOff,
+  TrendingUp
 } from "lucide-react";
 import { syncLeadToGoogleSheet } from "../utils/exportUtils";
 import { saveEnquiryToBackend, registerUserInBackend, loginAdminServer } from "../services/api";

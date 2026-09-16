@@ -75,7 +75,7 @@ switch ($action) {
 
         if (password_verify($password, $authData['password_hash'])) {
             $token = bin2hex(random_bytes(32));
-            $expiresAt = time() + (86400 * 7); // 7 days session
+            $expiresAt = time() + 1800; // 30 minutes inactivity window
             $authData['sessions'][$token] = [
                 'created_at' => date('c'),
                 'expires_at' => $expiresAt,
@@ -98,10 +98,13 @@ switch ($action) {
     case 'verify_session':
         $token = trim($input['token'] ?? '');
         if (!empty($token) && isset($authData['sessions'][$token])) {
-            echo json_encode(['success' => true, 'valid' => true]);
+            // Rolling 30-minute extension on active verification
+            $authData['sessions'][$token]['expires_at'] = time() + 1800;
+            saveAuthData($authFile, $authData);
+            echo json_encode(['success' => true, 'valid' => true, 'expires_in' => 1800]);
         } else {
             http_response_code(401);
-            echo json_encode(['success' => false, 'valid' => false, 'error' => 'Session expired or invalid.']);
+            echo json_encode(['success' => false, 'valid' => false, 'error' => 'Session expired due to 30 minutes of inactivity.']);
         }
         break;
 
@@ -136,7 +139,7 @@ switch ($action) {
 
         $authData['sessions'] = [];
         $newToken = bin2hex(random_bytes(32));
-        $expiresAt = time() + (86400 * 7);
+        $expiresAt = time() + 1800; // 30 minutes
         $authData['sessions'][$newToken] = [
             'created_at' => date('c'),
             'expires_at' => $expiresAt,

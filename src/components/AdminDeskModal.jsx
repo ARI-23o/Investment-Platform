@@ -33,7 +33,9 @@ import {
   loginAdminServer,
   verifyAdminSessionServer,
   changeAdminPasswordServer,
-  logoutAdminServer
+  logoutAdminServer,
+  updateAdminActivity,
+  isAdminSessionExpiredDueToInactivity
 } from "../services/api";
 import { 
   getLocalUnlistedShares, 
@@ -83,18 +85,59 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   const [pinChangeSuccess, setPinChangeSuccess] = useState(false);
   const [pinChangeError, setPinChangeError] = useState("");
 
+  // 30-Minute Inactivity Auto-Logout Watcher
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleUserActivity = () => {
+      updateAdminActivity();
+    };
+
+    // Listen to user interactions to refresh activity timestamp
+    window.addEventListener("mousemove", handleUserActivity, { passive: true });
+    window.addEventListener("mousedown", handleUserActivity, { passive: true });
+    window.addEventListener("keydown", handleUserActivity, { passive: true });
+    window.addEventListener("touchstart", handleUserActivity, { passive: true });
+    window.addEventListener("scroll", handleUserActivity, { passive: true });
+
+    // Periodic check every 15 seconds for 30 minutes of inactivity
+    const interval = setInterval(() => {
+      if (isAdminSessionExpiredDueToInactivity()) {
+        logoutAdminServer();
+        setIsAuthenticated(false);
+        setPinError("Session timed out after 30 minutes of inactivity. Please log in again.");
+      }
+    }, 15000);
+
+    return () => {
+      window.removeEventListener("mousemove", handleUserActivity);
+      window.removeEventListener("mousedown", handleUserActivity);
+      window.removeEventListener("keydown", handleUserActivity);
+      window.removeEventListener("touchstart", handleUserActivity);
+      window.removeEventListener("scroll", handleUserActivity);
+      clearInterval(interval);
+    };
+  }, [isAuthenticated]);
+
   // Check active server session whenever modal opens
   useEffect(() => {
     if (isOpen) {
       setSyncedProducts(getLocalUnlistedShares());
       const token = sessionStorage.getItem("gsp_admin_token");
       if (token) {
-        setIsAuthenticated(true);
-        verifyAdminSessionServer(token).then((isValid) => {
-          if (!isValid && !token.startsWith("dev-token-")) {
-            setIsAuthenticated(false);
-          }
-        });
+        if (isAdminSessionExpiredDueToInactivity()) {
+          logoutAdminServer();
+          setIsAuthenticated(false);
+          setPinError("Session timed out after 30 minutes of inactivity. Please log in again.");
+        } else {
+          setIsAuthenticated(true);
+          updateAdminActivity();
+          verifyAdminSessionServer(token).then((isValid) => {
+            if (!isValid) {
+              setIsAuthenticated(false);
+            }
+          });
+        }
       }
       fetchSettingsFromBackend().then((settings) => {
         if (settings && settings.googleSheetWebhook) {

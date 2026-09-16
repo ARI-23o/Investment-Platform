@@ -139,6 +139,24 @@ export async function saveSettingsToBackend(newSettings) {
   return newSettings;
 }
 
+// 30-MINUTE INACTIVITY TIMEOUT CONSTANT (30 minutes = 1,800,000 ms)
+export const ADMIN_INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000;
+
+export function updateAdminActivity() {
+  if (sessionStorage.getItem("gsp_admin_token")) {
+    sessionStorage.setItem("gsp_admin_last_activity", Date.now().toString());
+  }
+}
+
+export function isAdminSessionExpiredDueToInactivity() {
+  const token = sessionStorage.getItem("gsp_admin_token");
+  if (!token) return true;
+  const lastActiveStr = sessionStorage.getItem("gsp_admin_last_activity");
+  if (!lastActiveStr) return false;
+  const lastActive = parseInt(lastActiveStr, 10);
+  return Date.now() - lastActive > ADMIN_INACTIVITY_TIMEOUT_MS;
+}
+
 // SECURE SERVER-SIDE BCRYPT AUTHENTICATION (PHP BACKEND)
 export async function loginAdminServer(password) {
   try {
@@ -150,6 +168,7 @@ export async function loginAdminServer(password) {
     const data = await res.json();
     if (res.ok && data.success) {
       sessionStorage.setItem("gsp_admin_token", data.token);
+      sessionStorage.setItem("gsp_admin_last_activity", Date.now().toString());
       return { success: true, token: data.token };
     }
     return { success: false, error: data.error || "Authentication failed." };
@@ -160,6 +179,7 @@ export async function loginAdminServer(password) {
     if (password === fallbackPin) {
       const fakeToken = "dev-token-" + Date.now();
       sessionStorage.setItem("gsp_admin_token", fakeToken);
+      sessionStorage.setItem("gsp_admin_last_activity", Date.now().toString());
       return { success: true, token: fakeToken };
     }
     return { success: false, error: "Invalid password. Please check and try again." };
@@ -168,6 +188,13 @@ export async function loginAdminServer(password) {
 
 export async function verifyAdminSessionServer(token) {
   if (!token) return false;
+  
+  // Check client-side 30-minute inactivity limit
+  if (isAdminSessionExpiredDueToInactivity()) {
+    await logoutAdminServer();
+    return false;
+  }
+
   try {
     const res = await fetch("/api/auth.php", {
       method: "POST",
@@ -175,9 +202,17 @@ export async function verifyAdminSessionServer(token) {
       body: JSON.stringify({ action: "verify_session", token }),
     });
     const data = await res.json();
-    return res.ok && data.success && data.valid;
+    if (res.ok && data.success && data.valid) {
+      sessionStorage.setItem("gsp_admin_last_activity", Date.now().toString());
+      return true;
+    }
+    return false;
   } catch (err) {
-    return token.startsWith("dev-token-");
+    if (token.startsWith("dev-token-")) {
+      sessionStorage.setItem("gsp_admin_last_activity", Date.now().toString());
+      return true;
+    }
+    return false;
   }
 }
 
@@ -193,6 +228,7 @@ export async function changeAdminPasswordServer(currentPassword, newPassword) {
     if (res.ok && data.success) {
       if (data.token) {
         sessionStorage.setItem("gsp_admin_token", data.token);
+        sessionStorage.setItem("gsp_admin_last_activity", Date.now().toString());
       }
       return { success: true, message: data.message };
     }
@@ -200,6 +236,7 @@ export async function changeAdminPasswordServer(currentPassword, newPassword) {
   } catch (err) {
     console.warn("Server change password endpoint unavailable:", err);
     localStorage.setItem("gsp_dev_admin_pin", newPassword);
+    sessionStorage.setItem("gsp_admin_last_activity", Date.now().toString());
     return { success: true, message: "Password updated successfully in local environment." };
   }
 }
@@ -207,6 +244,7 @@ export async function changeAdminPasswordServer(currentPassword, newPassword) {
 export async function logoutAdminServer() {
   const token = sessionStorage.getItem("gsp_admin_token") || "";
   sessionStorage.removeItem("gsp_admin_token");
+  sessionStorage.removeItem("gsp_admin_last_activity");
   try {
     await fetch("/api/auth.php", {
       method: "POST",
