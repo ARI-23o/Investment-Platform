@@ -173,6 +173,122 @@ switch ($action) {
         break;
 
 
+    case 'request_password_reset':
+        $otp = str_pad((string)mt_rand(100000, 999999), 6, '0', STR_PAD_LEFT);
+        $resetToken = bin2hex(random_bytes(24));
+        $expiresAt = time() + 900; // 15 minutes
+        
+        $authData['reset_code'] = $otp;
+        $authData['reset_token'] = $resetToken;
+        $authData['reset_expires_at'] = $expiresAt;
+        saveAuthData($authFile, $authData);
+        
+        $to = 'gspbackoffice6@gmail.com';
+        $host = $_SERVER['HTTP_HOST'] ?? 'gspinvestment.com';
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $resetUrl = "{$protocol}://{$host}/#/admin-reset?token={$resetToken}";
+        
+        $subject = 'GSP Investment - Admin Password Reset Code & Link';
+        $message = "
+        <html>
+        <head><title>Password Reset Request</title></head>
+        <body style='font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px; color: #333;'>
+          <div style='max-width: 560px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #e1e8ed;'>
+            <div style='text-align: center; margin-bottom: 20px;'>
+              <h2 style='color: #063321; margin: 0;'>GSP Investment Portal</h2>
+              <p style='color: #666; font-size: 13px;'>Admin Security & Access Verification</p>
+            </div>
+            <p>Hello Admin,</p>
+            <p>A password reset request was initiated for your GSP Investment Central Admin Portal.</p>
+            <div style='background: #e6f4ea; border-left: 4px solid #0d652d; padding: 15px; margin: 20px 0; border-radius: 4px;'>
+              <p style='margin: 0; font-size: 12px; color: #0d652d; font-weight: bold;'>YOUR 6-DIGIT VERIFICATION CODE:</p>
+              <h1 style='margin: 8px 0; font-size: 32px; letter-spacing: 6px; color: #063321; font-family: monospace;'>{$otp}</h1>
+              <p style='margin: 0; font-size: 12px; color: #555;'>This code is valid for <strong>15 minutes</strong>.</p>
+            </div>
+            <p style='margin-top: 25px;'>Or click the button below to reset your password directly:</p>
+            <div style='text-align: center; margin: 25px 0;'>
+              <a href='{$resetUrl}' style='background: #107c41; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;'>Reset Password Now &rarr;</a>
+            </div>
+            <p style='font-size: 12px; color: #888;'>Direct link: <a href='{$resetUrl}' style='color: #107c41;'>{$resetUrl}</a></p>
+            <hr style='border: none; border-top: 1px solid #eee; margin: 25px 0;' />
+            <p style='font-size: 11px; color: #999; margin: 0;'>If you did not request this password reset, please ignore this email. Your current password remains secure.</p>
+          </div>
+        </body>
+        </html>
+        ";
+        
+        $headers = "MIME-Version: 1.0\r\n";
+        $headers .= "Content-type: text/html; charset=UTF-8\r\n";
+        $headers .= "From: GSP Security Desk <no-reply@{$host}>\r\n";
+        $headers .= "Reply-To: gspbackoffice6@gmail.com\r\n";
+        
+        $mailSent = @mail($to, $subject, $message, $headers);
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'Verification code & reset link sent to gspbackoffice6@gmail.com',
+            'email' => $to,
+            'mail_dispatched' => $mailSent
+        ]);
+        break;
+
+    case 'reset_password':
+        $code = trim($input['code'] ?? '');
+        $token = trim($input['token'] ?? '');
+        $newPassword = trim($input['newPassword'] ?? '');
+        
+        $storedCode = $authData['reset_code'] ?? '';
+        $storedToken = $authData['reset_token'] ?? '';
+        $expiresAt = $authData['reset_expires_at'] ?? 0;
+        
+        if (time() > $expiresAt || empty($expiresAt)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Reset code has expired. Please request a new one.']);
+            exit;
+        }
+        
+        $isMatch = false;
+        if (!empty($code) && !empty($storedCode) && $code === $storedCode) {
+            $isMatch = true;
+        }
+        if (!empty($token) && !empty($storedToken) && $token === $storedToken) {
+            $isMatch = true;
+        }
+        
+        if (!$isMatch) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => 'Invalid verification code or reset token.']);
+            exit;
+        }
+        
+        if (strlen($newPassword) < 4) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'New password must be at least 4 characters.']);
+            exit;
+        }
+        
+        $newHash = password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 12]);
+        $authData['password_hash'] = $newHash;
+        $authData['updated_at'] = date('c');
+        unset($authData['reset_code'], $authData['reset_token'], $authData['reset_expires_at']);
+        
+        // Invalidate old sessions and issue new session
+        $authData['sessions'] = [];
+        $newToken = bin2hex(random_bytes(32));
+        $authData['sessions'][$newToken] = [
+            'created_at' => date('c'),
+            'expires_at' => time() + 1800,
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+        ];
+        saveAuthData($authFile, $authData);
+        
+        echo json_encode([
+            'success' => true,
+            'token' => $newToken,
+            'message' => 'Admin password has been securely reset and updated on the server!'
+        ]);
+        break;
+
     case 'logout':
         $token = trim($input['token'] ?? '');
         if (!empty($token) && isset($authData['sessions'][$token])) {

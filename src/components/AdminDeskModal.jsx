@@ -43,6 +43,8 @@ import {
   loginAdminServer,
   verifyAdminSessionServer,
   changeAdminPasswordServer,
+  requestAdminPasswordReset,
+  resetAdminPassword,
   logoutAdminServer,
   updateAdminActivity,
   isAdminSessionExpiredDueToInactivity
@@ -95,6 +97,27 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   const [isChangingPass, setIsChangingPass] = useState(false);
   const [pinChangeSuccess, setPinChangeSuccess] = useState(false);
   const [pinChangeError, setPinChangeError] = useState("");
+
+  // Forgot Password & Reset State
+  const [isForgotMode, setIsForgotMode] = useState(false);
+  const [forgotStep, setForgotStep] = useState(1); // 1 = request, 2 = enter code
+  const [resetCodeInput, setResetCodeInput] = useState("");
+  const [resetNewPassInput, setResetNewPassInput] = useState("");
+  const [resetConfirmPassInput, setResetConfirmPassInput] = useState("");
+  const [showResetNewPass, setShowResetNewPass] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSuccessMsg, setResetSuccessMsg] = useState("");
+  const [resetErrorMsg, setResetErrorMsg] = useState("");
+
+  // Escape key handler
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   // 30-Minute Inactivity Auto-Logout Watcher
   useEffect(() => {
@@ -518,11 +541,69 @@ function doPost(e) {
   }
 }`;
 
+  const handleRequestAdminReset = async () => {
+    setResetLoading(true);
+    setResetErrorMsg("");
+    setResetSuccessMsg("");
+    const res = await requestAdminPasswordReset();
+    setResetLoading(false);
+    if (res.success) {
+      setForgotStep(2);
+      setResetSuccessMsg("6-digit verification code & reset link sent to gspbackoffice6@gmail.com!");
+    } else {
+      setResetErrorMsg(res.error || "Failed to send reset email.");
+    }
+  };
+
+  const handleConfirmAdminReset = async (e) => {
+    e.preventDefault();
+    setResetErrorMsg("");
+    setResetSuccessMsg("");
+
+    if (!resetCodeInput.trim()) {
+      setResetErrorMsg("Please enter the 6-digit code received in email.");
+      return;
+    }
+    if (resetNewPassInput.length < 4) {
+      setResetErrorMsg("New password must be at least 4 characters.");
+      return;
+    }
+    if (resetNewPassInput !== resetConfirmPassInput) {
+      setResetErrorMsg("Passwords do not match.");
+      return;
+    }
+
+    setResetLoading(true);
+    const res = await resetAdminPassword(resetCodeInput.trim(), resetNewPassInput);
+    setResetLoading(false);
+
+    if (res.success) {
+      setResetSuccessMsg("Password reset successfully! Unlocking admin desk...");
+      setTimeout(() => {
+        setIsAuthenticated(true);
+        setIsForgotMode(false);
+        setForgotStep(1);
+        setResetCodeInput("");
+        setResetNewPassInput("");
+        setResetConfirmPassInput("");
+        setResetSuccessMsg("");
+      }, 1500);
+    } else {
+      setResetErrorMsg(res.error || "Invalid or expired verification code.");
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 relative overflow-hidden">
+    <div 
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 relative overflow-hidden"
+      >
         
         {/* Modal Top Header */}
         <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-[#031d13] via-[#063321] to-[#0a482e] text-white">
@@ -547,8 +628,10 @@ function doPost(e) {
           </div>
 
           <button 
-            onClick={onClose}
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onClose(); }}
             className="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            title="Close (Esc)"
           >
             <X className="w-5 h-5" />
           </button>
@@ -557,69 +640,219 @@ function doPost(e) {
         {/* Security Screen if not authenticated */}
         {!isAuthenticated ? (
           <div className="p-8 sm:p-12 text-center max-w-md mx-auto my-auto space-y-5">
-            <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-800 flex items-center justify-center mx-auto border border-emerald-200 shadow-sm">
-              <Lock className="w-8 h-8" />
-            </div>
-            <div>
-              <h4 className="text-xl font-bold text-gray-900">
-                Staff / Admin Authentication
-              </h4>
-              <p className="text-xs text-gray-500 mt-1">
-                Enter your secure Admin PIN or password to unlock leads, Google Sheet sync, and website catalog controls.
-              </p>
-            </div>
+            {!isForgotMode ? (
+              <>
+                <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-800 flex items-center justify-center mx-auto border border-emerald-200 shadow-sm">
+                  <Lock className="w-8 h-8" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-gray-900">
+                    Staff / Admin Authentication
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Enter your secure Admin PIN or password to unlock leads, Google Sheet sync, and website catalog controls.
+                  </p>
+                </div>
 
-            <form onSubmit={handleAdminAuth} className="space-y-4">
-              <div className="text-left">
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
-                  Admin Password / PIN
-                </label>
-                <div className="relative">
-                  <input
-                    type={showLockPin ? "text" : "password"}
-                    value={adminPin}
-                    onChange={(e) => setAdminPin(e.target.value)}
-                    placeholder="Enter password / PIN"
-                    autoFocus
-                    required
-                    className="w-full pl-4 pr-11 py-2.5 rounded-xl border border-gray-300 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none font-mono text-gray-900 bg-gray-50/50 focus:bg-white transition-all"
-                  />
+                <form onSubmit={handleAdminAuth} className="space-y-4">
+                  <div className="text-left">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-bold text-gray-700 uppercase">
+                        Admin Password / PIN
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => { setIsForgotMode(true); setPinError(""); }}
+                        className="text-xs text-amber-700 hover:text-amber-800 font-semibold underline cursor-pointer"
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type={showLockPin ? "text" : "password"}
+                        value={adminPin}
+                        onChange={(e) => setAdminPin(e.target.value)}
+                        placeholder="Enter password / PIN"
+                        autoFocus
+                        required
+                        className="w-full pl-4 pr-11 py-2.5 rounded-xl border border-gray-300 text-sm focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none font-mono text-gray-900 bg-gray-50/50 focus:bg-white transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowLockPin(!showLockPin)}
+                        className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-700 p-0.5 cursor-pointer"
+                        title={showLockPin ? "Hide Password" : "Show Password"}
+                      >
+                        {showLockPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {pinError && (
+                    <div className="text-xs text-rose-600 font-semibold text-left bg-rose-50 p-2.5 rounded-xl border border-rose-200 flex items-center gap-1.5">
+                      <ShieldAlert className="w-4 h-4 shrink-0" />
+                      <span>{pinError}</span>
+                    </div>
+                  )}
+
                   <button
-                    type="button"
-                    onClick={() => setShowLockPin(!showLockPin)}
-                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-700 p-0.5 cursor-pointer"
-                    title={showLockPin ? "Hide Password" : "Show Password"}
+                    type="submit"
+                    disabled={isAuthenticating}
+                    className="w-full py-3 rounded-xl text-sm font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    {showLockPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {isAuthenticating ? (
+                      <>
+                        <RotateCw className="w-4 h-4 animate-spin" />
+                        <span>Verifying with Server...</span>
+                      </>
+                    ) : (
+                      <>
+                        <KeyRound className="w-4 h-4" />
+                        <span>Unlock Admin Portal →</span>
+                      </>
+                    )}
                   </button>
+                </form>
+              </>
+            ) : (
+              /* FORGOT PASSWORD RESET ON ADMIN DESK */
+              <div className="space-y-4 animate-fade-in text-left">
+                <div className="text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-2 border border-amber-200">
+                    <KeyRound className="w-7 h-7" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900">
+                    Reset Admin Password
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Official Recovery Email: <strong className="text-emerald-800">gspbackoffice6@gmail.com</strong>
+                  </p>
                 </div>
-              </div>
 
-              {pinError && (
-                <div className="text-xs text-rose-600 font-semibold text-left bg-rose-50 p-2.5 rounded-xl border border-rose-200 flex items-center gap-1.5">
-                  <ShieldAlert className="w-4 h-4 shrink-0" />
-                  <span>{pinError}</span>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isAuthenticating}
-                className="w-full py-3 rounded-xl text-sm font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {isAuthenticating ? (
-                  <>
-                    <RotateCw className="w-4 h-4 animate-spin" />
-                    <span>Verifying with Server...</span>
-                  </>
-                ) : (
-                  <>
-                    <KeyRound className="w-4 h-4" />
-                    <span>Unlock Admin Portal →</span>
-                  </>
+                {resetErrorMsg && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
+                    {resetErrorMsg}
+                  </div>
                 )}
-              </button>
-            </form>
+
+                {resetSuccessMsg && (
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{resetSuccessMsg}</span>
+                  </div>
+                )}
+
+                {forgotStep === 1 ? (
+                  <div className="space-y-3">
+                    <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-600 space-y-1">
+                      <p>Click below to send a secure 6-digit OTP code to the verified administrator mailbox:</p>
+                      <strong className="text-gray-900 font-mono block">gspbackoffice6@gmail.com</strong>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleRequestAdminReset}
+                      disabled={resetLoading}
+                      className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <Mail className="w-4 h-4" />
+                      <span>{resetLoading ? "Dispatching Email..." : "Send Verification Code to Email"}</span>
+                    </button>
+
+                    <div className="text-center pt-1">
+                      <button
+                        type="button"
+                        onClick={() => { setIsForgotMode(false); setResetErrorMsg(""); }}
+                        className="text-xs text-gray-500 hover:text-gray-900 underline cursor-pointer"
+                      >
+                        ← Back to Admin Login
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleConfirmAdminReset} className="space-y-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-700 uppercase mb-1">
+                        6-Digit Verification Code (From Email) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        maxLength={10}
+                        value={resetCodeInput}
+                        onChange={(e) => setResetCodeInput(e.target.value)}
+                        placeholder="e.g. 482910"
+                        className="w-full px-3.5 py-2 rounded-xl border border-gray-300 font-mono text-center tracking-widest text-base focus:border-emerald-600 outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-700 uppercase mb-1">
+                        New Admin Password (Min 4 chars) *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showResetNewPass ? "text" : "password"}
+                          required
+                          value={resetNewPassInput}
+                          onChange={(e) => setResetNewPassInput(e.target.value)}
+                          placeholder="Enter new password"
+                          className="w-full px-3.5 py-2 pr-10 rounded-xl border border-gray-300 text-xs focus:border-emerald-600 outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowResetNewPass(!showResetNewPass)}
+                          className="absolute right-3 top-2 text-gray-400 hover:text-gray-700 p-0.5 cursor-pointer"
+                        >
+                          {showResetNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-700 uppercase mb-1">
+                        Confirm New Password *
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        value={resetConfirmPassInput}
+                        onChange={(e) => setResetConfirmPassInput(e.target.value)}
+                        placeholder="Repeat new password"
+                        className="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-xs focus:border-emerald-600 outline-none"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={resetLoading}
+                      className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#0a482e] hover:bg-[#063321] text-white transition-all cursor-pointer shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <Key className="w-4 h-4" />
+                      <span>{resetLoading ? "Updating Password..." : "Set New Password & Unlock"}</span>
+                    </button>
+
+                    <div className="flex justify-between items-center pt-1 text-xs">
+                      <button
+                        type="button"
+                        onClick={handleRequestAdminReset}
+                        className="text-emerald-800 hover:underline cursor-pointer font-semibold"
+                      >
+                        Resend Code
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setIsForgotMode(false); setForgotStep(1); setResetErrorMsg(""); }}
+                        className="text-gray-500 hover:text-gray-900 underline cursor-pointer"
+                      >
+                        Back to Login
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           /* Authenticated Admin Desk */
