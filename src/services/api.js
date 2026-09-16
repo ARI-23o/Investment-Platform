@@ -37,6 +37,29 @@ export async function saveEnquiryToBackend(enquiry) {
   return enquiry;
 }
 
+export async function updateEnquiryStatusInBackend(id, newStatus) {
+  try {
+    const res = await fetch("/api/enquiries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "update_status", id, status: newStatus }),
+    });
+    if (res.ok) {
+      const result = await res.json();
+      return result;
+    }
+  } catch (err) {
+    console.warn("Could not update status on backend, updating local cache:", err);
+  }
+  // Fallback to local cache
+  try {
+    const cached = JSON.parse(localStorage.getItem("gsp_enquiries_cache") || "[]");
+    const updated = cached.map((item) => (item.id === id ? { ...item, status: newStatus } : item));
+    localStorage.setItem("gsp_enquiries_cache", JSON.stringify(updated));
+  } catch (e) {}
+  return { success: true, id, status: newStatus };
+}
+
 export async function deleteEnquiryFromBackend(id) {
   try {
     await fetch(`/api/enquiries?id=${id || "all"}`, { method: "DELETE" });

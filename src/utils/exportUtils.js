@@ -33,7 +33,7 @@ export function exportToCSV(data, filename = `gsp_leads_${new Date().toISOString
       `"${item.pan || ""}"`,
       `"${(item.service || "").replace(/"/g, '""')}"`,
       `"${(item.message || "").replace(/"/g, '""')}"`,
-      `"${item.status || "Received"}"`
+      `"${item.status || "New"}"`
     ];
   });
 
@@ -201,6 +201,7 @@ export async function syncLeadToGoogleSheet(leadData) {
     formData.append("message", leadData.message || "");
     formData.append("pan", leadData.pan || "");
     formData.append("service", leadData.service || "");
+    formData.append("status", leadData.status || "New");
 
     // Mode no-cors avoids browser CORS preflight blocking Google servers
     await fetch(webhookUrl, {
@@ -216,6 +217,37 @@ export async function syncLeadToGoogleSheet(leadData) {
     return { synced: true };
   } catch (err) {
     console.error("Failed to sync lead to Google:", err);
+    return { synced: false, error: err };
+  }
+}
+
+// Update lead status in Google Sheet via Webhook
+export async function syncLeadStatusToGoogleSheet(lead, newStatus) {
+  let webhookUrl = getSavedWebhookUrl();
+  if (!webhookUrl) return { synced: false, reason: "No webhook configured" };
+
+  try {
+    const formData = new URLSearchParams();
+    formData.append("action", "update_status");
+    formData.append("id", lead.id || "");
+    formData.append("fullName", lead.fullName || lead.name || "");
+    formData.append("mobile", lead.mobile || "");
+    formData.append("timestamp", lead.time || "");
+    formData.append("status", newStatus);
+
+    await fetch(webhookUrl, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: formData.toString(),
+    });
+
+    console.log(`Dispatched status update "${newStatus}" to Google Sheet`);
+    return { synced: true };
+  } catch (err) {
+    console.warn("Failed to sync status update to Google Sheet:", err);
     return { synced: false, error: err };
   }
 }

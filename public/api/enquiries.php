@@ -43,8 +43,29 @@ switch ($method) {
         $raw = file_get_contents('php://input');
         $input = json_decode($raw, true) ?? $_POST;
         if (!empty($input)) {
+            // Check if this is a status update
+            if (($input['action'] ?? '') === 'update_status' || isset($input['status']) && isset($input['id']) && !isset($input['fullName'])) {
+                $id = $input['id'] ?? '';
+                $newStatus = $input['status'] ?? 'New';
+                $found = false;
+                foreach ($enquiries as &$enq) {
+                    if (($enq['id'] ?? '') === $id) {
+                        $enq['status'] = $newStatus;
+                        $enq['status_updated_at'] = date('c');
+                        $found = true;
+                        break;
+                    }
+                }
+                if ($found) {
+                    saveEnquiries($enquiriesFile, $enquiries);
+                    echo json_encode(['success' => true, 'id' => $id, 'status' => $newStatus]);
+                    exit;
+                }
+            }
+
+            // Create new lead / enquiry
             $entry = [
-                'id' => $input['id'] ?? ('lead_' . time()),
+                'id' => $input['id'] ?? ('lead_' . time() . '_' . rand(100, 999)),
                 'time' => $input['time'] ?? date('c'),
                 'type' => $input['type'] ?? 'BUY',
                 'title' => $input['title'] ?? $input['share'] ?? 'General Enquiry',
@@ -55,6 +76,7 @@ switch ($method) {
                 'pan' => $input['pan'] ?? '',
                 'service' => $input['service'] ?? 'Unlisted Shares',
                 'message' => $input['message'] ?? '',
+                'status' => $input['status'] ?? 'New',
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
             ];
             array_unshift($enquiries, $entry);

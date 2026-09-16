@@ -23,14 +23,18 @@ import {
   RotateCw,
   Package,
   Layers,
-ArrowUpDown,
-  ImageIcon
+  ArrowUpDown,
+  ImageIcon,
+  PhoneCall,
+  MessageCircle,
+  Tag
 } from "lucide-react";
 import { 
   exportToCSV, 
   exportSharesToCSV, 
   copyToClipboardSafe, 
-  syncLeadToGoogleSheet, 
+  syncLeadToGoogleSheet,
+  syncLeadStatusToGoogleSheet,
   getSavedWebhookUrl 
 } from "../utils/exportUtils";
 import { 
@@ -50,7 +54,7 @@ import {
 } from "../services/unlistedSharesService";
 import { UNLISTED_SHARES } from "../data/sharesData";
 
-export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll, onDeleteOne, onRefresh }) {
+export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll, onDeleteOne, onRefresh, onUpdateStatus }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminPin, setAdminPin] = useState("");
   const [showLockPin, setShowLockPin] = useState(false);
@@ -59,6 +63,7 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
   const [activeTab, setActiveTab] = useState("leads"); // 'leads', 'products', 'google-sheets', 'security'
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all"); // 'all', 'New', 'Contacted', 'In Progress', 'KYC Received', 'Converted', 'Closed'
 
   // Google Drive & Image tester state
   const [testDriveInput, setTestDriveInput] = useState("");
@@ -304,6 +309,25 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
     return [headerRow, ...dataRows].join("\n");
   }, []);
 
+  // Status badge styling helper
+  const getStatusBadgeClasses = (status) => {
+    switch (status) {
+      case "Contacted":
+        return "bg-sky-100 text-sky-900 border-sky-300";
+      case "In Progress":
+        return "bg-purple-100 text-purple-900 border-purple-300";
+      case "KYC Received":
+        return "bg-indigo-100 text-indigo-900 border-indigo-300";
+      case "Converted":
+        return "bg-emerald-100 text-emerald-900 border-emerald-300";
+      case "Closed":
+        return "bg-gray-100 text-gray-700 border-gray-300";
+      case "New":
+      default:
+        return "bg-amber-100 text-amber-900 border-amber-300";
+    }
+  };
+
   // Filtered Leads
   const filteredEnquiries = enquiries.filter((item) => {
     const matchesSearch = 
@@ -313,13 +337,15 @@ export default function AdminDeskModal({ isOpen, onClose, enquiries, onClearAll,
       (item.email || "").toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesType = typeFilter === "all" || item.type === typeFilter;
-    return matchesSearch && matchesType;
+    const currentStatus = item.status || "New";
+    const matchesStatus = statusFilter === "all" || currentStatus === statusFilter;
+    return matchesSearch && matchesType && matchesStatus;
   });
 
   const sampleAppsScriptCode = `// ─────────────────────────────────────────────────────────────
 // 2-WAY SYNC GOOGLE APPS SCRIPT FOR GSP INVESTMENT PLATFORM
 // 1. doGet: Reads Unlisted Products from tab "Unlisted product"
-// 2. doPost: Appends customer leads & auto-creates "Enquiries" headers
+// 2. doPost: Appends customer leads & updates lead status in "Enquiries"
 // ─────────────────────────────────────────────────────────────
 
 function doGet(e) {
@@ -426,7 +452,8 @@ function doPost(e) {
         "Email Address",
         "Service Category",
         "Client Message",
-        "PAN Number"
+        "PAN Number",
+        "Status"
       ];
       sheet.appendRow(headers);
       var headerRange = sheet.getRange(1, 1, 1, headers.length);
@@ -446,6 +473,27 @@ function doPost(e) {
       } catch (e2) {}
     }
     
+    // 3. Handle Status Update from Admin Desk
+    if (params.action === "update_status") {
+      var data = sheet.getDataRange().getValues();
+      var searchPhone = String(params.mobile || "").replace(/[^0-9]/g, "");
+      var searchName = String(params.fullName || params.name || "").trim().toLowerCase();
+      var updated = false;
+      for (var r = 1; r < data.length; r++) {
+        var rowPhone = String(data[r][5] || "").replace(/[^0-9]/g, "");
+        var rowName = String(data[r][4] || "").trim().toLowerCase();
+        if ((searchPhone && rowPhone && (rowPhone.indexOf(searchPhone) !== -1 || searchPhone.indexOf(rowPhone) !== -1)) ||
+            (searchName && rowName && rowName === searchName)) {
+          sheet.getRange(r + 1, 11).setValue(params.status || "New");
+          updated = true;
+          break;
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ "result": "success", "status": "updated", "found": updated }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // 4. Append New Enquiry Row
     var dateFormatted = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || "GMT+5:30", "yyyy-MM-dd HH:mm:ss");
     
     sheet.appendRow([
@@ -458,7 +506,8 @@ function doPost(e) {
       params.email || "",
       params.service || "",
       params.message || "",
-      params.pan || ""
+      params.pan || "",
+      params.status || "New"
     ]);
     
     return ContentService.createTextOutput(JSON.stringify({ "result": "success", "status": "logged" }))
@@ -668,7 +717,7 @@ function doPost(e) {
                 
                 {/* Search & Filter Bar */}
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                  <div className="relative flex-1 min-w-[220px]">
+                  <div className="relative flex-1 min-w-[200px]">
                     <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
                     <input
                       type="text"
@@ -679,19 +728,38 @@ function doPost(e) {
                     />
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400 font-medium">Type:</span>
-                    <select
-                      value={typeFilter}
-                      onChange={(e) => setTypeFilter(e.target.value)}
-                      className="bg-white border border-gray-200 text-xs font-semibold rounded-xl px-3 py-2 outline-none cursor-pointer"
-                    >
-                      <option value="all">All Enquiries</option>
-                      <option value="buy">Buy Requests</option>
-                      <option value="sell">Sell Offers</option>
-                      <option value="callback">Callback Requests</option>
-                      <option value="account">Demat Accounts</option>
-                    </select>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-gray-400 font-medium">Type:</span>
+                      <select
+                        value={typeFilter}
+                        onChange={(e) => setTypeFilter(e.target.value)}
+                        className="bg-white border border-gray-200 text-xs font-semibold rounded-xl px-2.5 py-2 outline-none cursor-pointer"
+                      >
+                        <option value="all">All Enquiries</option>
+                        <option value="buy">Buy Requests</option>
+                        <option value="sell">Sell Offers</option>
+                        <option value="callback">Callback Requests</option>
+                        <option value="account">Demat Accounts</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-gray-400 font-medium">Status:</span>
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="bg-white border border-gray-200 text-xs font-semibold rounded-xl px-2.5 py-2 outline-none cursor-pointer"
+                      >
+                        <option value="all">All Statuses</option>
+                        <option value="New">🟡 New</option>
+                        <option value="Contacted">🔵 Contacted</option>
+                        <option value="In Progress">🟣 In Progress</option>
+                        <option value="KYC Received">🔷 KYC Received</option>
+                        <option value="Converted">🟢 Converted</option>
+                        <option value="Closed">⚪ Closed</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
@@ -777,6 +845,56 @@ function doPost(e) {
                             <strong className="text-emerald-900 font-semibold">Message:</strong> “{item.message}”
                           </div>
                         )}
+
+                        {/* Lead Status & Quick Actions Bar */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-100 mt-1">
+                          <div className="flex items-center gap-2">
+                            <Tag className="w-3.5 h-3.5 text-gray-400" />
+                            <span className="text-[11px] font-bold text-gray-600 uppercase">Status:</span>
+                            <select
+                              value={item.status || "New"}
+                              onChange={(e) => {
+                                const newStat = e.target.value;
+                                if (onUpdateStatus) {
+                                  onUpdateStatus(item.id, newStat);
+                                }
+                                syncLeadStatusToGoogleSheet(item, newStat);
+                              }}
+                              className={`text-xs font-bold px-2.5 py-1 rounded-lg border cursor-pointer outline-none transition-all ${getStatusBadgeClasses(item.status || "New")}`}
+                            >
+                              <option value="New">🟡 New</option>
+                              <option value="Contacted">🔵 Contacted</option>
+                              <option value="In Progress">🟣 In Progress</option>
+                              <option value="KYC Received">🔷 KYC Received</option>
+                              <option value="Converted">🟢 Converted</option>
+                              <option value="Closed">⚪ Closed</option>
+                            </select>
+                          </div>
+
+                          {/* Quick Actions: Call & WhatsApp */}
+                          {item.mobile && (
+                            <div className="flex items-center gap-2">
+                              <a
+                                href={`tel:${item.mobile}`}
+                                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200 transition-colors"
+                                title="Call Lead"
+                              >
+                                <PhoneCall className="w-3 h-3" />
+                                <span>Call</span>
+                              </a>
+                              <a
+                                href={`https://wa.me/${String(item.mobile).replace(/[^0-9]/g, "")}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-green-50 hover:bg-green-100 text-green-800 text-xs font-bold border border-green-200 transition-colors"
+                                title="WhatsApp Chat"
+                              >
+                                <MessageCircle className="w-3 h-3" />
+                                <span>WhatsApp</span>
+                              </a>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))
                   )}

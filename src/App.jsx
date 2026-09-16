@@ -21,6 +21,7 @@ import { CheckCircle2, X, Bell } from "lucide-react";
 import { 
   fetchAllEnquiries, 
   saveEnquiryToBackend, 
+  updateEnquiryStatusInBackend,
   deleteEnquiryFromBackend, 
   clearAllEnquiriesFromBackend,
   fetchSettingsFromBackend
@@ -288,6 +289,14 @@ export default function App() {
     }
     await refreshEnquiries();
     showToast("Record removed from Central Database.");
+  };
+
+  const handleUpdateEnquiryStatus = async (id, newStatus) => {
+    setEnquiries((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
+    );
+    await updateEnquiryStatusInBackend(id, newStatus);
+    showToast(`Lead status updated to: ${newStatus}`);
   };
 
   const handleServiceClick = (service) => {
@@ -559,6 +568,7 @@ export default function App() {
         onClearAll={handleClearEnquiries}
         onDeleteOne={handleDeleteEnquiry}
         onRefresh={refreshEnquiries}
+        onUpdateStatus={handleUpdateEnquiryStatus}
       />
 
     </div>
