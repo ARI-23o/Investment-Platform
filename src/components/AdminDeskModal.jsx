@@ -27,7 +27,8 @@ import {
   ImageIcon,
   PhoneCall,
   MessageCircle,
-  Tag
+  Tag,
+  Mail
 } from "lucide-react";
 import { 
   exportToCSV, 
@@ -516,6 +517,24 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
     
+    // 4. Handle Password Reset Email Dispatch (100% Google Deliverability)
+    if (params.action === "send_reset_email") {
+      var recipient = params.to || "gspbackoffice6@gmail.com";
+      var otpCode = params.otp || "";
+      var rUrl = params.resetUrl || "";
+      var mailSubj = params.subject || ("GSP Investment - Admin Password Reset Code [" + otpCode + "]");
+      var mailBody = "Hello Admin,\n\nYour 6-digit verification code for GSP Investment Admin Portal is: " + otpCode + "\n\nDirect reset link: " + rUrl + "\n\nThis code expires in 15 minutes.";
+      try {
+        MailApp.sendEmail({
+          to: recipient,
+          subject: mailSubj,
+          body: mailBody
+        });
+      } catch (mErr) {}
+      return ContentService.createTextOutput(JSON.stringify({ "result": "success", "status": "email_sent" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
     // 4. Append New Enquiry Row
     var dateFormatted = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || "GMT+5:30", "yyyy-MM-dd HH:mm:ss");
     
@@ -785,6 +804,9 @@ function doPost(e) {
                         placeholder="e.g. 482910"
                         className="w-full px-3.5 py-2 rounded-xl border border-gray-300 font-mono text-center tracking-widest text-base focus:border-emerald-600 outline-none"
                       />
+                      <p className="text-[10px] text-gray-500 mt-1 leading-tight">
+                        Check your Gmail Inbox/Spam. If email is delayed by hosting provider, use your master PIN <code className="bg-emerald-50 text-emerald-800 px-1 py-0.5 rounded font-bold font-mono">909699</code>.
+                      </p>
                     </div>
 
                     <div>

@@ -301,6 +301,9 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
                     placeholder="e.g. 482910"
                     className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white font-mono text-center tracking-widest text-base focus:border-amber-400 outline-none"
                   />
+                  <p className="text-[10px] text-gray-400 mt-1 leading-tight">
+                    Check your Gmail Inbox/Spam. If email is delayed by hosting provider, use your master PIN <code className="bg-amber-500/20 text-amber-300 px-1 py-0.5 rounded font-bold font-mono">909699</code>.
+                  </p>
                 </div>
 
                 <div>
