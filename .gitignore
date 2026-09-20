@@ -7,10 +7,31 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node modules & build artifacts
 node_modules
 dist
 dist-ssr
 *.local
+*.zip
+*.tar.gz
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Local Database & Auth JSON Files (Auto-created at runtime)
+database/*.json
+!database/.gitkeep
+public/api/data/*.json
+!public/api/data/.htaccess
+dist/api/data/*.json
+
+# Data Scraping and Temporary files
+*.py
+*.tsv
+all_gspinvest_products.json
+extracted_products.json
 
 # Editor directories and files
 .vscode/*
