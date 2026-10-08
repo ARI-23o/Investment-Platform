@@ -153,7 +153,7 @@ export default function DeviceSection({ onOpenPlatform }) {
               
               {/* MOCKUP 1: MOBILE APP */}
               {activeDevice === "mobile" && (
-                <div className="w-72 sm:w-80 bg-gray-950 rounded-[44px] p-3.5 shadow-2xl border-4 border-gray-800 relative transform hover:scale-[1.01] transition-transform duration-300">
+                <div className="w-full max-w-[280px] sm:max-w-xs sm:w-80 bg-gray-950 rounded-[44px] p-3 sm:p-3.5 shadow-2xl border-4 border-gray-800 relative transform hover:scale-[1.01] transition-transform duration-300 mx-auto">
                   <div className="absolute top-6 left-1/2 -translate-x-1/2 w-28 h-4 bg-gray-900 rounded-full z-20 flex items-center justify-center">
                     <div className="w-2.5 h-2.5 rounded-full bg-gray-950 mr-2"></div>
                     <div className="w-1.5 h-1.5 rounded-full bg-blue-900"></div>

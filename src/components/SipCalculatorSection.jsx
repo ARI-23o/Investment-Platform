@@ -27,17 +27,17 @@ function CalculatorSlider({
 }) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-2.5">
-        <label className="text-sm sm:text-base font-bold text-gray-800">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+        <label className="text-xs sm:text-base font-bold text-gray-800">
           {label}
         </label>
-        <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 px-3.5 py-1.5 rounded-xl text-base font-extrabold text-gray-900 shadow-2xs">
+        <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl text-sm sm:text-base font-extrabold text-gray-900 shadow-2xs">
           {prefix && <span className="text-gray-400 text-xs font-semibold">{prefix}</span>}
           <input 
             type="number" 
             value={value} 
             onChange={(e) => onChange(Math.max(min, Math.min(max, Number(e.target.value) || 0)))}
-            className="w-32 sm:w-36 bg-transparent outline-none text-right font-black"
+            className="w-24 sm:w-36 bg-transparent outline-none text-right font-black"
             step={step}
             min={min}
             max={max}

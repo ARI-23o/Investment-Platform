@@ -10,18 +10,20 @@
 # 2. SPA Rewriting & PHP API Routing
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  RewriteBase /
 
   # Route /api/something to /api/something.php if PHP exists
   RewriteCond %{REQUEST_FILENAME}.php -f
   RewriteRule ^api/(.*)$ api/$1.php [L,QSA]
 
   # Allow direct access to real files and directories
+  RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
   # SPA Fallback: rewrite non-file URLs to index.html
-  RewriteRule ^ index.html [L]
+  RewriteRule . /index.html [L]
 </IfModule>
 
 # 3. Security Headers

@@ -84,7 +84,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
           <div className={`lg:col-span-7 space-y-6 transition-all duration-700 ease-out ${isMounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.14]">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.18] sm:leading-[1.14]">
               GSP Investment<br />
               Pvt. Ltd.<br />
               <span className="text-[#c28414] font-serif-accent italic font-normal tracking-normal">
@@ -96,15 +96,15 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base sm:text-lg text-gray-600 max-w-2xl leading-relaxed font-normal">
+            <p className="text-sm sm:text-lg text-gray-600 max-w-2xl leading-relaxed font-normal">
               GSP Investment Pvt. Ltd. offers Equities, IPOs, Mutual Funds and Wealth Management Services across India.
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
               <button 
                 onClick={onOpenRegister}
-                className="flex items-center gap-2.5 px-7 py-3.5 rounded-full text-base font-semibold bg-[#0f4b32] hover:bg-[#093523] text-white shadow-lg shadow-emerald-950/20 hover:shadow-emerald-950/30 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                className="flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full text-sm sm:text-base font-semibold bg-[#0f4b32] hover:bg-[#093523] text-white shadow-lg shadow-emerald-950/20 hover:shadow-emerald-950/30 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
               >
                 <span>Open Account</span>
                 <ArrowRight className="w-4 h-4" />
@@ -112,7 +112,7 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
 
               <button 
                 onClick={onBookConsultation}
-                className="flex items-center gap-2.5 px-6 py-3.5 rounded-full text-base font-semibold bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 shadow-sm transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                className="flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full text-sm sm:text-base font-semibold bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 shadow-sm transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
               >
                 <Calendar className="w-4 h-4 text-emerald-700" />
                 <span>Book Consultation</span>
@@ -120,15 +120,15 @@ export default function HeroSection({ onOpenRegister, onBookConsultation, onGetS
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-gray-200/80">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-6 border-t border-gray-200/80">
               
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
-                  <ShieldCheck className="w-5 h-5" />
+              <div className="flex items-center gap-2.5 sm:gap-3 p-2 sm:p-0 bg-white/70 sm:bg-transparent rounded-2xl sm:rounded-none border border-gray-100 sm:border-0">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
+                  <ShieldCheck className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-gray-900 leading-tight">100% Safe</div>
-                  <div className="text-xs text-gray-500 font-medium">Bank-Grade Escrow</div>
+                  <div className="text-xs sm:text-sm font-bold text-gray-900 leading-tight">100% Safe</div>
+                  <div className="text-[11px] sm:text-xs text-gray-500 font-medium truncate">Bank Escrow</div>
                 </div>
               </div>
 
