@@ -1,4 +1,4 @@
-// Live Market Intelligence Service - Real-Time Indian Indices & Day-Wise Historical Feed
+// Live Market Intelligence Service - Instant Baseline & Non-Blocking Feed
 
 const INDICES_CONFIG = [
   {
@@ -69,7 +69,7 @@ const INDICES_CONFIG = [
   {
     id: "giftnifty",
     name: "GIFT NIFTY",
-    symbol: "^NSEI", // Benchmark derived
+    symbol: "^NSEI",
     exchange: "NSE IX",
     category: "Global Index",
     baseFallback: 23455.00,
@@ -81,124 +81,133 @@ const INDICES_CONFIG = [
   },
 ];
 
+// Generates immediate zero-latency baseline market data
+export function getBaselineMarketData(timeframe = "5d") {
+  return INDICES_CONFIG.map((item) => {
+    const price = item.baseFallback;
+    const prev = item.prevCloseFallback;
+    const changeVal = Number((price - prev).toFixed(2));
+    const changePercent = Number(((changeVal / prev) * 100).toFixed(2));
+
+    return {
+      id: item.id,
+      name: item.name,
+      symbol: item.symbol,
+      exchange: item.exchange,
+      category: item.category,
+      value: price,
+      baseValue: prev,
+      changeVal: changeVal,
+      changePercent: changePercent,
+      change: `${changeVal >= 0 ? "+" : ""}${changeVal.toLocaleString("en-IN", { minimumFractionDigits: 2 })} (${changePercent >= 0 ? "+" : ""}${changePercent}%)`,
+      positive: changeVal >= 0,
+      dayHigh: item.dayHigh,
+      dayLow: item.dayLow,
+      high52: item.high52,
+      low52: item.low52,
+      lastTradeTime: "Daily Close (IST)",
+      history: generateDayWiseHistory(price, timeframe),
+      isLive: false,
+    };
+  });
+}
+
+// In-memory cache to prevent redundant fetches
+let memCache = {
+  data: null,
+  timestamp: 0,
+  timeframe: ""
+};
+
 export async function fetchLiveMarketData(timeframe = "5d") {
-  // Check local cached real data first
-  const cacheKey = `gsp_real_market_${timeframe}`;
-  let cachedData = null;
+  const now = Date.now();
+  // Return cached data if less than 2 minutes old
+  if (memCache.data && memCache.timeframe === timeframe && now - memCache.timestamp < 120000) {
+    return memCache.data;
+  }
+
+  // Fast baseline
+  const baseline = getBaselineMarketData(timeframe);
+
+  // Attempt parallel live fetch with short 1.5s timeout (non-blocking)
   try {
-    const raw = localStorage.getItem(cacheKey);
-    if (raw) {
-      cachedData = JSON.parse(raw);
-    }
-  } catch (e) {
-    console.warn("Error reading market cache", e);
-  }
+    const fetchPromises = INDICES_CONFIG.map(async (item) => {
+      try {
+        const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(item.symbol)}?interval=1d&range=${timeframe}`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
 
-  const results = [];
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
 
-  for (const item of INDICES_CONFIG) {
-    try {
-      const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(item.symbol)}?interval=1d&range=${timeframe}`;
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+        const res = await fetch(proxyUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
+        if (res.ok) {
+          const json = await res.json();
+          const result = json?.chart?.result?.[0];
+          const meta = result?.meta;
+          const quotes = result?.indicators?.quote?.[0];
+          const timestamps = result?.timestamp || [];
 
-      const res = await fetch(proxyUrl, { signal: controller.signal });
-      clearTimeout(timeoutId);
+          if (meta && meta.regularMarketPrice) {
+            const currentPrice = Number(meta.regularMarketPrice.toFixed(2));
+            const prevClose = Number((meta.chartPreviousClose || meta.previousClose || item.prevCloseFallback).toFixed(2));
+            const changeVal = Number((currentPrice - prevClose).toFixed(2));
+            const changePercent = Number(((changeVal / prevClose) * 100).toFixed(2));
 
-      if (res.ok) {
-        const json = await res.json();
-        const result = json?.chart?.result?.[0];
-        const meta = result?.meta;
-        const quotes = result?.indicators?.quote?.[0];
-        const timestamps = result?.timestamp || [];
+            const history = timestamps.map((ts, i) => ({
+              date: new Date(ts * 1000).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
+              timestamp: ts * 1000,
+              close: quotes?.close?.[i] ? Number(quotes.close[i].toFixed(2)) : currentPrice,
+              open: quotes?.open?.[i] ? Number(quotes.open[i].toFixed(2)) : currentPrice,
+              high: quotes?.high?.[i] ? Number(quotes.high[i].toFixed(2)) : currentPrice,
+              low: quotes?.low?.[i] ? Number(quotes.low[i].toFixed(2)) : currentPrice,
+            })).filter(h => h.close > 0);
 
-        if (meta && meta.regularMarketPrice) {
-          const currentPrice = Number(meta.regularMarketPrice.toFixed(2));
-          const prevClose = Number((meta.chartPreviousClose || meta.previousClose || item.prevCloseFallback).toFixed(2));
-          const changeVal = Number((currentPrice - prevClose).toFixed(2));
-          const changePercent = Number(((changeVal / prevClose) * 100).toFixed(2));
-
-          const history = timestamps.map((ts, i) => ({
-            date: new Date(ts * 1000).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
-            timestamp: ts * 1000,
-            close: quotes?.close?.[i] ? Number(quotes.close[i].toFixed(2)) : currentPrice,
-            open: quotes?.open?.[i] ? Number(quotes.open[i].toFixed(2)) : currentPrice,
-            high: quotes?.high?.[i] ? Number(quotes.high[i].toFixed(2)) : currentPrice,
-            low: quotes?.low?.[i] ? Number(quotes.low[i].toFixed(2)) : currentPrice,
-          })).filter(h => h.close > 0);
-
-          results.push({
-            id: item.id,
-            name: item.name,
-            symbol: item.symbol,
-            exchange: item.exchange,
-            category: item.category,
-            value: currentPrice,
-            baseValue: prevClose,
-            changeVal: changeVal,
-            changePercent: changePercent,
-            change: `${changeVal >= 0 ? "+" : ""}${changeVal.toLocaleString("en-IN", { minimumFractionDigits: 2 })} (${changePercent >= 0 ? "+" : ""}${changePercent}%)`,
-            positive: changeVal >= 0,
-            dayHigh: meta.regularMarketDayHigh ? `₹${meta.regularMarketDayHigh.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : item.dayHigh,
-            dayLow: meta.regularMarketDayLow ? `₹${meta.regularMarketDayLow.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : item.dayLow,
-            high52: meta.fiftyTwoWeekHigh ? `₹${meta.fiftyTwoWeekHigh.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : item.high52,
-            low52: meta.fiftyTwoWeekLow ? `₹${meta.fiftyTwoWeekLow.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : item.low52,
-            lastTradeTime: meta.regularMarketTime ? new Date(meta.regularMarketTime * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Live Market",
-            history: history.length > 0 ? history : generateDayWiseHistory(currentPrice, timeframe),
-            isLive: true,
-          });
-          continue;
+            return {
+              id: item.id,
+              name: item.name,
+              symbol: item.symbol,
+              exchange: item.exchange,
+              category: item.category,
+              value: currentPrice,
+              baseValue: prevClose,
+              changeVal: changeVal,
+              changePercent: changePercent,
+              change: `${changeVal >= 0 ? "+" : ""}${changeVal.toLocaleString("en-IN", { minimumFractionDigits: 2 })} (${changePercent >= 0 ? "+" : ""}${changePercent}%)`,
+              positive: changeVal >= 0,
+              dayHigh: meta.regularMarketDayHigh ? `₹${meta.regularMarketDayHigh.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : item.dayHigh,
+              dayLow: meta.regularMarketDayLow ? `₹${meta.regularMarketDayLow.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : item.dayLow,
+              high52: meta.fiftyTwoWeekHigh ? `₹${meta.fiftyTwoWeekHigh.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : item.high52,
+              low52: meta.fiftyTwoWeekLow ? `₹${meta.fiftyTwoWeekLow.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : item.low52,
+              lastTradeTime: meta.regularMarketTime ? new Date(meta.regularMarketTime * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Live Market",
+              history: history.length > 0 ? history : generateDayWiseHistory(currentPrice, timeframe),
+              isLive: true,
+            };
+          }
         }
+      } catch {
+        // Silently fallback to baseline
       }
-    } catch (err) {
-      console.warn(`Live fetch failed for ${item.name}, using real baseline:`, err.message);
-    }
+      return null;
+    });
 
-    // Fallback using cached data or calculated baseline
-    const cachedItem = cachedData?.find((c) => c.id === item.id);
-    if (cachedItem) {
-      results.push(cachedItem);
-    } else {
-      const price = item.baseFallback;
-      const prev = item.prevCloseFallback;
-      const changeVal = Number((price - prev).toFixed(2));
-      const changePercent = Number(((changeVal / prev) * 100).toFixed(2));
+    const liveResults = await Promise.allSettled(fetchPromises);
+    const merged = baseline.map((baseItem, idx) => {
+      const settled = liveResults[idx];
+      return (settled.status === "fulfilled" && settled.value) ? settled.value : baseItem;
+    });
 
-      results.push({
-        id: item.id,
-        name: item.name,
-        symbol: item.symbol,
-        exchange: item.exchange,
-        category: item.category,
-        value: price,
-        baseValue: prev,
-        changeVal: changeVal,
-        changePercent: changePercent,
-        change: `${changeVal >= 0 ? "+" : ""}${changeVal.toLocaleString("en-IN", { minimumFractionDigits: 2 })} (${changePercent >= 0 ? "+" : ""}${changePercent}%)`,
-        positive: changeVal >= 0,
-        dayHigh: item.dayHigh,
-        dayLow: item.dayLow,
-        high52: item.high52,
-        low52: item.low52,
-        lastTradeTime: "Daily Close (IST)",
-        history: generateDayWiseHistory(price, timeframe),
-        isLive: false,
-      });
-    }
+    memCache = {
+      data: merged,
+      timestamp: Date.now(),
+      timeframe: timeframe
+    };
+
+    return merged;
+  } catch {
+    return baseline;
   }
-
-  // Save successful batch to localStorage
-  if (results.length > 0) {
-    try {
-      localStorage.setItem(cacheKey, JSON.stringify(results));
-    } catch (e) {
-      console.warn("Could not write cache", e);
-    }
-  }
-
-  return results;
 }
 
 function generateDayWiseHistory(currentPrice, timeframe) {

@@ -321,11 +321,33 @@ export function getLocalUnlistedShares() {
 export async function fetchUnlistedSharesFromSheet(customUrl = null, forceRefresh = false) {
   const webhookUrl = (customUrl || getSavedWebhookUrl() || "").trim();
 
+  // Return local cache immediately if recently synced and not force refreshing
+  const lastSync = localStorage.getItem(LAST_FETCH_KEY);
+  if (!forceRefresh && lastSync && (Date.now() - new Date(lastSync).getTime() < 180000)) {
+    const cachedProducts = getLocalUnlistedShares();
+    if (cachedProducts && cachedProducts.length > 0) {
+      return {
+        success: true,
+        count: cachedProducts.length,
+        products: cachedProducts,
+        lastSync: lastSync,
+        cached: true,
+        isDefault: false
+      };
+    }
+  }
+
   // 1. PRIMARY SECURE GATEWAY FETCH (Hostinger PHP Server-Side Proxy)
   try {
     const webhookParam = webhookUrl ? `&webhook=${encodeURIComponent(webhookUrl)}` : "";
     const gatewayUrl = `/api/sheets-gateway.php?action=get_products${webhookParam}${forceRefresh ? "&force=1" : ""}&t=${Date.now()}`;
-    const gatewayRes = await fetch(gatewayUrl, { cache: "no-store" });
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+    const gatewayRes = await fetch(gatewayUrl, { cache: "no-store", signal: controller.signal });
+    clearTimeout(timeoutId);
+
     if (gatewayRes.ok) {
       const data = await gatewayRes.json();
       if (data && data.success && Array.isArray(data.products) && data.products.length > 0) {
@@ -343,7 +365,7 @@ export async function fetchUnlistedSharesFromSheet(customUrl = null, forceRefres
       }
     }
   } catch (gatewayErr) {
-    // Gateway not responding (e.g., local Vite dev mode), proceed to direct client fallback
+    // Gateway not responding, continue
   }
 
   // 2. FALLBACK / DIRECT CLIENT-SIDE FETCH (FOR LOCAL DEV & HYBRID COMPATIBILITY)
@@ -363,54 +385,32 @@ export async function fetchUnlistedSharesFromSheet(customUrl = null, forceRefres
     const sheetIdMatch = webhookUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
     if (sheetIdMatch && sheetIdMatch[1]) {
       const sheetId = sheetIdMatch[1];
-      const sheetNames = [
-        "Unlisted product", "Unlisted Product", "Unlisted products", "Unlisted Products",
-        "unlisted product", "unlisted products", "Unlisted shares", "unlisted shares", 
-        "Unlisted Shares", "Products", "products", "Shares", "shares", "Stocks", "stocks", 
-        "Catalog", "Sheet1", "Sheet2", "Sheet3"
-      ];
       
-      let fetchSuccess = false;
-      // Try GViz for common sheet tab names
-      for (const tabName of sheetNames) {
-        try {
-          const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}&t=${Date.now()}`;
-          const res = await fetch(gvizUrl, { cache: "no-store" });
-          if (res.ok) {
-            const text = await res.text();
-            const parsed = parseGVizResponse(text);
-            if (parsed && parsed.length > 0) {
-              rawList = parsed;
-              fetchSuccess = true;
-              break;
-            }
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+      // Fast query default active sheet
+      try {
+        const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&t=${Date.now()}`;
+        const res = await fetch(gvizUrl, { cache: "no-store", signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const text = await res.text();
+          const parsed = parseGVizResponse(text);
+          if (parsed && parsed.length > 0) {
+            rawList = parsed;
           }
-        } catch (e) {
-          // continue to next candidate
         }
-      }
+      } catch {}
 
-      // Fallback: Try querying default active sheet without tab parameter
-      if (!fetchSuccess) {
+      // Fallback to CSV export if GViz empty
+      if (!rawList || rawList.length === 0) {
         try {
-          const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&t=${Date.now()}`;
-          const res = await fetch(gvizUrl, { cache: "no-store" });
-          if (res.ok) {
-            const text = await res.text();
-            const parsed = parseGVizResponse(text);
-            if (parsed && parsed.length > 0) {
-              rawList = parsed;
-              fetchSuccess = true;
-            }
-          }
-        } catch (e) {}
-      }
-
-      // Fallback: Try general CSV export
-      if (!fetchSuccess) {
-        try {
+          const csvCtrl = new AbortController();
+          const csvTimeout = setTimeout(() => csvCtrl.abort(), 2000);
           const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&t=${Date.now()}`;
-          const res = await fetch(csvUrl, { cache: "no-store" });
+          const res = await fetch(csvUrl, { cache: "no-store", signal: csvCtrl.signal });
+          clearTimeout(csvTimeout);
           if (res.ok) {
             const text = await res.text();
             const parsed = parseCSVResponse(text);
@@ -418,9 +418,7 @@ export async function fetchUnlistedSharesFromSheet(customUrl = null, forceRefres
               rawList = parsed;
             }
           }
-        } catch (e) {
-          console.warn("CSV export fetch failed:", e);
-        }
+        } catch {}
       }
     } 
     // CASE 2: Google Apps Script Web App (script.google.com/macros/s/...)
@@ -428,40 +426,42 @@ export async function fetchUnlistedSharesFromSheet(customUrl = null, forceRefres
       const separator = webhookUrl.includes("?") ? "&" : "?";
       const fetchUrl = webhookUrl + separator + "action=products&t=" + Date.now();
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
       const res = await fetch(fetchUrl, {
         method: "GET",
         cache: "no-store",
-        redirect: "follow"
+        redirect: "follow",
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
 
-      if (!res.ok) {
-        throw new Error("HTTP Error " + res.status);
-      }
-
-      const text = await res.text();
-      let data = null;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        // If not JSON, check if it's GViz or CSV text
-        data = parseGVizResponse(text);
-        if (!data || data.length === 0) {
-          data = parseCSVResponse(text);
+      if (res.ok) {
+        const text = await res.text();
+        let data = null;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = parseGVizResponse(text);
+          if (!data || data.length === 0) {
+            data = parseCSVResponse(text);
+          }
         }
-      }
 
-      if (Array.isArray(data)) {
-        rawList = data;
-      } else if (data && Array.isArray(data.products)) {
-        rawList = data.products;
-      } else if (data && Array.isArray(data.data)) {
-        rawList = data.data;
-      } else if (data && Array.isArray(data.rows)) {
-        rawList = data.rows;
-      } else if (data && Array.isArray(data.items)) {
-        rawList = data.items;
-      } else if (data && Array.isArray(data.shares)) {
-        rawList = data.shares;
+        if (Array.isArray(data)) {
+          rawList = data;
+        } else if (data && Array.isArray(data.products)) {
+          rawList = data.products;
+        } else if (data && Array.isArray(data.data)) {
+          rawList = data.data;
+        } else if (data && Array.isArray(data.rows)) {
+          rawList = data.rows;
+        } else if (data && Array.isArray(data.items)) {
+          rawList = data.items;
+        } else if (data && Array.isArray(data.shares)) {
+          rawList = data.shares;
+        }
       }
     }
 

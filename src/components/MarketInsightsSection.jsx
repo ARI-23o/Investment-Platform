@@ -22,11 +22,11 @@ import {
   Maximize2
 } from "lucide-react";
 import { RESEARCH_ARTICLES } from "../data/marketInsightsData";
-import { fetchLiveMarketData, isMarketOpenNow } from "../services/marketService";
+import { fetchLiveMarketData, getBaselineMarketData, isMarketOpenNow } from "../services/marketService";
 
 export default function MarketInsightsSection({ onSelectArticle }) {
-  const [indices, setIndices] = useState([]);
   const [timeframe, setTimeframe] = useState("5d"); // '1d', '5d', '1m', '6m', '1y'
+  const [indices, setIndices] = useState(() => getBaselineMarketData("5d"));
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
@@ -43,8 +43,8 @@ export default function MarketInsightsSection({ onSelectArticle }) {
         setIndices(data);
         setLastUpdated(new Date());
       }
-    } catch (err) {
-      console.warn("Failed loading live index data:", err);
+    } catch {
+      // Keep baseline on failure
     } finally {
       if (showSpin) setIsRefreshing(false);
       setIsMarketOpen(isMarketOpenNow());
@@ -53,10 +53,10 @@ export default function MarketInsightsSection({ onSelectArticle }) {
 
   useEffect(() => {
     loadData(timeframe, false);
-    // Poll real market data every 15 seconds
+    // Poll market data every 60 seconds (non-blocking)
     const interval = setInterval(() => {
       loadData(timeframe, false);
-    }, 15000);
+    }, 60000);
     return () => clearInterval(interval);
   }, [timeframe]);
 

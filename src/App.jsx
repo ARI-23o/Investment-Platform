@@ -192,14 +192,12 @@ export default function App() {
       }
     };
 
-    // 1. Initial immediate sync
-    syncShares();
-
-    // 2. Fetch central settings & sync with configured webhook
+    // 1. Fetch settings and sync shares once
     fetchSettingsFromBackend().then((settings) => {
-      if (settings && settings.googleSheetWebhook) {
-        syncShares(settings.googleSheetWebhook);
-      }
+      const webhook = settings?.googleSheetWebhook || null;
+      syncShares(webhook);
+    }).catch(() => {
+      syncShares(null);
     });
 
     // 3. React to custom event whenever dynamic shares update
