@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "package": "vite build && python package_deploy.py",
     "lint": "oxlint",
     "preview": "vite preview"
   },
