@@ -382,7 +382,7 @@ export default function ShareDetailsView({ selectedShareId, onBack, onEnquirySuc
           {/* ─────────────────────────────────────────────────────────────
               RIGHT COLUMN: DEALING DESK ENQUIRY FORM (STACKS ON MOBILE)
           ───────────────────────────────────────────────────────────── */}
-          <div className="lg:col-span-5 sticky top-24">
+          <div className="lg:col-span-5 static lg:sticky lg:top-24">
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/90 shadow-xl space-y-6">
               
               {/* Buy / Sell Toggle Switch */}

@@ -335,7 +335,7 @@ export default function ContactSection({ onCallbackSubmitted }) {
           {/* ─────────────────────────────────────────────────────────────
               RIGHT COLUMN: REQUEST A CALLBACK FORM
           ───────────────────────────────────────────────────────────── */}
-          <div className="lg:col-span-5 sticky top-24">
+          <div className="lg:col-span-5 static lg:sticky lg:top-24">
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/90 shadow-xl space-y-6">
               
               <div>

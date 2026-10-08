@@ -412,7 +412,7 @@ Email: ${email.trim()}`;
           </div>
 
           {/* Right Column: Application Form */}
-          <div id="apply-form-card" className="lg:col-span-5 sticky top-24">
+          <div id="apply-form-card" className="lg:col-span-5 static lg:sticky lg:top-24">
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-xl space-y-5">
               
               <div>

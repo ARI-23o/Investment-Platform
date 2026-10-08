@@ -83,75 +83,78 @@ export default function LegalPoliciesView({ initialTab = "risk", onBack, onNavig
           </div>
         </div>
 
-        {/* Main Grid: Sticky Sidebar on Left, Content on Right */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Main Grid: Responsive Tab Navigation on Mobile, Sticky Sidebar on Desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           
-          {/* Left Sticky Tab Navigation */}
-          <div className="lg:col-span-4 sticky top-24 space-y-4">
-            <div className="bg-white rounded-3xl p-4 sm:p-5 border border-gray-200 shadow-sm space-y-2">
-              <div className="text-xs font-bold uppercase tracking-wider text-gray-400 px-3 pb-2 border-b border-gray-100">
-                Legal Documents
+          {/* Left Tab Navigation (Static on Mobile, Sticky on Desktop) */}
+          <div className="lg:col-span-4 static lg:sticky lg:top-24 space-y-4">
+            <div className="bg-white rounded-3xl p-3 sm:p-5 border border-gray-200 shadow-sm space-y-2">
+              <div className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-gray-400 px-2 sm:px-3 pb-2 border-b border-gray-100 flex items-center justify-between">
+                <span>Legal Documents</span>
+                <span className="text-[10px] text-emerald-800 lg:hidden font-medium">Select Policy Below</span>
               </div>
 
-              <button
-                onClick={() => handleTabChange("risk")}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer ${
-                  (activeTab === "risk" || activeTab === "disclaimer")
-                    ? "bg-[#0f4b32] text-white shadow-md"
-                    : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-900"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <AlertTriangle className={`w-4 h-4 ${(activeTab === "risk" || activeTab === "disclaimer") ? "text-amber-400" : "text-amber-600"}`} />
-                  <span>Risk Disclosure</span>
-                </div>
-                <ChevronRight className="w-4 h-4 opacity-70" />
-              </button>
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
+                <button
+                  onClick={() => handleTabChange("risk")}
+                  className={`flex items-center justify-between p-2.5 sm:px-4 sm:py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer ${
+                    (activeTab === "risk" || activeTab === "disclaimer")
+                      ? "bg-[#0f4b32] text-white shadow-md"
+                      : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-900 bg-gray-50 lg:bg-transparent"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                    <AlertTriangle className={`w-4 h-4 shrink-0 ${(activeTab === "risk" || activeTab === "disclaimer") ? "text-amber-400" : "text-amber-600"}`} />
+                    <span className="truncate">Risk Notice</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 opacity-70 hidden lg:block shrink-0" />
+                </button>
 
-              <button
-                onClick={() => handleTabChange("terms")}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer ${
-                  activeTab === "terms"
-                    ? "bg-[#0f4b32] text-white shadow-md"
-                    : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-900"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <FileText className={`w-4 h-4 ${activeTab === "terms" ? "text-emerald-300" : "text-emerald-700"}`} />
-                  <span>Term & Conditions</span>
-                </div>
-                <ChevronRight className="w-4 h-4 opacity-70" />
-              </button>
+                <button
+                  onClick={() => handleTabChange("terms")}
+                  className={`flex items-center justify-between p-2.5 sm:px-4 sm:py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer ${
+                    activeTab === "terms"
+                      ? "bg-[#0f4b32] text-white shadow-md"
+                      : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-900 bg-gray-50 lg:bg-transparent"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                    <FileText className={`w-4 h-4 shrink-0 ${activeTab === "terms" ? "text-emerald-300" : "text-emerald-700"}`} />
+                    <span className="truncate">Terms</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 opacity-70 hidden lg:block shrink-0" />
+                </button>
 
-              <button
-                onClick={() => handleTabChange("privacy")}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer ${
-                  activeTab === "privacy"
-                    ? "bg-[#0f4b32] text-white shadow-md"
-                    : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-900"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Lock className={`w-4 h-4 ${activeTab === "privacy" ? "text-emerald-300" : "text-emerald-700"}`} />
-                  <span>Privacy</span>
-                </div>
-                <ChevronRight className="w-4 h-4 opacity-70" />
-              </button>
+                <button
+                  onClick={() => handleTabChange("privacy")}
+                  className={`flex items-center justify-between p-2.5 sm:px-4 sm:py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer ${
+                    activeTab === "privacy"
+                      ? "bg-[#0f4b32] text-white shadow-md"
+                      : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-900 bg-gray-50 lg:bg-transparent"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                    <Lock className={`w-4 h-4 shrink-0 ${activeTab === "privacy" ? "text-emerald-300" : "text-emerald-700"}`} />
+                    <span className="truncate">Privacy</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 opacity-70 hidden lg:block shrink-0" />
+                </button>
 
-              <button
-                onClick={() => handleTabChange("refund")}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer ${
-                  activeTab === "refund"
-                    ? "bg-[#0f4b32] text-white shadow-md"
-                    : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-900"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <RotateCcw className={`w-4 h-4 ${activeTab === "refund" ? "text-amber-400" : "text-emerald-700"}`} />
-                  <span>Refund Policy</span>
-                </div>
-                <ChevronRight className="w-4 h-4 opacity-70" />
-              </button>
+                <button
+                  onClick={() => handleTabChange("refund")}
+                  className={`flex items-center justify-between p-2.5 sm:px-4 sm:py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer ${
+                    activeTab === "refund"
+                      ? "bg-[#0f4b32] text-white shadow-md"
+                      : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-900 bg-gray-50 lg:bg-transparent"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                    <RotateCcw className={`w-4 h-4 shrink-0 ${activeTab === "refund" ? "text-amber-400" : "text-emerald-700"}`} />
+                    <span className="truncate">Refund</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 opacity-70 hidden lg:block shrink-0" />
+                </button>
+              </div>
             </div>
 
             {/* Entity Verification Card */}
