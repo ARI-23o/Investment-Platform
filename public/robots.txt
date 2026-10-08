@@ -1,0 +1,15 @@
+# robots.txt for GSP Investment Pvt. Ltd.
+# https://gspinvestment.com
+
+User-agent: *
+Allow: /
+Allow: /#/all-shares
+Allow: /#/careers
+Allow: /#/legal
+
+# Disallow private API data folders & server JSON endpoints
+Disallow: /api/data/
+Disallow: /api/config.php
+
+# Sitemap reference
+Sitemap: https://gspinvestment.com/sitemap.xml

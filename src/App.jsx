@@ -23,6 +23,7 @@ import {
   LoanApplicationModal 
 } from "./components/Modals";
 import AdminDeskModal from "./components/AdminDeskModal";
+import CookieConsentBanner from "./components/CookieConsentBanner";
 import { CheckCircle2, X, Bell } from "lucide-react";
 import { 
   fetchAllEnquiries, 
@@ -597,6 +598,15 @@ export default function App() {
         onDeleteOne={handleDeleteEnquiry}
         onRefresh={refreshEnquiries}
         onUpdateStatus={handleUpdateEnquiryStatus}
+      />
+
+      {/* Privacy & Cookie Consent Banner */}
+      <CookieConsentBanner
+        onNavigatePrivacy={() => {
+          setLegalTab("privacy");
+          navigateToView("legal", { tab: "privacy" });
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
       />
 
     </div>
