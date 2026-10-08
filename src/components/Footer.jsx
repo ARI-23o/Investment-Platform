@@ -196,8 +196,10 @@ export default function Footer({ onOpenLogin, onOpenRegister, onSelectShare, onO
 
         {/* Bottom Copyright & Admin Access */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-emerald-300/70">
-          <div>
-            © {new Date().getFullYear()} GSP Investment Pvt. Ltd. All rights reserved.
+          <div className="flex items-center gap-2 flex-wrap">
+            <span>© {new Date().getFullYear()} GSP Investment Pvt. Ltd. All rights reserved.</span>
+            <span className="text-emerald-500">•</span>
+            <span>Crafted by <strong className="text-amber-400 font-semibold">MakDeveloper</strong></span>
           </div>
           <div className="flex flex-wrap items-center gap-6">
             <button onClick={() => scrollTo("risk")} className="hover:text-white cursor-pointer transition-colors">
