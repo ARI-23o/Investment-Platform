@@ -9,11 +9,15 @@ export function exportToCSV(data, filename = `gsp_leads_${new Date().toISOString
     "Enquiry ID",
     "Timestamp",
     "Type",
-    "Stock / Product",
-    "Quantity",
+    "Stock / Product / Loan Type",
+    "Quantity / Loan Amount",
+    "Tenure",
     "Customer Name",
     "Mobile Number",
     "Email Address",
+    "Employment / Category",
+    "Income / Turnover",
+    "City / Pincode",
     "PAN Number",
     "Service Requested",
     "Message / Notes",
@@ -21,17 +25,26 @@ export function exportToCSV(data, filename = `gsp_leads_${new Date().toISOString
   ];
 
   const rows = data.map((item) => {
+    const isLoan = item.type === "loan" || !!item.loanAmount || !!item.loanType;
+    const formattedAmount = item.loanAmount 
+      ? `₹${Number(item.loanAmount).toLocaleString("en-IN")}` 
+      : (item.quantity ? `${item.quantity}` : "1");
+
     return [
       `"${item.id || ""}"`,
       `"${item.time || new Date().toLocaleString()}"`,
-      `"${(item.type || "BUY").toUpperCase()}"`,
-      `"${(item.title || item.share || "General Enquiry").replace(/"/g, '""')}"`,
-      `"${item.quantity || 1}"`,
+      `"${(item.type || (isLoan ? "LOAN" : "BUY")).toUpperCase()}"`,
+      `"${(item.title || item.share || item.loanType || "General Enquiry").replace(/"/g, '""')}"`,
+      `"${formattedAmount}"`,
+      `"${item.tenure || "—"}"`,
       `"${(item.fullName || item.name || "").replace(/"/g, '""')}"`,
       `"${item.mobile || ""}"`,
       `"${item.email || ""}"`,
+      `"${item.employmentType || "—"}"`,
+      `"${item.monthlyIncome || "—"}"`,
+      `"${[item.city, item.pincode].filter(Boolean).join(" - ") || "—"}"`,
       `"${item.pan || ""}"`,
-      `"${(item.service || "").replace(/"/g, '""')}"`,
+      `"${(item.service || (isLoan ? "Loan & Credit" : "Unlisted Shares")).replace(/"/g, '""')}"`,
       `"${(item.message || "").replace(/"/g, '""')}"`,
       `"${item.status || "New"}"`
     ];
@@ -193,15 +206,24 @@ export async function syncLeadToGoogleSheet(leadData) {
     const formData = new URLSearchParams();
     formData.append("timestamp", new Date().toLocaleString());
     formData.append("type", leadData.type || "Enquiry");
-    formData.append("share", leadData.title || leadData.share || "General Enquiry");
-    formData.append("quantity", leadData.quantity || "1");
+    formData.append("share", leadData.title || leadData.share || leadData.loanType || "General Enquiry");
+    formData.append("quantity", leadData.quantity || leadData.loanAmount || "1");
     formData.append("fullName", leadData.fullName || leadData.name || "");
     formData.append("mobile", leadData.mobile || "");
     formData.append("email", leadData.email || "");
     formData.append("message", leadData.message || "");
     formData.append("pan", leadData.pan || "");
-    formData.append("service", leadData.service || "");
+    formData.append("service", leadData.service || (leadData.type === "loan" ? "Loan & Credit" : ""));
     formData.append("status", leadData.status || "New");
+    if (leadData.loanType) formData.append("loanType", leadData.loanType);
+    if (leadData.loanAmount) formData.append("loanAmount", leadData.loanAmount);
+    if (leadData.tenure) formData.append("tenure", leadData.tenure);
+    if (leadData.employmentType) formData.append("employmentType", leadData.employmentType);
+    if (leadData.monthlyIncome) formData.append("monthlyIncome", leadData.monthlyIncome);
+    if (leadData.city) formData.append("city", leadData.city);
+    if (leadData.pincode) formData.append("pincode", leadData.pincode);
+    if (leadData.existingEmi) formData.append("existingEmi", leadData.existingEmi);
+    if (leadData.estimatedEmi) formData.append("estimatedEmi", leadData.estimatedEmi);
 
     // Mode no-cors avoids browser CORS preflight blocking Google servers
     await fetch(webhookUrl, {

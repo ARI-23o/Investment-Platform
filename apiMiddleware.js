@@ -1,4 +1,4 @@
-﻿import fs from "fs";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -90,6 +90,15 @@ export function apiMiddlewarePlugin() {
                     formData.append("service", newEnquiry.service || "");
                     formData.append("message", newEnquiry.message || "");
                     formData.append("pan", newEnquiry.pan || "");
+                    formData.append("status", newEnquiry.status || "New");
+                    if (newEnquiry.loanType) formData.append("loanType", newEnquiry.loanType);
+                    if (newEnquiry.loanAmount) formData.append("loanAmount", newEnquiry.loanAmount);
+                    if (newEnquiry.tenure) formData.append("tenure", newEnquiry.tenure);
+                    if (newEnquiry.employmentType) formData.append("employmentType", newEnquiry.employmentType);
+                    if (newEnquiry.monthlyIncome) formData.append("monthlyIncome", newEnquiry.monthlyIncome);
+                    if (newEnquiry.city) formData.append("city", newEnquiry.city);
+                    if (newEnquiry.pincode) formData.append("pincode", newEnquiry.pincode);
+                    if (newEnquiry.existingEmi) formData.append("existingEmi", newEnquiry.existingEmi);
 
                     fetch(settings.googleSheetWebhook, {
                       method: "POST",
@@ -97,6 +106,7 @@ export function apiMiddlewarePlugin() {
                       headers: { "Content-Type": "application/x-www-form-urlencoded" }
                     }).catch(err => console.error("Google sync error:", err));
                   }
+                  console.log(`[Notification] Alert dispatched for ${newEnquiry.fullName} to gspbackoffice6@gmail.com`);
                 } catch (e) {
                   console.error(e);
                 }

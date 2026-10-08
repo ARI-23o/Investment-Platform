@@ -15,7 +15,13 @@ import LegalPoliciesView from "./components/LegalPoliciesView";
 import AllUnlistedSharesPage from "./components/AllUnlistedSharesPage";
 import ContactSection from "./components/ContactSection";
 import Footer from "./components/Footer";
-import { LoginModal, OpenAccountModal, QuickEnquiryModal, ConsultAdvisorModal } from "./components/Modals";
+import { 
+  LoginModal, 
+  OpenAccountModal, 
+  QuickEnquiryModal, 
+  ConsultAdvisorModal, 
+  LoanApplicationModal 
+} from "./components/Modals";
 import AdminDeskModal from "./components/AdminDeskModal";
 import { CheckCircle2, X, Bell } from "lucide-react";
 import { 
@@ -101,7 +107,18 @@ export default function App() {
   const [enquiriesDeskOpen, setEnquiriesDeskOpen] = useState(false);
   const [quickEnquiryShare, setQuickEnquiryShare] = useState(null);
   const [consultAdvisorService, setConsultAdvisorService] = useState(null);
+  const [loanModalService, setLoanModalService] = useState(null);
   const [toast, setToast] = useState(null);
+
+  // Listen for open-loan-modal custom event from navigation/cards
+  useEffect(() => {
+    const handleOpenLoan = (e) => {
+      const loanData = e?.detail || { id: "home-loan" };
+      setLoanModalService(loanData);
+    };
+    window.addEventListener("open-loan-modal", handleOpenLoan);
+    return () => window.removeEventListener("open-loan-modal", handleOpenLoan);
+  }, []);
 
   // Central routing helper with browser History & URL hash sync
   const navigateToView = (view, extra = {}) => {
@@ -486,7 +503,7 @@ export default function App() {
 
             {/* Page 5: Our Services & Loan Solutions */}
             <ServicesAndLoans
-              onApplyLoan={(loan) => setConsultAdvisorService(loan)}
+              onApplyLoan={(loan) => setLoanModalService(loan || { id: "home-loan" })}
               onSelectService={(service) => setConsultAdvisorService(service)}
             />
 
@@ -546,6 +563,17 @@ export default function App() {
         onClose={() => setQuickEnquiryShare(null)}
         onSubmitted={(shareName) => {
           handleEnquiryRecorded({ title: shareName, type: "buy" });
+        }}
+      />
+
+      {/* Specialized Loan Application & Eligibility Modal */}
+      <LoanApplicationModal
+        isOpen={!!loanModalService}
+        selectedLoan={loanModalService}
+        onClose={() => setLoanModalService(null)}
+        onSubmitted={(record) => {
+          handleEnquiryRecorded(record);
+          showToast(`Loan application received! Reference token: ${record.id}`);
         }}
       />
 

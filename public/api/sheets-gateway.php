@@ -539,7 +539,7 @@ switch ($action) {
             'id' => $lead['id'] ?? ('lead_' . time()),
             'time' => $lead['time'] ?? date('c'),
             'type' => $lead['type'] ?? 'BUY',
-            'title' => $lead['title'] ?? $lead['share'] ?? 'General Enquiry',
+            'title' => $lead['title'] ?? $lead['share'] ?? $lead['loanType'] ?? 'General Enquiry',
             'quantity' => $lead['quantity'] ?? 1,
             'fullName' => $lead['fullName'] ?? $lead['name'] ?? '',
             'mobile' => $lead['mobile'] ?? '',
@@ -547,6 +547,16 @@ switch ($action) {
             'pan' => $lead['pan'] ?? '',
             'service' => $lead['service'] ?? 'Unlisted Shares',
             'message' => $lead['message'] ?? '',
+            'status' => $lead['status'] ?? 'New',
+            'loanType' => $lead['loanType'] ?? '',
+            'loanAmount' => $lead['loanAmount'] ?? '',
+            'tenure' => $lead['tenure'] ?? '',
+            'employmentType' => $lead['employmentType'] ?? '',
+            'monthlyIncome' => $lead['monthlyIncome'] ?? '',
+            'city' => $lead['city'] ?? '',
+            'pincode' => $lead['pincode'] ?? '',
+            'existingEmi' => $lead['existingEmi'] ?? '',
+            'estimatedEmi' => $lead['estimatedEmi'] ?? '',
             'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
         ];
         array_unshift($enquiries, $leadEntry);
@@ -565,7 +575,16 @@ switch ($action) {
                 'email' => $leadEntry['email'],
                 'message' => $leadEntry['message'],
                 'pan' => $leadEntry['pan'],
-                'service' => $leadEntry['service']
+                'service' => $leadEntry['service'],
+                'status' => $leadEntry['status'],
+                'loanType' => $leadEntry['loanType'],
+                'loanAmount' => $leadEntry['loanAmount'],
+                'tenure' => $leadEntry['tenure'],
+                'employmentType' => $leadEntry['employmentType'],
+                'monthlyIncome' => $leadEntry['monthlyIncome'],
+                'city' => $leadEntry['city'],
+                'pincode' => $leadEntry['pincode'],
+                'existingEmi' => $leadEntry['existingEmi']
             ];
 
             $response = fetchExternalData($webhookUrl, true, $postPayload, 10);

@@ -534,23 +534,76 @@ function doPost(e) {
       return ContentService.createTextOutput(JSON.stringify({ "result": "success", "status": "email_sent" }))
         .setMimeType(ContentService.MimeType.JSON);
     }
+
+    // 5. Handle Automated Email Notification for New Enquiry / Loan Application
+    if (params.action === "send_notification") {
+      var recipient = params.to || "gspbackoffice6@gmail.com";
+      var nSubj = params.subject || "🚨 New Enquiry Received - GSP Investment Portal";
+      var nBody = params.message || (params.htmlBody ? params.htmlBody.replace(/<[^>]*>/g, " ") : "New lead received.");
+      try {
+        if (params.htmlBody) {
+          MailApp.sendEmail({
+            to: recipient,
+            subject: nSubj,
+            htmlBody: params.htmlBody,
+            body: nBody
+          });
+        } else {
+          MailApp.sendEmail({
+            to: recipient,
+            subject: nSubj,
+            body: nBody
+          });
+        }
+      } catch (nErr) {}
+      return ContentService.createTextOutput(JSON.stringify({ "result": "success", "status": "notification_sent" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
     
-    // 4. Append New Enquiry Row
+    // 6. Append New Enquiry / Loan Row
     var dateFormatted = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || "GMT+5:30", "yyyy-MM-dd HH:mm:ss");
+    var amountOrQty = params.loanAmount ? ("₹" + Number(params.loanAmount).toLocaleString()) : (params.quantity || "");
+    var categoryOrLoan = params.loanType ? (params.loanType + " (" + (params.tenure || "") + ")") : (params.service || "");
+    var incomeOrNotes = params.monthlyIncome ? ("Income: " + params.monthlyIncome + (params.employmentType ? " | " + params.employmentType : "")) : (params.message || "");
+    var locationOrPan = [params.city, params.pincode, params.pan].filter(Boolean).join(" | ");
     
     sheet.appendRow([
       dateFormatted,
-      params.type || "Enquiry",
-      params.share || params.title || "",
-      params.quantity || "",
+      params.type || (params.loanType ? "Loan Application" : "Enquiry"),
+      params.share || params.title || params.loanType || "",
+      amountOrQty,
       params.fullName || params.name || "",
       params.mobile || params.phone || "",
       params.email || "",
-      params.service || "",
-      params.message || "",
-      params.pan || "",
+      categoryOrLoan,
+      incomeOrNotes,
+      locationOrPan,
       params.status || "New"
     ]);
+
+    // Send immediate email alert to Admin
+    try {
+      var leadTypeDesc = params.loanType ? ("🚨 New Loan Application: " + params.loanType) : ("💼 New Lead: " + (params.share || params.title || "General Enquiry"));
+      var alertSubj = leadTypeDesc + " - " + (params.fullName || params.name || "Customer") + " [" + (params.mobile || "") + "]";
+      var alertBody = "Hello Admin,\n\nA new enquiry has been submitted on GSP Investment Portal:\n\n" +
+        "• Type: " + (params.type || (params.loanType ? "Loan" : "Enquiry")) + "\n" +
+        "• Product/Loan: " + (params.share || params.title || params.loanType || "") + "\n" +
+        "• Amount/Qty: " + amountOrQty + "\n" +
+        "• Customer Name: " + (params.fullName || params.name || "") + "\n" +
+        "• Mobile: " + (params.mobile || "") + "\n" +
+        "• Email: " + (params.email || "") + "\n" +
+        "• Category/Tenure: " + categoryOrLoan + "\n" +
+        "• Income/Employment: " + incomeOrNotes + "\n" +
+        "• Location: " + locationOrPan + "\n" +
+        "• Time: " + dateFormatted + "\n\n" +
+        "Direct WhatsApp: https://wa.me/" + String(params.mobile || "").replace(/[^0-9]/g, "") + "\n";
+      
+      MailApp.sendEmail({
+        to: "gspbackoffice6@gmail.com",
+        subject: alertSubj,
+        body: alertBody
+      });
+    } catch (eMailErr) {}
     
     return ContentService.createTextOutput(JSON.stringify({ "result": "success", "status": "logged" }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -992,10 +1045,12 @@ function doPost(e) {
                         className="bg-white border border-gray-200 text-xs font-semibold rounded-xl px-2.5 py-2 outline-none cursor-pointer"
                       >
                         <option value="all">All Enquiries</option>
+                        <option value="loan">🟡 Loan Applications</option>
                         <option value="buy">Buy Requests</option>
                         <option value="sell">Sell Offers</option>
                         <option value="callback">Callback Requests</option>
                         <option value="account">Demat Accounts</option>
+                        <option value="career">Job Applications</option>
                       </select>
                     </div>
 
@@ -1008,6 +1063,7 @@ function doPost(e) {
                       >
                         <option value="all">All Statuses</option>
                         <option value="New">🟡 New</option>
+                        <option value="New Application">🟡 New Application</option>
                         <option value="Contacted">🔵 Contacted</option>
                         <option value="In Progress">🟣 In Progress</option>
                         <option value="KYC Received">🔷 KYC Received</option>
@@ -1029,28 +1085,36 @@ function doPost(e) {
                       </p>
                     </div>
                   ) : (
-                    filteredEnquiries.map((item, idx) => (
+                    filteredEnquiries.map((item, idx) => {
+                      const isLoanItem = item.type === "loan" || !!item.loanAmount || !!item.loanType;
+                      return (
                       <div
                         key={item.id || idx}
-                        className="bg-white rounded-2xl p-4 border border-gray-200/90 shadow-xs hover:border-emerald-500/50 transition-all flex flex-col gap-2.5"
+                        className={`bg-white rounded-2xl p-4 border transition-all flex flex-col gap-2.5 ${
+                          isLoanItem 
+                            ? "border-amber-300 shadow-sm hover:border-amber-500 bg-gradient-to-br from-white via-amber-50/10 to-white" 
+                            : "border-gray-200/90 shadow-xs hover:border-emerald-500/50"
+                        }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2">
                             <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                              item.type === "sell" 
+                              isLoanItem
+                                ? "bg-amber-100 text-amber-900 border border-amber-300 font-extrabold"
+                                : item.type === "sell" 
                                 ? "bg-rose-100 text-rose-800" 
                                 : item.type === "callback" 
                                 ? "bg-blue-100 text-blue-800"
                                 : item.type === "account"
                                 ? "bg-purple-100 text-purple-800"
                                 : item.type === "career"
-                                ? "bg-amber-100 text-amber-900 border border-amber-300"
+                                ? "bg-indigo-100 text-indigo-900 border border-indigo-300"
                                 : "bg-emerald-100 text-emerald-800"
                             }`}>
-                              {item.type === "career" ? "JOB APPLICATION" : (item.type ? item.type.toUpperCase() : "BUY")}
+                              {isLoanItem ? "LOAN APPLICATION" : item.type === "career" ? "JOB APPLICATION" : (item.type ? item.type.toUpperCase() : "BUY")}
                             </span>
                             <span className="text-sm font-bold text-gray-900">
-                              {item.title || item.share || "General Enquiry"}
+                              {item.title || item.share || item.loanType || "General Enquiry"}
                             </span>
                           </div>
 
@@ -1087,17 +1151,41 @@ function doPost(e) {
                           </div>
                           <div>
                             <span className="text-gray-400 block text-[10px] uppercase font-bold">
-                              {item.quantity ? "Quantity" : item.service ? "Service" : item.pan ? "PAN" : "Detail"}
+                              {isLoanItem ? "Loan Amount" : item.quantity ? "Quantity" : item.service ? "Service" : "Detail"}
                             </span>
-                            <strong className="text-gray-900">
-                              {item.quantity ? `${item.quantity} shares` : item.service || item.pan || "Standard"}
+                            <strong className={isLoanItem ? "text-amber-800 text-sm font-black" : "text-gray-900"}>
+                              {item.loanAmount 
+                                ? `₹${Number(item.loanAmount).toLocaleString("en-IN")}` 
+                                : item.quantity ? `${item.quantity} shares` : item.service || item.pan || "Standard"}
                             </strong>
                           </div>
                         </div>
 
+                        {/* Loan-Specific Extended Attributes */}
+                        {isLoanItem && (
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] bg-amber-50/60 p-2.5 rounded-xl border border-amber-200/70 text-amber-950">
+                            <div>
+                              <span className="text-amber-700 block text-[9px] uppercase font-bold">Tenure</span>
+                              <strong>{item.tenure || "Flexible"}</strong>
+                            </div>
+                            <div>
+                              <span className="text-amber-700 block text-[9px] uppercase font-bold">Employment</span>
+                              <strong className="truncate block">{item.employmentType || "Salaried"}</strong>
+                            </div>
+                            <div>
+                              <span className="text-amber-700 block text-[9px] uppercase font-bold">Income / Turnover</span>
+                              <strong className="truncate block">{item.monthlyIncome || "Standard"}</strong>
+                            </div>
+                            <div>
+                              <span className="text-amber-700 block text-[9px] uppercase font-bold">City / Pincode</span>
+                              <strong className="truncate block">{[item.city, item.pincode].filter(Boolean).join(" - ") || "Mumbai / Vasai"}</strong>
+                            </div>
+                          </div>
+                        )}
+
                         {item.message && (
                           <div className="text-xs text-gray-600 bg-emerald-50/40 px-3 py-2 rounded-lg border border-emerald-100/60">
-                            <strong className="text-emerald-900 font-semibold">Message:</strong> “{item.message}”
+                            <strong className="text-emerald-900 font-semibold">Message / Notes:</strong> “{item.message}”
                           </div>
                         )}
 
@@ -1151,7 +1239,8 @@ function doPost(e) {
                           )}
                         </div>
                       </div>
-                    ))
+                    );
+                  })
                   )}
                 </div>
 
