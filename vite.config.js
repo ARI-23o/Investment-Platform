@@ -5,7 +5,6 @@ import { apiMiddlewarePlugin } from './apiMiddleware.js'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './',
   plugins: [
     tailwindcss(),
     react(),
